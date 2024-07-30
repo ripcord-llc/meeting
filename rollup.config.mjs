@@ -14,14 +14,14 @@ const plugins = [
         : JSON.stringify("development"),
     preventAssignment: true,
   }),
-  nodeResolve({ extensions: [".ts", ".tsx"] }),
+  nodeResolve({ extensions: [".js", ".jsx", ".ts", ".tsx"] }),
   commonjs(),
   babel({
     babelHelpers: "bundled",
     exclude: "node_modules/**",
     extensions: [".js", ".jsx", ".ts", ".tsx"],
-  }),
-  typescript({ noForceEmit: true }),
+  }), // Transpiles JSX and TS
+  typescript({ noForceEmit: true }), // Only for type checking and declaration file generation
 ];
 
 export default [
@@ -37,6 +37,13 @@ export default [
     plugins,
   },
   {
+    external: [
+      "react",
+      "react-dom",
+      "@mui/material",
+      "@emotion/styled",
+      "@emotion/react",
+    ],
     input: "src/index.tsx",
     output: [
       {

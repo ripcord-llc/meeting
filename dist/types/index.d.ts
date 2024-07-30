@@ -3,3 +3,4 @@ export default class Ripcord {
     constructor(el: HTMLElement);
     open(): void;
 }
+//# sourceMappingURL=index.d.ts.map

@@ -1,9 +1,28 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
+import { babel } from "@rollup/plugin-babel";
 import replace from "@rollup/plugin-replace";
 
 import pkj from "./package.json" assert { type: "json" };
+
+const plugins = [
+  replace({
+    "process.env.NODE_ENV":
+      process.env.NODE_ENV === "production"
+        ? JSON.stringify("production")
+        : JSON.stringify("development"),
+    preventAssignment: true,
+  }),
+  nodeResolve({ extensions: [".ts", ".tsx"] }),
+  commonjs(),
+  babel({
+    babelHelpers: "bundled",
+    exclude: "node_modules/**",
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
+  }),
+  typescript({ noForceEmit: true }),
+];
 
 export default [
   {
@@ -15,18 +34,7 @@ export default [
         name: "Ripcord",
       },
     ],
-    plugins: [
-      replace({
-        "process.env.NODE_ENV":
-          process.env.NODE_ENV === "production"
-            ? JSON.stringify("production")
-            : JSON.stringify("development"),
-        preventAssignment: true,
-      }),
-      nodeResolve({ extensions: [".ts", ".tsx"] }),
-      commonjs(),
-      typescript(),
-    ],
+    plugins,
   },
   {
     input: "src/index.tsx",
@@ -40,17 +48,6 @@ export default [
         format: "cjs",
       },
     ],
-    plugins: [
-      replace({
-        "process.env.NODE_ENV":
-          process.env.NODE_ENV === "production"
-            ? JSON.stringify("production")
-            : JSON.stringify("development"),
-        preventAssignment: true,
-      }),
-      nodeResolve({ extensions: [".ts", ".tsx"] }),
-      commonjs(),
-      typescript(),
-    ],
+    plugins,
   },
 ];

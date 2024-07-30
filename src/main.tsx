@@ -1,3 +1,7 @@
 export default function Main() {
-  return <div>Hello world!</div>;
+  return (
+    <main className="hello-world">
+      <div>Hello world!</div>
+    </main>
+  );
 }

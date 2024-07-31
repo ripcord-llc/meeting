@@ -4,6 +4,36 @@ import * as React from 'react';
 import React__default from 'react';
 import { ThemeContext as ThemeContext$1 } from '@emotion/react';
 
+function styleInject(css, ref) {
+  if ( ref === void 0 ) ref = {};
+  var insertAt = ref.insertAt;
+
+  if (typeof document === 'undefined') { return; }
+
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css_248z = "@import url(\"https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap\");\n";
+styleInject(css_248z);
+
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
@@ -69,8 +99,8 @@ function formatMuiErrorMessage$1(code) {
 }
 
 var formatMuiErrorMessage = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	default: formatMuiErrorMessage$1
+  __proto__: null,
+  default: formatMuiErrorMessage$1
 });
 
 var THEME_ID = '$$material';
@@ -3717,8 +3747,8 @@ function clamp$1(val, min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEG
 }
 
 var clamp = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	default: clamp$1
+  __proto__: null,
+  default: clamp$1
 });
 
 // This module is based on https://github.com/airbnb/prop-types-exact repository.
@@ -5042,27 +5072,13 @@ ThemeProvider.propTypes = {
   theme: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired
 } ;
 
-const theme = createTheme({
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: `
-        @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap')
-
-        h1 {
-          font-family: 'Barlow', sans-serif;
-        }
-      `
-    }
-  }
-});
+const theme = createTheme({});
 function Main() {
   return /*#__PURE__*/jsxRuntimeExports.jsxs(ThemeProvider, {
     theme: theme,
     children: [/*#__PURE__*/jsxRuntimeExports.jsx(CssBaseline, {}), /*#__PURE__*/jsxRuntimeExports.jsx(Typography, {
       variant: "h1",
-      sx: {
-        fontFamily: "Barlow"
-      },
+      sx: {},
       children: "Hello, world!"
     })]
   });

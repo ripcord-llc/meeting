@@ -3,6 +3,7 @@ import typescript from "@rollup/plugin-typescript";
 import commonjs from "@rollup/plugin-commonjs";
 import { babel } from "@rollup/plugin-babel";
 import replace from "@rollup/plugin-replace";
+import postcss from "rollup-plugin-postcss";
 
 import pkj from "./package.json" assert { type: "json" };
 
@@ -22,6 +23,9 @@ const plugins = [
     extensions: [".js", ".jsx", ".ts", ".tsx"],
   }), // Transpiles JSX and TS
   typescript({ noForceEmit: true }), // Only for type checking and declaration file generation
+  postcss({
+    plugins: [],
+  }),
 ];
 
 export default [

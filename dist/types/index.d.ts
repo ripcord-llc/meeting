@@ -1,3 +1,4 @@
+import "./index.css";
 export default class Ripcord {
     private root;
     constructor(el: HTMLElement);

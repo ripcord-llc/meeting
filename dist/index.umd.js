@@ -33371,6 +33371,7 @@ var Ripcord = (function () {
   }
 
   var reactDomExports = reactDom.exports;
+  var ReactDOM = /*@__PURE__*/getDefaultExportFromCjs(reactDomExports);
 
   var createRoot;
 
@@ -35828,7 +35829,7 @@ var Ripcord = (function () {
     return null;
   };
 
-  var createStyled$2
+  var createStyled$3
   /*: CreateStyled */
   = function createStyled
   /*: CreateStyled */
@@ -35962,7 +35963,7 @@ var Ripcord = (function () {
   var tags = ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'big', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr', // SVG
   'circle', 'clipPath', 'defs', 'ellipse', 'foreignObject', 'g', 'image', 'line', 'linearGradient', 'mask', 'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'stop', 'svg', 'text', 'tspan'];
 
-  var newStyled = createStyled$2.bind();
+  var newStyled = createStyled$3.bind();
   tags.forEach(function (tagName) {
     newStyled[tagName] = newStyled(tagName);
   });
@@ -38356,20 +38357,20 @@ var Ripcord = (function () {
     injectFirst: PropTypes.bool
   } ;
 
-  function isEmpty$1(obj) {
+  function isEmpty$2(obj) {
     return obj === undefined || obj === null || Object.keys(obj).length === 0;
   }
-  function GlobalStyles$2(props) {
+  function GlobalStyles$3(props) {
     const {
       styles,
       defaultTheme = {}
     } = props;
-    const globalStyles = typeof styles === 'function' ? themeInput => styles(isEmpty$1(themeInput) ? defaultTheme : themeInput) : styles;
+    const globalStyles = typeof styles === 'function' ? themeInput => styles(isEmpty$2(themeInput) ? defaultTheme : themeInput) : styles;
     return /*#__PURE__*/jsxRuntimeExports.jsx(Global, {
       styles: globalStyles
     });
   }
-  GlobalStyles$2.propTypes = {
+  GlobalStyles$3.propTypes = {
     defaultTheme: PropTypes.object,
     styles: PropTypes.oneOfType([PropTypes.array, PropTypes.string, PropTypes.object, PropTypes.func])
   } ;
@@ -38381,7 +38382,7 @@ var Ripcord = (function () {
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
    */
-  function styled$1(tag, options) {
+  function styled$2(tag, options) {
     const stylesFactory = newStyled(tag, options);
     {
       return (...styles) => {
@@ -38407,11 +38408,11 @@ var Ripcord = (function () {
 
   var styledEngine = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    GlobalStyles: GlobalStyles$2,
+    GlobalStyles: GlobalStyles$3,
     StyledEngineProvider: StyledEngineProvider,
     ThemeContext: ThemeContext$1,
     css: css,
-    default: styled$1,
+    default: styled$2,
     internal_processStyles: internal_processStyles,
     keyframes: keyframes
   });
@@ -38461,7 +38462,7 @@ var Ripcord = (function () {
     isPlainObject: isPlainObject
   });
 
-  const _excluded$a = ["values", "unit", "step"];
+  const _excluded$k = ["values", "unit", "step"];
   const sortBreakpointsValues = values => {
     const breakpointsAsArray = Object.keys(values).map(key => ({
       key,
@@ -38495,7 +38496,7 @@ var Ripcord = (function () {
         unit = 'px',
         step = 5
       } = breakpoints,
-      other = _objectWithoutPropertiesLoose(breakpoints, _excluded$a);
+      other = _objectWithoutPropertiesLoose(breakpoints, _excluded$k);
     const sortedValues = sortBreakpointsValues(values);
     const keys = Object.keys(sortedValues);
     function up(key) {
@@ -38618,6 +38619,61 @@ var Ripcord = (function () {
       return acc;
     }, style);
   }
+  function mergeBreakpointsInOrder(breakpointsInput, ...styles) {
+    const emptyBreakpoints = createEmptyBreakpointObject(breakpointsInput);
+    const mergedOutput = [emptyBreakpoints, ...styles].reduce((prev, next) => deepmerge$1(prev, next), {});
+    return removeUnusedBreakpoints(Object.keys(emptyBreakpoints), mergedOutput);
+  }
+
+  // compute base for responsive values; e.g.,
+  // [1,2,3] => {xs: true, sm: true, md: true}
+  // {xs: 1, sm: 2, md: 3} => {xs: true, sm: true, md: true}
+  function computeBreakpointsBase(breakpointValues, themeBreakpoints) {
+    // fixed value
+    if (typeof breakpointValues !== 'object') {
+      return {};
+    }
+    const base = {};
+    const breakpointsKeys = Object.keys(themeBreakpoints);
+    if (Array.isArray(breakpointValues)) {
+      breakpointsKeys.forEach((breakpoint, i) => {
+        if (i < breakpointValues.length) {
+          base[breakpoint] = true;
+        }
+      });
+    } else {
+      breakpointsKeys.forEach(breakpoint => {
+        if (breakpointValues[breakpoint] != null) {
+          base[breakpoint] = true;
+        }
+      });
+    }
+    return base;
+  }
+  function resolveBreakpointValues({
+    values: breakpointValues,
+    breakpoints: themeBreakpoints,
+    base: customBase
+  }) {
+    const base = customBase || computeBreakpointsBase(breakpointValues, themeBreakpoints);
+    const keys = Object.keys(base);
+    if (keys.length === 0) {
+      return breakpointValues;
+    }
+    let previous;
+    return keys.reduce((acc, breakpoint, i) => {
+      if (Array.isArray(breakpointValues)) {
+        acc[breakpoint] = breakpointValues[i] != null ? breakpointValues[i] : breakpointValues[previous];
+        previous = i;
+      } else if (typeof breakpointValues === 'object') {
+        acc[breakpoint] = breakpointValues[breakpoint] != null ? breakpointValues[breakpoint] : breakpointValues[previous];
+        previous = breakpoint;
+      } else {
+        acc[breakpoint] = breakpointValues;
+      }
+      return acc;
+    }, {});
+  }
 
   // It should to be noted that this function isn't equivalent to `text-transform: capitalize`.
   //
@@ -38668,7 +38724,7 @@ var Ripcord = (function () {
     }
     return value;
   }
-  function style$1(options) {
+  function style$2(options) {
     const {
       prop,
       cssProperty = options.prop,
@@ -38829,12 +38885,12 @@ var Ripcord = (function () {
     const propValue = props[prop];
     return handleBreakpoints(props, propValue, styleFromPropValue);
   }
-  function style(props, keys) {
+  function style$1(props, keys) {
     const transformer = createUnarySpacing(props.theme);
     return Object.keys(props).map(prop => resolveCssProperty(props, keys, prop, transformer)).reduce(merge, {});
   }
   function margin(props) {
-    return style(props, marginKeys);
+    return style$1(props, marginKeys);
   }
   margin.propTypes = marginKeys.reduce((obj, key) => {
     obj[key] = responsivePropType;
@@ -38842,7 +38898,7 @@ var Ripcord = (function () {
   }, {}) ;
   margin.filterProps = marginKeys;
   function padding(props) {
-    return style(props, paddingKeys);
+    return style$1(props, paddingKeys);
   }
   padding.propTypes = paddingKeys.reduce((obj, key) => {
     obj[key] = responsivePropType;
@@ -38915,7 +38971,7 @@ var Ripcord = (function () {
     return `${value}px solid`;
   }
   function createBorderStyle(prop, transform) {
-    return style$1({
+    return style$2({
       prop,
       themeKey: 'borders',
       transform
@@ -39002,31 +39058,31 @@ var Ripcord = (function () {
     rowGap: responsivePropType
   } ;
   rowGap.filterProps = ['rowGap'];
-  const gridColumn = style$1({
+  const gridColumn = style$2({
     prop: 'gridColumn'
   });
-  const gridRow = style$1({
+  const gridRow = style$2({
     prop: 'gridRow'
   });
-  const gridAutoFlow = style$1({
+  const gridAutoFlow = style$2({
     prop: 'gridAutoFlow'
   });
-  const gridAutoColumns = style$1({
+  const gridAutoColumns = style$2({
     prop: 'gridAutoColumns'
   });
-  const gridAutoRows = style$1({
+  const gridAutoRows = style$2({
     prop: 'gridAutoRows'
   });
-  const gridTemplateColumns = style$1({
+  const gridTemplateColumns = style$2({
     prop: 'gridTemplateColumns'
   });
-  const gridTemplateRows = style$1({
+  const gridTemplateRows = style$2({
     prop: 'gridTemplateRows'
   });
-  const gridTemplateAreas = style$1({
+  const gridTemplateAreas = style$2({
     prop: 'gridTemplateAreas'
   });
-  const gridArea = style$1({
+  const gridArea = style$2({
     prop: 'gridArea'
   });
   compose(gap, columnGap, rowGap, gridColumn, gridRow, gridAutoFlow, gridAutoColumns, gridAutoRows, gridTemplateColumns, gridTemplateRows, gridTemplateAreas, gridArea);
@@ -39037,18 +39093,18 @@ var Ripcord = (function () {
     }
     return value;
   }
-  const color = style$1({
+  const color = style$2({
     prop: 'color',
     themeKey: 'palette',
     transform: paletteTransform
   });
-  const bgcolor = style$1({
+  const bgcolor = style$2({
     prop: 'bgcolor',
     cssProperty: 'backgroundColor',
     themeKey: 'palette',
     transform: paletteTransform
   });
-  const backgroundColor = style$1({
+  const backgroundColor = style$2({
     prop: 'backgroundColor',
     themeKey: 'palette',
     transform: paletteTransform
@@ -39058,7 +39114,7 @@ var Ripcord = (function () {
   function sizingTransform(value) {
     return value <= 1 && value !== 0 ? `${value * 100}%` : value;
   }
-  const width = style$1({
+  const width = style$2({
     prop: 'width',
     transform: sizingTransform
   });
@@ -39086,33 +39142,33 @@ var Ripcord = (function () {
     return null;
   };
   maxWidth.filterProps = ['maxWidth'];
-  const minWidth = style$1({
+  const minWidth = style$2({
     prop: 'minWidth',
     transform: sizingTransform
   });
-  const height = style$1({
+  const height = style$2({
     prop: 'height',
     transform: sizingTransform
   });
-  const maxHeight = style$1({
+  const maxHeight = style$2({
     prop: 'maxHeight',
     transform: sizingTransform
   });
-  const minHeight = style$1({
+  const minHeight = style$2({
     prop: 'minHeight',
     transform: sizingTransform
   });
-  style$1({
+  style$2({
     prop: 'size',
     cssProperty: 'width',
     transform: sizingTransform
   });
-  style$1({
+  style$2({
     prop: 'size',
     cssProperty: 'height',
     transform: sizingTransform
   });
-  const boxSizing = style$1({
+  const boxSizing = style$2({
     prop: 'boxSizing'
   });
   compose(width, maxWidth, minWidth, height, maxHeight, minHeight, boxSizing);
@@ -39600,7 +39656,7 @@ var Ripcord = (function () {
     return {};
   }
 
-  const _excluded$9 = ["breakpoints", "palette", "spacing", "shape"];
+  const _excluded$j = ["breakpoints", "palette", "spacing", "shape"];
   function createTheme$2(options = {}, ...args) {
     const {
         breakpoints: breakpointsInput = {},
@@ -39608,7 +39664,7 @@ var Ripcord = (function () {
         spacing: spacingInput,
         shape: shapeInput = {}
       } = options,
-      other = _objectWithoutPropertiesLoose(options, _excluded$9);
+      other = _objectWithoutPropertiesLoose(options, _excluded$j);
     const breakpoints = createBreakpoints(breakpointsInput);
     const spacing = createSpacing(spacingInput);
     let muiTheme = deepmerge$1({
@@ -39644,28 +39700,28 @@ var Ripcord = (function () {
   function isObjectEmpty(obj) {
     return Object.keys(obj).length === 0;
   }
-  function useTheme$2(defaultTheme = null) {
+  function useTheme$3(defaultTheme = null) {
     const contextTheme = reactExports.useContext(ThemeContext$1);
     return !contextTheme || isObjectEmpty(contextTheme) ? defaultTheme : contextTheme;
   }
 
-  const systemDefaultTheme$1 = createTheme$2();
-  function useTheme$1(defaultTheme = systemDefaultTheme$1) {
-    return useTheme$2(defaultTheme);
+  const systemDefaultTheme$2 = createTheme$2();
+  function useTheme$2(defaultTheme = systemDefaultTheme$2) {
+    return useTheme$3(defaultTheme);
   }
 
-  function GlobalStyles$1({
+  function GlobalStyles$2({
     styles,
     themeId,
     defaultTheme = {}
   }) {
-    const upperTheme = useTheme$1(defaultTheme);
+    const upperTheme = useTheme$2(defaultTheme);
     const globalStyles = typeof styles === 'function' ? styles(themeId ? upperTheme[themeId] || upperTheme : upperTheme) : styles;
-    return /*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles$2, {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles$3, {
       styles: globalStyles
     });
   }
-  GlobalStyles$1.propTypes /* remove-proptypes */ = {
+  GlobalStyles$2.propTypes /* remove-proptypes */ = {
     // ┌────────────────────────────── Warning ──────────────────────────────┐
     // │ These PropTypes are generated from the TypeScript type definitions. │
     // │ To update them, edit the TypeScript types and run `pnpm proptypes`. │
@@ -39684,7 +39740,7 @@ var Ripcord = (function () {
     themeId: PropTypes.string
   } ;
 
-  const _excluded$8 = ["sx"];
+  const _excluded$i = ["sx"];
   const splitProps = props => {
     var _props$theme$unstable, _props$theme;
     const result = {
@@ -39705,7 +39761,7 @@ var Ripcord = (function () {
     const {
         sx: inSx
       } = props,
-      other = _objectWithoutPropertiesLoose(props, _excluded$8);
+      other = _objectWithoutPropertiesLoose(props, _excluded$i);
     const {
       systemProps,
       otherProps
@@ -40064,6 +40120,240 @@ var Ripcord = (function () {
     getFunctionName: getFunctionName
   });
 
+  const _excluded$h = ["ownerState"],
+    _excluded2$1 = ["variants"],
+    _excluded3$1 = ["name", "slot", "skipVariantsResolver", "skipSx", "overridesResolver"];
+  function isEmpty$1(obj) {
+    return Object.keys(obj).length === 0;
+  }
+
+  // https://github.com/emotion-js/emotion/blob/26ded6109fcd8ca9875cc2ce4564fee678a3f3c5/packages/styled/src/utils.js#L40
+  function isStringTag$1(tag) {
+    return typeof tag === 'string' &&
+    // 96 is one less than the char code
+    // for "a" so this is checking that
+    // it's a lowercase character
+    tag.charCodeAt(0) > 96;
+  }
+
+  // Update /system/styled/#api in case if this changes
+  function shouldForwardProp$1(prop) {
+    return prop !== 'ownerState' && prop !== 'theme' && prop !== 'sx' && prop !== 'as';
+  }
+  const systemDefaultTheme$1 = createTheme$2();
+  const lowercaseFirstLetter$1 = string => {
+    if (!string) {
+      return string;
+    }
+    return string.charAt(0).toLowerCase() + string.slice(1);
+  };
+  function resolveTheme$1({
+    defaultTheme,
+    theme,
+    themeId
+  }) {
+    return isEmpty$1(theme) ? defaultTheme : theme[themeId] || theme;
+  }
+  function defaultOverridesResolver$1(slot) {
+    if (!slot) {
+      return null;
+    }
+    return (props, styles) => styles[slot];
+  }
+  function processStyleArg$1(callableStyle, _ref) {
+    let {
+        ownerState
+      } = _ref,
+      props = _objectWithoutPropertiesLoose(_ref, _excluded$h);
+    const resolvedStylesArg = typeof callableStyle === 'function' ? callableStyle(_extends$1({
+      ownerState
+    }, props)) : callableStyle;
+    if (Array.isArray(resolvedStylesArg)) {
+      return resolvedStylesArg.flatMap(resolvedStyle => processStyleArg$1(resolvedStyle, _extends$1({
+        ownerState
+      }, props)));
+    }
+    if (!!resolvedStylesArg && typeof resolvedStylesArg === 'object' && Array.isArray(resolvedStylesArg.variants)) {
+      const {
+          variants = []
+        } = resolvedStylesArg,
+        otherStyles = _objectWithoutPropertiesLoose(resolvedStylesArg, _excluded2$1);
+      let result = otherStyles;
+      variants.forEach(variant => {
+        let isMatch = true;
+        if (typeof variant.props === 'function') {
+          isMatch = variant.props(_extends$1({
+            ownerState
+          }, props, ownerState));
+        } else {
+          Object.keys(variant.props).forEach(key => {
+            if ((ownerState == null ? void 0 : ownerState[key]) !== variant.props[key] && props[key] !== variant.props[key]) {
+              isMatch = false;
+            }
+          });
+        }
+        if (isMatch) {
+          if (!Array.isArray(result)) {
+            result = [result];
+          }
+          result.push(typeof variant.style === 'function' ? variant.style(_extends$1({
+            ownerState
+          }, props, ownerState)) : variant.style);
+        }
+      });
+      return result;
+    }
+    return resolvedStylesArg;
+  }
+  function createStyled$2(input = {}) {
+    const {
+      themeId,
+      defaultTheme = systemDefaultTheme$1,
+      rootShouldForwardProp = shouldForwardProp$1,
+      slotShouldForwardProp = shouldForwardProp$1
+    } = input;
+    const systemSx = props => {
+      return styleFunctionSx$1(_extends$1({}, props, {
+        theme: resolveTheme$1(_extends$1({}, props, {
+          defaultTheme,
+          themeId
+        }))
+      }));
+    };
+    systemSx.__mui_systemSx = true;
+    return (tag, inputOptions = {}) => {
+      // Filter out the `sx` style function from the previous styled component to prevent unnecessary styles generated by the composite components.
+      internal_processStyles(tag, styles => styles.filter(style => !(style != null && style.__mui_systemSx)));
+      const {
+          name: componentName,
+          slot: componentSlot,
+          skipVariantsResolver: inputSkipVariantsResolver,
+          skipSx: inputSkipSx,
+          // TODO v6: remove `lowercaseFirstLetter()` in the next major release
+          // For more details: https://github.com/mui/material-ui/pull/37908
+          overridesResolver = defaultOverridesResolver$1(lowercaseFirstLetter$1(componentSlot))
+        } = inputOptions,
+        options = _objectWithoutPropertiesLoose(inputOptions, _excluded3$1);
+
+      // if skipVariantsResolver option is defined, take the value, otherwise, true for root and false for other slots.
+      const skipVariantsResolver = inputSkipVariantsResolver !== undefined ? inputSkipVariantsResolver :
+      // TODO v6: remove `Root` in the next major release
+      // For more details: https://github.com/mui/material-ui/pull/37908
+      componentSlot && componentSlot !== 'Root' && componentSlot !== 'root' || false;
+      const skipSx = inputSkipSx || false;
+      let label;
+      {
+        if (componentName) {
+          // TODO v6: remove `lowercaseFirstLetter()` in the next major release
+          // For more details: https://github.com/mui/material-ui/pull/37908
+          label = `${componentName}-${lowercaseFirstLetter$1(componentSlot || 'Root')}`;
+        }
+      }
+      let shouldForwardPropOption = shouldForwardProp$1;
+
+      // TODO v6: remove `Root` in the next major release
+      // For more details: https://github.com/mui/material-ui/pull/37908
+      if (componentSlot === 'Root' || componentSlot === 'root') {
+        shouldForwardPropOption = rootShouldForwardProp;
+      } else if (componentSlot) {
+        // any other slot specified
+        shouldForwardPropOption = slotShouldForwardProp;
+      } else if (isStringTag$1(tag)) {
+        // for string (html) tag, preserve the behavior in emotion & styled-components.
+        shouldForwardPropOption = undefined;
+      }
+      const defaultStyledResolver = styled$2(tag, _extends$1({
+        shouldForwardProp: shouldForwardPropOption,
+        label
+      }, options));
+      const transformStyleArg = stylesArg => {
+        // On the server Emotion doesn't use React.forwardRef for creating components, so the created
+        // component stays as a function. This condition makes sure that we do not interpolate functions
+        // which are basically components used as a selectors.
+        if (typeof stylesArg === 'function' && stylesArg.__emotion_real !== stylesArg || isPlainObject(stylesArg)) {
+          return props => processStyleArg$1(stylesArg, _extends$1({}, props, {
+            theme: resolveTheme$1({
+              theme: props.theme,
+              defaultTheme,
+              themeId
+            })
+          }));
+        }
+        return stylesArg;
+      };
+      const muiStyledResolver = (styleArg, ...expressions) => {
+        let transformedStyleArg = transformStyleArg(styleArg);
+        const expressionsWithDefaultTheme = expressions ? expressions.map(transformStyleArg) : [];
+        if (componentName && overridesResolver) {
+          expressionsWithDefaultTheme.push(props => {
+            const theme = resolveTheme$1(_extends$1({}, props, {
+              defaultTheme,
+              themeId
+            }));
+            if (!theme.components || !theme.components[componentName] || !theme.components[componentName].styleOverrides) {
+              return null;
+            }
+            const styleOverrides = theme.components[componentName].styleOverrides;
+            const resolvedStyleOverrides = {};
+            // TODO: v7 remove iteration and use `resolveStyleArg(styleOverrides[slot])` directly
+            Object.entries(styleOverrides).forEach(([slotKey, slotStyle]) => {
+              resolvedStyleOverrides[slotKey] = processStyleArg$1(slotStyle, _extends$1({}, props, {
+                theme
+              }));
+            });
+            return overridesResolver(props, resolvedStyleOverrides);
+          });
+        }
+        if (componentName && !skipVariantsResolver) {
+          expressionsWithDefaultTheme.push(props => {
+            var _theme$components;
+            const theme = resolveTheme$1(_extends$1({}, props, {
+              defaultTheme,
+              themeId
+            }));
+            const themeVariants = theme == null || (_theme$components = theme.components) == null || (_theme$components = _theme$components[componentName]) == null ? void 0 : _theme$components.variants;
+            return processStyleArg$1({
+              variants: themeVariants
+            }, _extends$1({}, props, {
+              theme
+            }));
+          });
+        }
+        if (!skipSx) {
+          expressionsWithDefaultTheme.push(systemSx);
+        }
+        const numOfCustomFnsApplied = expressionsWithDefaultTheme.length - expressions.length;
+        if (Array.isArray(styleArg) && numOfCustomFnsApplied > 0) {
+          const placeholders = new Array(numOfCustomFnsApplied).fill('');
+          // If the type is array, than we need to add placeholders in the template for the overrides, variants and the sx styles.
+          transformedStyleArg = [...styleArg, ...placeholders];
+          transformedStyleArg.raw = [...styleArg.raw, ...placeholders];
+        }
+        const Component = defaultStyledResolver(transformedStyleArg, ...expressionsWithDefaultTheme);
+        {
+          let displayName;
+          if (componentName) {
+            displayName = `${componentName}${capitalize$1(componentSlot || '')}`;
+          }
+          if (displayName === undefined) {
+            displayName = `Styled(${getDisplayName$1(tag)})`;
+          }
+          Component.displayName = displayName;
+        }
+        if (tag.muiName) {
+          Component.muiName = tag.muiName;
+        }
+        return Component;
+      };
+      if (defaultStyledResolver.withConfig) {
+        muiStyledResolver.withConfig = defaultStyledResolver.withConfig;
+      }
+      return muiStyledResolver;
+    };
+  }
+
+  const styled$1 = createStyled$2();
+
   /**
    * Add keys, values of `defaultProps` that does not exist in `props`
    * @param {object} defaultProps
@@ -40098,6 +40388,160 @@ var Ripcord = (function () {
     return output;
   }
 
+  function getThemeProps$1(params) {
+    const {
+      theme,
+      name,
+      props
+    } = params;
+    if (!theme || !theme.components || !theme.components[name] || !theme.components[name].defaultProps) {
+      return props;
+    }
+    return resolveProps(theme.components[name].defaultProps, props);
+  }
+
+  function useThemeProps({
+    props,
+    name,
+    defaultTheme,
+    themeId
+  }) {
+    let theme = useTheme$2(defaultTheme);
+    if (themeId) {
+      theme = theme[themeId] || theme;
+    }
+    const mergedProps = getThemeProps$1({
+      theme,
+      name,
+      props
+    });
+    return mergedProps;
+  }
+
+  /**
+   * A version of `React.useLayoutEffect` that does not show a warning when server-side rendering.
+   * This is useful for effects that are only needed for client-side rendering but not for SSR.
+   *
+   * Before you use this hook, make sure to read https://gist.github.com/gaearon/e7d97cdf38a2907924ea12e4ebdf3c85
+   * and confirm it doesn't apply to your use-case.
+   */
+  const useEnhancedEffect = typeof window !== 'undefined' ? reactExports.useLayoutEffect : reactExports.useEffect;
+
+  /**
+   * @deprecated Not used internally. Use `MediaQueryListEvent` from lib.dom.d.ts instead.
+   */
+
+  /**
+   * @deprecated Not used internally. Use `MediaQueryList` from lib.dom.d.ts instead.
+   */
+
+  /**
+   * @deprecated Not used internally. Use `(event: MediaQueryListEvent) => void` instead.
+   */
+
+  function useMediaQueryOld(query, defaultMatches, matchMedia, ssrMatchMedia, noSsr) {
+    const [match, setMatch] = reactExports.useState(() => {
+      if (noSsr && matchMedia) {
+        return matchMedia(query).matches;
+      }
+      if (ssrMatchMedia) {
+        return ssrMatchMedia(query).matches;
+      }
+
+      // Once the component is mounted, we rely on the
+      // event listeners to return the correct matches value.
+      return defaultMatches;
+    });
+    useEnhancedEffect(() => {
+      let active = true;
+      if (!matchMedia) {
+        return undefined;
+      }
+      const queryList = matchMedia(query);
+      const updateMatch = () => {
+        // Workaround Safari wrong implementation of matchMedia
+        // TODO can we remove it?
+        // https://github.com/mui/material-ui/pull/17315#issuecomment-528286677
+        if (active) {
+          setMatch(queryList.matches);
+        }
+      };
+      updateMatch();
+      // TODO: Use `addEventListener` once support for Safari < 14 is dropped
+      queryList.addListener(updateMatch);
+      return () => {
+        active = false;
+        queryList.removeListener(updateMatch);
+      };
+    }, [query, matchMedia]);
+    return match;
+  }
+
+  // eslint-disable-next-line no-useless-concat -- Workaround for https://github.com/webpack/webpack/issues/14814
+  const maybeReactUseSyncExternalStore = React$1['useSyncExternalStore' + ''];
+  function useMediaQueryNew(query, defaultMatches, matchMedia, ssrMatchMedia, noSsr) {
+    const getDefaultSnapshot = reactExports.useCallback(() => defaultMatches, [defaultMatches]);
+    const getServerSnapshot = reactExports.useMemo(() => {
+      if (noSsr && matchMedia) {
+        return () => matchMedia(query).matches;
+      }
+      if (ssrMatchMedia !== null) {
+        const {
+          matches
+        } = ssrMatchMedia(query);
+        return () => matches;
+      }
+      return getDefaultSnapshot;
+    }, [getDefaultSnapshot, query, ssrMatchMedia, noSsr, matchMedia]);
+    const [getSnapshot, subscribe] = reactExports.useMemo(() => {
+      if (matchMedia === null) {
+        return [getDefaultSnapshot, () => () => {}];
+      }
+      const mediaQueryList = matchMedia(query);
+      return [() => mediaQueryList.matches, notify => {
+        // TODO: Use `addEventListener` once support for Safari < 14 is dropped
+        mediaQueryList.addListener(notify);
+        return () => {
+          mediaQueryList.removeListener(notify);
+        };
+      }];
+    }, [getDefaultSnapshot, matchMedia, query]);
+    const match = maybeReactUseSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+    return match;
+  }
+  function useMediaQuery(queryInput, options = {}) {
+    const theme = useTheme$3();
+    // Wait for jsdom to support the match media feature.
+    // All the browsers MUI support have this built-in.
+    // This defensive check is here for simplicity.
+    // Most of the time, the match media logic isn't central to people tests.
+    const supportMatchMedia = typeof window !== 'undefined' && typeof window.matchMedia !== 'undefined';
+    const {
+      defaultMatches = false,
+      matchMedia = supportMatchMedia ? window.matchMedia : null,
+      ssrMatchMedia = null,
+      noSsr = false
+    } = getThemeProps$1({
+      name: 'MuiUseMediaQuery',
+      props: options,
+      theme
+    });
+    let query = queryInput;
+    query = query.replace(/^@media( ?)/m, '');
+
+    // TODO: Drop `useMediaQueryOld` and use  `use-sync-external-store` shim in `useMediaQueryNew` once the package is stable
+    const useMediaQueryImplementation = maybeReactUseSyncExternalStore !== undefined ? useMediaQueryNew : useMediaQueryOld;
+    const match = useMediaQueryImplementation(query, defaultMatches, matchMedia, ssrMatchMedia, noSsr);
+    {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      reactExports.useDebugValue({
+        query,
+        match
+      });
+    }
+    return match;
+  }
+
   function clamp$1(val, min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER) {
     return Math.max(min, Math.min(val, max));
   }
@@ -40106,6 +40550,180 @@ var Ripcord = (function () {
     __proto__: null,
     default: clamp$1
   });
+
+  /**
+   * Returns a number whose value is limited to the given range.
+   * @param {number} value The value to be clamped
+   * @param {number} min The lower boundary of the output range
+   * @param {number} max The upper boundary of the output range
+   * @returns {number} A number in the range [min, max]
+   */
+  function clampWrapper$1(value, min = 0, max = 1) {
+    {
+      if (value < min || value > max) {
+        console.error(`MUI: The value provided ${value} is out of range [${min}, ${max}].`);
+      }
+    }
+    return clamp$1(value, min, max);
+  }
+
+  /**
+   * Converts a color from CSS hex format to CSS rgb format.
+   * @param {string} color - Hex color, i.e. #nnn or #nnnnnn
+   * @returns {string} A CSS rgb color string
+   */
+  function hexToRgb$1(color) {
+    color = color.slice(1);
+    const re = new RegExp(`.{1,${color.length >= 6 ? 2 : 1}}`, 'g');
+    let colors = color.match(re);
+    if (colors && colors[0].length === 1) {
+      colors = colors.map(n => n + n);
+    }
+    return colors ? `rgb${colors.length === 4 ? 'a' : ''}(${colors.map((n, index) => {
+    return index < 3 ? parseInt(n, 16) : Math.round(parseInt(n, 16) / 255 * 1000) / 1000;
+  }).join(', ')})` : '';
+  }
+
+  /**
+   * Returns an object with the type and values of a color.
+   *
+   * Note: Does not support rgb % values.
+   * @param {string} color - CSS color, i.e. one of: #nnn, #nnnnnn, rgb(), rgba(), hsl(), hsla(), color()
+   * @returns {object} - A MUI color object: {type: string, values: number[]}
+   */
+  function decomposeColor$1(color) {
+    // Idempotent
+    if (color.type) {
+      return color;
+    }
+    if (color.charAt(0) === '#') {
+      return decomposeColor$1(hexToRgb$1(color));
+    }
+    const marker = color.indexOf('(');
+    const type = color.substring(0, marker);
+    if (['rgb', 'rgba', 'hsl', 'hsla', 'color'].indexOf(type) === -1) {
+      throw new Error(`MUI: Unsupported \`${color}\` color.
+The following formats are supported: #nnn, #nnnnnn, rgb(), rgba(), hsl(), hsla(), color().` );
+    }
+    let values = color.substring(marker + 1, color.length - 1);
+    let colorSpace;
+    if (type === 'color') {
+      values = values.split(' ');
+      colorSpace = values.shift();
+      if (values.length === 4 && values[3].charAt(0) === '/') {
+        values[3] = values[3].slice(1);
+      }
+      if (['srgb', 'display-p3', 'a98-rgb', 'prophoto-rgb', 'rec-2020'].indexOf(colorSpace) === -1) {
+        throw new Error(`MUI: unsupported \`${colorSpace}\` color space.
+The following color spaces are supported: srgb, display-p3, a98-rgb, prophoto-rgb, rec-2020.` );
+      }
+    } else {
+      values = values.split(',');
+    }
+    values = values.map(value => parseFloat(value));
+    return {
+      type,
+      values,
+      colorSpace
+    };
+  }
+
+  /**
+   * Converts a color object with type and values to a string.
+   * @param {object} color - Decomposed color
+   * @param {string} color.type - One of: 'rgb', 'rgba', 'hsl', 'hsla', 'color'
+   * @param {array} color.values - [n,n,n] or [n,n,n,n]
+   * @returns {string} A CSS color string
+   */
+  function recomposeColor$1(color) {
+    const {
+      type,
+      colorSpace
+    } = color;
+    let {
+      values
+    } = color;
+    if (type.indexOf('rgb') !== -1) {
+      // Only convert the first 3 values to int (i.e. not alpha)
+      values = values.map((n, i) => i < 3 ? parseInt(n, 10) : n);
+    } else if (type.indexOf('hsl') !== -1) {
+      values[1] = `${values[1]}%`;
+      values[2] = `${values[2]}%`;
+    }
+    if (type.indexOf('color') !== -1) {
+      values = `${colorSpace} ${values.join(' ')}`;
+    } else {
+      values = `${values.join(', ')}`;
+    }
+    return `${type}(${values})`;
+  }
+
+  /**
+   * Sets the absolute transparency of a color.
+   * Any existing alpha values are overwritten.
+   * @param {string} color - CSS color, i.e. one of: #nnn, #nnnnnn, rgb(), rgba(), hsl(), hsla(), color()
+   * @param {number} value - value to set the alpha channel to in the range 0 - 1
+   * @returns {string} A CSS color string. Hex input values are returned as rgb
+   */
+  function alpha$1(color, value) {
+    color = decomposeColor$1(color);
+    value = clampWrapper$1(value);
+    if (color.type === 'rgb' || color.type === 'hsl') {
+      color.type += 'a';
+    }
+    if (color.type === 'color') {
+      color.values[3] = `/${value}`;
+    } else {
+      color.values[3] = value;
+    }
+    return recomposeColor$1(color);
+  }
+
+  function chainPropTypes(propType1, propType2) {
+    return function validate(...args) {
+      return propType1(...args) || propType2(...args);
+    };
+  }
+
+  function isClassComponent(elementType) {
+    // elementType.prototype?.isReactComponent
+    const {
+      prototype = {}
+    } = elementType;
+    return Boolean(prototype.isReactComponent);
+  }
+  function acceptingRef(props, propName, componentName, location, propFullName) {
+    const element = props[propName];
+    const safePropName = propFullName || propName;
+    if (element == null ||
+    // When server-side rendering React doesn't warn either.
+    // This is not an accurate check for SSR.
+    // This is only in place for Emotion compat.
+    // TODO: Revisit once https://github.com/facebook/react/issues/20047 is resolved.
+    typeof window === 'undefined') {
+      return null;
+    }
+    let warningHint;
+    const elementType = element.type;
+    /**
+     * Blacklisting instead of whitelisting
+     *
+     * Blacklisting will miss some components, such as React.Fragment. Those will at least
+     * trigger a warning in React.
+     * We can't whitelist because there is no safe way to detect React.forwardRef
+     * or class components. "Safe" means there's no public API.
+     *
+     */
+    if (typeof elementType === 'function' && !isClassComponent(elementType)) {
+      warningHint = 'Did you accidentally use a plain function component for an element instead?';
+    }
+    if (warningHint !== undefined) {
+      return new Error(`Invalid ${location} \`${safePropName}\` supplied to \`${componentName}\`. ` + `Expected an element that can hold a ref. ${warningHint} ` + 'For more information see https://mui.com/r/caveat-with-refs-guide');
+    }
+    return null;
+  }
+  const elementAcceptingRef = chainPropTypes(PropTypes.element, acceptingRef);
+  elementAcceptingRef.isRequired = chainPropTypes(PropTypes.element.isRequired, acceptingRef);
 
   // This module is based on https://github.com/airbnb/prop-types-exact repository.
   // However, in order to reduce the number of dependencies and to remove some extra safe checks
@@ -40123,6 +40741,194 @@ var Ripcord = (function () {
       }
     });
   }
+
+  function HTMLElementType(props, propName, componentName, location, propFullName) {
+    const propValue = props[propName];
+    const safePropName = propFullName || propName;
+    if (propValue == null) {
+      return null;
+    }
+    if (propValue && propValue.nodeType !== 1) {
+      return new Error(`Invalid ${location} \`${safePropName}\` supplied to \`${componentName}\`. ` + `Expected an HTMLElement.`);
+    }
+    return null;
+  }
+
+  /**
+   * Safe chained function.
+   *
+   * Will only create a new function if needed,
+   * otherwise will pass back existing functions or null.
+   */
+  function createChainedFunction(...funcs) {
+    return funcs.reduce((acc, func) => {
+      if (func == null) {
+        return acc;
+      }
+      return function chainedFunction(...args) {
+        acc.apply(this, args);
+        func.apply(this, args);
+      };
+    }, () => {});
+  }
+
+  function ownerDocument(node) {
+    return node && node.ownerDocument || document;
+  }
+
+  function ownerWindow(node) {
+    const doc = ownerDocument(node);
+    return doc.defaultView || window;
+  }
+
+  /**
+   * TODO v5: consider making it private
+   *
+   * passes {value} to {ref}
+   *
+   * WARNING: Be sure to only call this inside a callback that is passed as a ref.
+   * Otherwise, make sure to cleanup the previous {ref} if it changes. See
+   * https://github.com/mui/material-ui/issues/13539
+   *
+   * Useful if you want to expose the ref of an inner component to the public API
+   * while still using it inside the component.
+   * @param ref A ref callback or ref object. If anything falsy, this is a no-op.
+   */
+  function setRef(ref, value) {
+    if (typeof ref === 'function') {
+      ref(value);
+    } else if (ref) {
+      ref.current = value;
+    }
+  }
+
+  let globalId = 0;
+  function useGlobalId(idOverride) {
+    const [defaultId, setDefaultId] = reactExports.useState(idOverride);
+    const id = idOverride || defaultId;
+    reactExports.useEffect(() => {
+      if (defaultId == null) {
+        // Fallback to this default id when possible.
+        // Use the incrementing value for client-side rendering only.
+        // We can't use it server-side.
+        // If you want to use random values please consider the Birthday Problem: https://en.wikipedia.org/wiki/Birthday_problem
+        globalId += 1;
+        setDefaultId(`mui-${globalId}`);
+      }
+    }, [defaultId]);
+    return id;
+  }
+
+  // downstream bundlers may remove unnecessary concatenation, but won't remove toString call -- Workaround for https://github.com/webpack/webpack/issues/14814
+  const maybeReactUseId = React$1['useId'.toString()];
+  /**
+   *
+   * @example <div id={useId()} />
+   * @param idOverride
+   * @returns {string}
+   */
+  function useId(idOverride) {
+    if (maybeReactUseId !== undefined) {
+      const reactId = maybeReactUseId();
+      return idOverride != null ? idOverride : reactId;
+    }
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- `React.useId` is invariant at runtime.
+    return useGlobalId(idOverride);
+  }
+
+  /**
+   * Inspired by https://github.com/facebook/react/issues/14099#issuecomment-440013892
+   * See RFC in https://github.com/reactjs/rfcs/pull/220
+   */
+
+  function useEventCallback(fn) {
+    const ref = reactExports.useRef(fn);
+    useEnhancedEffect(() => {
+      ref.current = fn;
+    });
+    return reactExports.useRef((...args) =>
+    // @ts-expect-error hide `this`
+    (0, ref.current)(...args)).current;
+  }
+
+  function useForkRef(...refs) {
+    /**
+     * This will create a new function if the refs passed to this hook change and are all defined.
+     * This means react will call the old forkRef with `null` and the new forkRef
+     * with the ref. Cleanup naturally emerges from this behavior.
+     */
+    return reactExports.useMemo(() => {
+      if (refs.every(ref => ref == null)) {
+        return null;
+      }
+      return instance => {
+        refs.forEach(ref => {
+          setRef(ref, instance);
+        });
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, refs);
+  }
+
+  // A change of the browser zoom change the scrollbar size.
+  // Credit https://github.com/twbs/bootstrap/blob/488fd8afc535ca3a6ad4dc581f5e89217b6a36ac/js/src/util/scrollbar.js#L14-L18
+  function getScrollbarSize(doc) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth#usage_notes
+    const documentWidth = doc.documentElement.clientWidth;
+    return Math.abs(window.innerWidth - documentWidth);
+  }
+
+  function getTypeByValue(value) {
+    const valueType = typeof value;
+    switch (valueType) {
+      case 'number':
+        if (Number.isNaN(value)) {
+          return 'NaN';
+        }
+        if (!Number.isFinite(value)) {
+          return 'Infinity';
+        }
+        if (value !== Math.floor(value)) {
+          return 'float';
+        }
+        return 'number';
+      case 'object':
+        if (value === null) {
+          return 'null';
+        }
+        return value.constructor.name;
+      default:
+        return valueType;
+    }
+  }
+
+  // IE 11 support
+  function ponyfillIsInteger(x) {
+    // eslint-disable-next-line no-restricted-globals
+    return typeof x === 'number' && isFinite(x) && Math.floor(x) === x;
+  }
+  const isInteger = Number.isInteger || ponyfillIsInteger;
+  function requiredInteger(props, propName, componentName, location) {
+    const propValue = props[propName];
+    if (propValue == null || !isInteger(propValue)) {
+      const propType = getTypeByValue(propValue);
+      return new RangeError(`Invalid ${location} \`${propName}\` of type \`${propType}\` supplied to \`${componentName}\`, expected \`integer\`.`);
+    }
+    return null;
+  }
+  function validator(props, propName, ...other) {
+    const propValue = props[propName];
+    if (propValue === undefined) {
+      return null;
+    }
+    return requiredInteger(props, propName, ...other);
+  }
+  function validatorNoop() {
+    return null;
+  }
+  validator.isRequired = requiredInteger;
+  validatorNoop.isRequired = validatorNoop;
+  var integerPropType = validator;
 
   function composeClasses(slots, getUtilityClass, classes = undefined) {
     const output = {};
@@ -40146,12 +40952,186 @@ var Ripcord = (function () {
     return output;
   }
 
+  /**
+   * Determines if a given element is a DOM element name (i.e. not a React component).
+   */
+  function isHostComponent(element) {
+    return typeof element === 'string';
+  }
+
+  /**
+   * Type of the ownerState based on the type of an element it applies to.
+   * This resolves to the provided OwnerState for React components and `undefined` for host components.
+   * Falls back to `OwnerState | undefined` when the exact type can't be determined in development time.
+   */
+
+  /**
+   * Appends the ownerState object to the props, merging with the existing one if necessary.
+   *
+   * @param elementType Type of the element that owns the `existingProps`. If the element is a DOM node or undefined, `ownerState` is not applied.
+   * @param otherProps Props of the element.
+   * @param ownerState
+   */
+  function appendOwnerState(elementType, otherProps, ownerState) {
+    if (elementType === undefined || isHostComponent(elementType)) {
+      return otherProps;
+    }
+    return _extends$1({}, otherProps, {
+      ownerState: _extends$1({}, otherProps.ownerState, ownerState)
+    });
+  }
+
+  /**
+   * Extracts event handlers from a given object.
+   * A prop is considered an event handler if it is a function and its name starts with `on`.
+   *
+   * @param object An object to extract event handlers from.
+   * @param excludeKeys An array of keys to exclude from the returned object.
+   */
+  function extractEventHandlers(object, excludeKeys = []) {
+    if (object === undefined) {
+      return {};
+    }
+    const result = {};
+    Object.keys(object).filter(prop => prop.match(/^on[A-Z]/) && typeof object[prop] === 'function' && !excludeKeys.includes(prop)).forEach(prop => {
+      result[prop] = object[prop];
+    });
+    return result;
+  }
+
+  /**
+   * Removes event handlers from the given object.
+   * A field is considered an event handler if it is a function with a name beginning with `on`.
+   *
+   * @param object Object to remove event handlers from.
+   * @returns Object with event handlers removed.
+   */
+  function omitEventHandlers(object) {
+    if (object === undefined) {
+      return {};
+    }
+    const result = {};
+    Object.keys(object).filter(prop => !(prop.match(/^on[A-Z]/) && typeof object[prop] === 'function')).forEach(prop => {
+      result[prop] = object[prop];
+    });
+    return result;
+  }
+
+  /**
+   * Merges the slot component internal props (usually coming from a hook)
+   * with the externally provided ones.
+   *
+   * The merge order is (the latter overrides the former):
+   * 1. The internal props (specified as a getter function to work with get*Props hook result)
+   * 2. Additional props (specified internally on a Base UI component)
+   * 3. External props specified on the owner component. These should only be used on a root slot.
+   * 4. External props specified in the `slotProps.*` prop.
+   * 5. The `className` prop - combined from all the above.
+   * @param parameters
+   * @returns
+   */
+  function mergeSlotProps(parameters) {
+    const {
+      getSlotProps,
+      additionalProps,
+      externalSlotProps,
+      externalForwardedProps,
+      className
+    } = parameters;
+    if (!getSlotProps) {
+      // The simpler case - getSlotProps is not defined, so no internal event handlers are defined,
+      // so we can simply merge all the props without having to worry about extracting event handlers.
+      const joinedClasses = clsx(additionalProps == null ? void 0 : additionalProps.className, className, externalForwardedProps == null ? void 0 : externalForwardedProps.className, externalSlotProps == null ? void 0 : externalSlotProps.className);
+      const mergedStyle = _extends$1({}, additionalProps == null ? void 0 : additionalProps.style, externalForwardedProps == null ? void 0 : externalForwardedProps.style, externalSlotProps == null ? void 0 : externalSlotProps.style);
+      const props = _extends$1({}, additionalProps, externalForwardedProps, externalSlotProps);
+      if (joinedClasses.length > 0) {
+        props.className = joinedClasses;
+      }
+      if (Object.keys(mergedStyle).length > 0) {
+        props.style = mergedStyle;
+      }
+      return {
+        props,
+        internalRef: undefined
+      };
+    }
+
+    // In this case, getSlotProps is responsible for calling the external event handlers.
+    // We don't need to include them in the merged props because of this.
+
+    const eventHandlers = extractEventHandlers(_extends$1({}, externalForwardedProps, externalSlotProps));
+    const componentsPropsWithoutEventHandlers = omitEventHandlers(externalSlotProps);
+    const otherPropsWithoutEventHandlers = omitEventHandlers(externalForwardedProps);
+    const internalSlotProps = getSlotProps(eventHandlers);
+
+    // The order of classes is important here.
+    // Emotion (that we use in libraries consuming Base UI) depends on this order
+    // to properly override style. It requires the most important classes to be last
+    // (see https://github.com/mui/material-ui/pull/33205) for the related discussion.
+    const joinedClasses = clsx(internalSlotProps == null ? void 0 : internalSlotProps.className, additionalProps == null ? void 0 : additionalProps.className, className, externalForwardedProps == null ? void 0 : externalForwardedProps.className, externalSlotProps == null ? void 0 : externalSlotProps.className);
+    const mergedStyle = _extends$1({}, internalSlotProps == null ? void 0 : internalSlotProps.style, additionalProps == null ? void 0 : additionalProps.style, externalForwardedProps == null ? void 0 : externalForwardedProps.style, externalSlotProps == null ? void 0 : externalSlotProps.style);
+    const props = _extends$1({}, internalSlotProps, additionalProps, otherPropsWithoutEventHandlers, componentsPropsWithoutEventHandlers);
+    if (joinedClasses.length > 0) {
+      props.className = joinedClasses;
+    }
+    if (Object.keys(mergedStyle).length > 0) {
+      props.style = mergedStyle;
+    }
+    return {
+      props,
+      internalRef: internalSlotProps.ref
+    };
+  }
+
+  /**
+   * If `componentProps` is a function, calls it with the provided `ownerState`.
+   * Otherwise, just returns `componentProps`.
+   */
+  function resolveComponentProps(componentProps, ownerState, slotState) {
+    if (typeof componentProps === 'function') {
+      return componentProps(ownerState, slotState);
+    }
+    return componentProps;
+  }
+
+  const _excluded$g = ["elementType", "externalSlotProps", "ownerState", "skipResolvingSlotProps"];
+  /**
+   * @ignore - do not document.
+   * Builds the props to be passed into the slot of an unstyled component.
+   * It merges the internal props of the component with the ones supplied by the user, allowing to customize the behavior.
+   * If the slot component is not a host component, it also merges in the `ownerState`.
+   *
+   * @param parameters.getSlotProps - A function that returns the props to be passed to the slot component.
+   */
+  function useSlotProps(parameters) {
+    var _parameters$additiona;
+    const {
+        elementType,
+        externalSlotProps,
+        ownerState,
+        skipResolvingSlotProps = false
+      } = parameters,
+      rest = _objectWithoutPropertiesLoose(parameters, _excluded$g);
+    const resolvedComponentsProps = skipResolvingSlotProps ? {} : resolveComponentProps(externalSlotProps, ownerState);
+    const {
+      props: mergedProps,
+      internalRef
+    } = mergeSlotProps(_extends$1({}, rest, {
+      externalSlotProps: resolvedComponentsProps
+    }));
+    const ref = useForkRef(internalRef, resolvedComponentsProps == null ? void 0 : resolvedComponentsProps.ref, (_parameters$additiona = parameters.additionalProps) == null ? void 0 : _parameters$additiona.ref);
+    const props = appendOwnerState(elementType, _extends$1({}, mergedProps, {
+      ref
+    }), ownerState);
+    return props;
+  }
+
   const ThemeContext = /*#__PURE__*/reactExports.createContext(null);
   {
     ThemeContext.displayName = 'ThemeContext';
   }
 
-  function useTheme() {
+  function useTheme$1() {
     const theme = reactExports.useContext(ThemeContext);
     {
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -40181,12 +41161,12 @@ var Ripcord = (function () {
    * It makes the `theme` available down the React tree thanks to React context.
    * This component should preferably be used at **the root of your component tree**.
    */
-  function ThemeProvider$2(props) {
+  function ThemeProvider$3(props) {
     const {
       children,
       theme: localTheme
     } = props;
-    const outerTheme = useTheme();
+    const outerTheme = useTheme$1();
     {
       if (outerTheme === null && typeof localTheme === 'function') {
         console.error(['MUI: You are providing a theme function prop to the ThemeProvider component:', '<ThemeProvider theme={outerTheme => outerTheme} />', '', 'However, no outer theme is present.', 'Make sure a theme is already injected higher in the React tree ' + 'or provide a theme object.'].join('\n'));
@@ -40204,7 +41184,7 @@ var Ripcord = (function () {
       children: children
     });
   }
-  ThemeProvider$2.propTypes = {
+  ThemeProvider$3.propTypes = {
     /**
      * Your component tree.
      */
@@ -40215,16 +41195,16 @@ var Ripcord = (function () {
     theme: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired
   } ;
   {
-    ThemeProvider$2.propTypes = exactProp(ThemeProvider$2.propTypes) ;
+    ThemeProvider$3.propTypes = exactProp(ThemeProvider$3.propTypes) ;
   }
 
-  const _excluded$7 = ["value"];
+  const _excluded$f = ["value"];
   const RtlContext = /*#__PURE__*/reactExports.createContext();
   function RtlProvider(_ref) {
     let {
         value
       } = _ref,
-      props = _objectWithoutPropertiesLoose(_ref, _excluded$7);
+      props = _objectWithoutPropertiesLoose(_ref, _excluded$f);
     return /*#__PURE__*/jsxRuntimeExports.jsx(RtlContext.Provider, _extends$1({
       value: value != null ? value : true
     }, props));
@@ -40321,14 +41301,14 @@ var Ripcord = (function () {
    * <ThemeProvider theme={theme}> // existing use case
    * <ThemeProvider theme={{ id: theme }}> // theme scoping
    */
-  function ThemeProvider$1(props) {
+  function ThemeProvider$2(props) {
     const {
       children,
       theme: localTheme,
       themeId
     } = props;
-    const upperTheme = useTheme$2(EMPTY_THEME);
-    const upperPrivateTheme = useTheme() || EMPTY_THEME;
+    const upperTheme = useTheme$3(EMPTY_THEME);
+    const upperPrivateTheme = useTheme$1() || EMPTY_THEME;
     {
       if (upperTheme === null && typeof localTheme === 'function' || themeId && upperTheme && !upperTheme[themeId] && typeof localTheme === 'function') {
         console.error(['MUI: You are providing a theme function prop to the ThemeProvider component:', '<ThemeProvider theme={outerTheme => outerTheme} />', '', 'However, no outer theme is present.', 'Make sure a theme is already injected higher in the React tree ' + 'or provide a theme object.'].join('\n'));
@@ -40337,7 +41317,7 @@ var Ripcord = (function () {
     const engineTheme = useThemeScoping(themeId, upperTheme, localTheme);
     const privateTheme = useThemeScoping(themeId, upperPrivateTheme, localTheme, true);
     const rtlValue = engineTheme.direction === 'rtl';
-    return /*#__PURE__*/jsxRuntimeExports.jsx(ThemeProvider$2, {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(ThemeProvider$3, {
       theme: privateTheme,
       children: /*#__PURE__*/jsxRuntimeExports.jsx(ThemeContext$1.Provider, {
         value: engineTheme,
@@ -40351,7 +41331,7 @@ var Ripcord = (function () {
       })
     });
   }
-  ThemeProvider$1.propTypes /* remove-proptypes */ = {
+  ThemeProvider$2.propTypes /* remove-proptypes */ = {
     // ┌────────────────────────────── Warning ──────────────────────────────┐
     // │ These PropTypes are generated from the TypeScript type definitions. │
     // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
@@ -40370,7 +41350,166 @@ var Ripcord = (function () {
     themeId: PropTypes.string
   } ;
   {
-    ThemeProvider$1.propTypes = exactProp(ThemeProvider$1.propTypes) ;
+    ThemeProvider$2.propTypes = exactProp(ThemeProvider$2.propTypes) ;
+  }
+
+  const _excluded$e = ["component", "direction", "spacing", "divider", "children", "className", "useFlexGap"];
+  const defaultTheme$1 = createTheme$2();
+  // widening Theme to any so that the consumer can own the theme structure.
+  const defaultCreateStyledComponent = styled$1('div', {
+    name: 'MuiStack',
+    slot: 'Root',
+    overridesResolver: (props, styles) => styles.root
+  });
+  function useThemePropsDefault(props) {
+    return useThemeProps({
+      props,
+      name: 'MuiStack',
+      defaultTheme: defaultTheme$1
+    });
+  }
+
+  /**
+   * Return an array with the separator React element interspersed between
+   * each React node of the input children.
+   *
+   * > joinChildren([1,2,3], 0)
+   * [1,0,2,0,3]
+   */
+  function joinChildren(children, separator) {
+    const childrenArray = reactExports.Children.toArray(children).filter(Boolean);
+    return childrenArray.reduce((output, child, index) => {
+      output.push(child);
+      if (index < childrenArray.length - 1) {
+        output.push( /*#__PURE__*/reactExports.cloneElement(separator, {
+          key: `separator-${index}`
+        }));
+      }
+      return output;
+    }, []);
+  }
+  const getSideFromDirection = direction => {
+    return {
+      row: 'Left',
+      'row-reverse': 'Right',
+      column: 'Top',
+      'column-reverse': 'Bottom'
+    }[direction];
+  };
+  const style = ({
+    ownerState,
+    theme
+  }) => {
+    let styles = _extends$1({
+      display: 'flex',
+      flexDirection: 'column'
+    }, handleBreakpoints({
+      theme
+    }, resolveBreakpointValues({
+      values: ownerState.direction,
+      breakpoints: theme.breakpoints.values
+    }), propValue => ({
+      flexDirection: propValue
+    })));
+    if (ownerState.spacing) {
+      const transformer = createUnarySpacing(theme);
+      const base = Object.keys(theme.breakpoints.values).reduce((acc, breakpoint) => {
+        if (typeof ownerState.spacing === 'object' && ownerState.spacing[breakpoint] != null || typeof ownerState.direction === 'object' && ownerState.direction[breakpoint] != null) {
+          acc[breakpoint] = true;
+        }
+        return acc;
+      }, {});
+      const directionValues = resolveBreakpointValues({
+        values: ownerState.direction,
+        base
+      });
+      const spacingValues = resolveBreakpointValues({
+        values: ownerState.spacing,
+        base
+      });
+      if (typeof directionValues === 'object') {
+        Object.keys(directionValues).forEach((breakpoint, index, breakpoints) => {
+          const directionValue = directionValues[breakpoint];
+          if (!directionValue) {
+            const previousDirectionValue = index > 0 ? directionValues[breakpoints[index - 1]] : 'column';
+            directionValues[breakpoint] = previousDirectionValue;
+          }
+        });
+      }
+      const styleFromPropValue = (propValue, breakpoint) => {
+        if (ownerState.useFlexGap) {
+          return {
+            gap: getValue(transformer, propValue)
+          };
+        }
+        return {
+          // The useFlexGap={false} implement relies on each child to give up control of the margin.
+          // We need to reset the margin to avoid double spacing.
+          '& > :not(style):not(style)': {
+            margin: 0
+          },
+          '& > :not(style) ~ :not(style)': {
+            [`margin${getSideFromDirection(breakpoint ? directionValues[breakpoint] : ownerState.direction)}`]: getValue(transformer, propValue)
+          }
+        };
+      };
+      styles = deepmerge$1(styles, handleBreakpoints({
+        theme
+      }, spacingValues, styleFromPropValue));
+    }
+    styles = mergeBreakpointsInOrder(theme.breakpoints, styles);
+    return styles;
+  };
+  function createStack(options = {}) {
+    const {
+      // This will allow adding custom styled fn (for example for custom sx style function)
+      createStyledComponent = defaultCreateStyledComponent,
+      useThemeProps = useThemePropsDefault,
+      componentName = 'MuiStack'
+    } = options;
+    const useUtilityClasses = () => {
+      const slots = {
+        root: ['root']
+      };
+      return composeClasses(slots, slot => generateUtilityClass(componentName, slot), {});
+    };
+    const StackRoot = createStyledComponent(style);
+    const Stack = /*#__PURE__*/reactExports.forwardRef(function Grid(inProps, ref) {
+      const themeProps = useThemeProps(inProps);
+      const props = extendSxProp(themeProps); // `color` type conflicts with html color attribute.
+      const {
+          component = 'div',
+          direction = 'column',
+          spacing = 0,
+          divider,
+          children,
+          className,
+          useFlexGap = false
+        } = props,
+        other = _objectWithoutPropertiesLoose(props, _excluded$e);
+      const ownerState = {
+        direction,
+        spacing,
+        useFlexGap
+      };
+      const classes = useUtilityClasses();
+      return /*#__PURE__*/jsxRuntimeExports.jsx(StackRoot, _extends$1({
+        as: component,
+        ownerState: ownerState,
+        ref: ref,
+        className: clsx(classes.root, className)
+      }, other, {
+        children: divider ? joinChildren(children, divider) : children
+      }));
+    });
+    Stack.propTypes /* remove-proptypes */ = {
+      children: PropTypes.node,
+      direction: PropTypes.oneOfType([PropTypes.oneOf(['column-reverse', 'column', 'row-reverse', 'row']), PropTypes.arrayOf(PropTypes.oneOf(['column-reverse', 'column', 'row-reverse', 'row'])), PropTypes.object]),
+      divider: PropTypes.node,
+      spacing: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])), PropTypes.number, PropTypes.object, PropTypes.string]),
+      sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object])
+    } ;
+    return Stack;
   }
 
   function createMixins(breakpoints, mixins) {
@@ -40412,7 +41551,7 @@ var Ripcord = (function () {
   Object.defineProperty(colorManipulator, "__esModule", {
     value: true
   });
-  colorManipulator.alpha = alpha;
+  var alpha_1 = colorManipulator.alpha = alpha;
   colorManipulator.blend = blend;
   colorManipulator.colorChannel = void 0;
   var darken_1 = colorManipulator.darken = darken;
@@ -40779,7 +41918,7 @@ The following color spaces are supported: srgb, display-p3, a98-rgb, prophoto-rg
     });
   }
 
-  const _excluded$6 = ["mode", "contrastThreshold", "tonalOffset"];
+  const _excluded$d = ["mode", "contrastThreshold", "tonalOffset"];
   const light = {
     // The colors used to style the text.
     text: {
@@ -40948,7 +42087,7 @@ The following color spaces are supported: srgb, display-p3, a98-rgb, prophoto-rg
         contrastThreshold = 3,
         tonalOffset = 0.2
       } = palette,
-      other = _objectWithoutPropertiesLoose(palette, _excluded$6);
+      other = _objectWithoutPropertiesLoose(palette, _excluded$d);
     const primary = palette.primary || getDefaultPrimary(mode);
     const secondary = palette.secondary || getDefaultSecondary(mode);
     const error = palette.error || getDefaultError(mode);
@@ -41072,7 +42211,7 @@ const theme2 = createTheme({ palette: {
     return paletteOutput;
   }
 
-  const _excluded$5 = ["fontFamily", "fontSize", "fontWeightLight", "fontWeightRegular", "fontWeightMedium", "fontWeightBold", "htmlFontSize", "allVariants", "pxToRem"];
+  const _excluded$c = ["fontFamily", "fontSize", "fontWeightLight", "fontWeightRegular", "fontWeightMedium", "fontWeightBold", "htmlFontSize", "allVariants", "pxToRem"];
   function round(value) {
     return Math.round(value * 1e5) / 1e5;
   }
@@ -41103,7 +42242,7 @@ const theme2 = createTheme({ palette: {
         allVariants,
         pxToRem: pxToRem2
       } = _ref,
-      other = _objectWithoutPropertiesLoose(_ref, _excluded$5);
+      other = _objectWithoutPropertiesLoose(_ref, _excluded$c);
     {
       if (typeof fontSize !== 'number') {
         console.error('MUI: `fontSize` is required to be a number.');
@@ -41163,14 +42302,14 @@ const theme2 = createTheme({ palette: {
   const shadowKeyUmbraOpacity = 0.2;
   const shadowKeyPenumbraOpacity = 0.14;
   const shadowAmbientShadowOpacity = 0.12;
-  function createShadow(...px) {
+  function createShadow$2(...px) {
     return [`${px[0]}px ${px[1]}px ${px[2]}px ${px[3]}px rgba(0,0,0,${shadowKeyUmbraOpacity})`, `${px[4]}px ${px[5]}px ${px[6]}px ${px[7]}px rgba(0,0,0,${shadowKeyPenumbraOpacity})`, `${px[8]}px ${px[9]}px ${px[10]}px ${px[11]}px rgba(0,0,0,${shadowAmbientShadowOpacity})`].join(',');
   }
 
   // Values from https://github.com/material-components/material-components-web/blob/be8747f94574669cb5e7add1a7c54fa41a89cec7/packages/mdc-elevation/_variables.scss
-  const shadows = ['none', createShadow(0, 2, 1, -1, 0, 1, 1, 0, 0, 1, 3, 0), createShadow(0, 3, 1, -2, 0, 2, 2, 0, 0, 1, 5, 0), createShadow(0, 3, 3, -2, 0, 3, 4, 0, 0, 1, 8, 0), createShadow(0, 2, 4, -1, 0, 4, 5, 0, 0, 1, 10, 0), createShadow(0, 3, 5, -1, 0, 5, 8, 0, 0, 1, 14, 0), createShadow(0, 3, 5, -1, 0, 6, 10, 0, 0, 1, 18, 0), createShadow(0, 4, 5, -2, 0, 7, 10, 1, 0, 2, 16, 1), createShadow(0, 5, 5, -3, 0, 8, 10, 1, 0, 3, 14, 2), createShadow(0, 5, 6, -3, 0, 9, 12, 1, 0, 3, 16, 2), createShadow(0, 6, 6, -3, 0, 10, 14, 1, 0, 4, 18, 3), createShadow(0, 6, 7, -4, 0, 11, 15, 1, 0, 4, 20, 3), createShadow(0, 7, 8, -4, 0, 12, 17, 2, 0, 5, 22, 4), createShadow(0, 7, 8, -4, 0, 13, 19, 2, 0, 5, 24, 4), createShadow(0, 7, 9, -4, 0, 14, 21, 2, 0, 5, 26, 4), createShadow(0, 8, 9, -5, 0, 15, 22, 2, 0, 6, 28, 5), createShadow(0, 8, 10, -5, 0, 16, 24, 2, 0, 6, 30, 5), createShadow(0, 8, 11, -5, 0, 17, 26, 2, 0, 6, 32, 5), createShadow(0, 9, 11, -5, 0, 18, 28, 2, 0, 7, 34, 6), createShadow(0, 9, 12, -6, 0, 19, 29, 2, 0, 7, 36, 6), createShadow(0, 10, 13, -6, 0, 20, 31, 3, 0, 8, 38, 7), createShadow(0, 10, 13, -6, 0, 21, 33, 3, 0, 8, 40, 7), createShadow(0, 10, 14, -6, 0, 22, 35, 3, 0, 8, 42, 7), createShadow(0, 11, 14, -7, 0, 23, 36, 3, 0, 9, 44, 8), createShadow(0, 11, 15, -7, 0, 24, 38, 3, 0, 9, 46, 8)];
+  const shadows$1 = ['none', createShadow$2(0, 2, 1, -1, 0, 1, 1, 0, 0, 1, 3, 0), createShadow$2(0, 3, 1, -2, 0, 2, 2, 0, 0, 1, 5, 0), createShadow$2(0, 3, 3, -2, 0, 3, 4, 0, 0, 1, 8, 0), createShadow$2(0, 2, 4, -1, 0, 4, 5, 0, 0, 1, 10, 0), createShadow$2(0, 3, 5, -1, 0, 5, 8, 0, 0, 1, 14, 0), createShadow$2(0, 3, 5, -1, 0, 6, 10, 0, 0, 1, 18, 0), createShadow$2(0, 4, 5, -2, 0, 7, 10, 1, 0, 2, 16, 1), createShadow$2(0, 5, 5, -3, 0, 8, 10, 1, 0, 3, 14, 2), createShadow$2(0, 5, 6, -3, 0, 9, 12, 1, 0, 3, 16, 2), createShadow$2(0, 6, 6, -3, 0, 10, 14, 1, 0, 4, 18, 3), createShadow$2(0, 6, 7, -4, 0, 11, 15, 1, 0, 4, 20, 3), createShadow$2(0, 7, 8, -4, 0, 12, 17, 2, 0, 5, 22, 4), createShadow$2(0, 7, 8, -4, 0, 13, 19, 2, 0, 5, 24, 4), createShadow$2(0, 7, 9, -4, 0, 14, 21, 2, 0, 5, 26, 4), createShadow$2(0, 8, 9, -5, 0, 15, 22, 2, 0, 6, 28, 5), createShadow$2(0, 8, 10, -5, 0, 16, 24, 2, 0, 6, 30, 5), createShadow$2(0, 8, 11, -5, 0, 17, 26, 2, 0, 6, 32, 5), createShadow$2(0, 9, 11, -5, 0, 18, 28, 2, 0, 7, 34, 6), createShadow$2(0, 9, 12, -6, 0, 19, 29, 2, 0, 7, 36, 6), createShadow$2(0, 10, 13, -6, 0, 20, 31, 3, 0, 8, 38, 7), createShadow$2(0, 10, 13, -6, 0, 21, 33, 3, 0, 8, 40, 7), createShadow$2(0, 10, 14, -6, 0, 22, 35, 3, 0, 8, 42, 7), createShadow$2(0, 11, 14, -7, 0, 23, 36, 3, 0, 9, 44, 8), createShadow$2(0, 11, 15, -7, 0, 24, 38, 3, 0, 9, 46, 8)];
 
-  const _excluded$4 = ["duration", "easing", "delay"];
+  const _excluded$b = ["duration", "easing", "delay"];
   // Follow https://material.google.com/motion/duration-easing.html#duration-easing-natural-easing-curves
   // to learn the context in which each easing should be used.
   const easing = {
@@ -41221,7 +42360,7 @@ const theme2 = createTheme({ palette: {
           easing: easingOption = mergedEasing.easeInOut,
           delay = 0
         } = options,
-        other = _objectWithoutPropertiesLoose(options, _excluded$4);
+        other = _objectWithoutPropertiesLoose(options, _excluded$b);
       {
         const isString = value => typeof value === 'string';
         // IE11 support, replace with Number.isNaN
@@ -41270,7 +42409,7 @@ const theme2 = createTheme({ palette: {
     tooltip: 1500
   };
 
-  const _excluded$3 = ["breakpoints", "mixins", "spacing", "palette", "transitions", "typography", "shape"];
+  const _excluded$a = ["breakpoints", "mixins", "spacing", "palette", "transitions", "typography", "shape"];
   function createTheme(options = {}, ...args) {
     const {
         mixins: mixinsInput = {},
@@ -41278,7 +42417,7 @@ const theme2 = createTheme({ palette: {
         transitions: transitionsInput = {},
         typography: typographyInput = {}
       } = options,
-      other = _objectWithoutPropertiesLoose(options, _excluded$3);
+      other = _objectWithoutPropertiesLoose(options, _excluded$a);
     if (options.vars) {
       throw new Error(`MUI: \`vars\` is a private field used for CSS variables support.
 Please use another name.` );
@@ -41289,7 +42428,7 @@ Please use another name.` );
       mixins: createMixins(systemTheme.breakpoints, mixinsInput),
       palette,
       // Don't use [...shadows] until you've verified its transpiled code is not invoking the iterator protocol.
-      shadows: shadows.slice(),
+      shadows: shadows$1.slice(),
       typography: createTypography(palette, typographyInput),
       transitions: createTransitions(transitionsInput),
       zIndex: _extends$1({}, zIndex)
@@ -41337,6 +42476,15 @@ Please use another name.` );
   }
 
   const defaultTheme = createTheme();
+
+  function useTheme() {
+    const theme = useTheme$2(defaultTheme);
+    {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      reactExports.useDebugValue(theme);
+    }
+    return theme[THEME_ID] || theme;
+  }
 
   var createStyled$1 = {};
 
@@ -41418,7 +42566,7 @@ Please use another name.` );
   var _getDisplayName = _interopRequireDefault(require$$6);
   var _createTheme = _interopRequireDefault(require$$7);
   var _styleFunctionSx = _interopRequireDefault(require$$8);
-  const _excluded$2 = ["ownerState"],
+  const _excluded$9 = ["ownerState"],
     _excluded2 = ["variants"],
     _excluded3 = ["name", "slot", "skipVariantsResolver", "skipSx", "overridesResolver"];
   /* eslint-disable no-underscore-dangle */
@@ -41465,7 +42613,7 @@ Please use another name.` );
     let {
         ownerState
       } = _ref,
-      props = (0, _objectWithoutPropertiesLoose2.default)(_ref, _excluded$2);
+      props = (0, _objectWithoutPropertiesLoose2.default)(_ref, _excluded$9);
     const resolvedStylesArg = typeof callableStyle === 'function' ? callableStyle((0, _extends2.default)({
       ownerState
     }, props)) : callableStyle;
@@ -41666,19 +42814,19 @@ Please use another name.` );
     rootShouldForwardProp
   });
 
-  const _excluded$1 = ["theme"];
-  function ThemeProvider(_ref) {
+  const _excluded$8 = ["theme"];
+  function ThemeProvider$1(_ref) {
     let {
         theme: themeInput
       } = _ref,
-      props = _objectWithoutPropertiesLoose(_ref, _excluded$1);
+      props = _objectWithoutPropertiesLoose(_ref, _excluded$8);
     const scopedTheme = themeInput[THEME_ID];
-    return /*#__PURE__*/jsxRuntimeExports.jsx(ThemeProvider$1, _extends$1({}, props, {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(ThemeProvider$2, _extends$1({}, props, {
       themeId: scopedTheme ? THEME_ID : undefined,
       theme: scopedTheme || themeInput
     }));
   }
-  ThemeProvider.propTypes = {
+  ThemeProvider$1.propTypes = {
     /**
      * Your component tree.
      */
@@ -41688,6 +42836,17 @@ Please use another name.` );
      */
     theme: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired
   } ;
+
+  // Inspired by https://github.com/material-components/material-components-ios/blob/bca36107405594d5b7b16265a5b0ed698f85a5ee/components/Elevation/src/UIColor%2BMaterialElevation.m#L61
+  const getOverlayAlpha = elevation => {
+    let alphaValue;
+    if (elevation < 1) {
+      alphaValue = 5.11916 * elevation ** 2;
+    } else {
+      alphaValue = 4.5 * Math.log(elevation + 1) + 2;
+    }
+    return (alphaValue / 100).toFixed(2);
+  };
 
   ({
     // ┌────────────────────────────── Warning ──────────────────────────────┐
@@ -41707,13 +42866,999 @@ Please use another name.` );
     return useDefaultProps$1(params);
   }
 
+  function getSvgIconUtilityClass(slot) {
+    return generateUtilityClass('MuiSvgIcon', slot);
+  }
+  generateUtilityClasses('MuiSvgIcon', ['root', 'colorPrimary', 'colorSecondary', 'colorAction', 'colorError', 'colorDisabled', 'fontSizeInherit', 'fontSizeSmall', 'fontSizeMedium', 'fontSizeLarge']);
+
+  const _excluded$7 = ["children", "className", "color", "component", "fontSize", "htmlColor", "inheritViewBox", "titleAccess", "viewBox"];
+  const useUtilityClasses$6 = ownerState => {
+    const {
+      color,
+      fontSize,
+      classes
+    } = ownerState;
+    const slots = {
+      root: ['root', color !== 'inherit' && `color${capitalize$1(color)}`, `fontSize${capitalize$1(fontSize)}`]
+    };
+    return composeClasses(slots, getSvgIconUtilityClass, classes);
+  };
+  const SvgIconRoot = styled('svg', {
+    name: 'MuiSvgIcon',
+    slot: 'Root',
+    overridesResolver: (props, styles) => {
+      const {
+        ownerState
+      } = props;
+      return [styles.root, ownerState.color !== 'inherit' && styles[`color${capitalize$1(ownerState.color)}`], styles[`fontSize${capitalize$1(ownerState.fontSize)}`]];
+    }
+  })(({
+    theme,
+    ownerState
+  }) => {
+    var _theme$transitions, _theme$transitions$cr, _theme$transitions2, _theme$typography, _theme$typography$pxT, _theme$typography2, _theme$typography2$px, _theme$typography3, _theme$typography3$px, _palette$ownerState$c, _palette, _palette2, _palette3;
+    return {
+      userSelect: 'none',
+      width: '1em',
+      height: '1em',
+      display: 'inline-block',
+      // the <svg> will define the property that has `currentColor`
+      // for example heroicons uses fill="none" and stroke="currentColor"
+      fill: ownerState.hasSvgAsChild ? undefined : 'currentColor',
+      flexShrink: 0,
+      transition: (_theme$transitions = theme.transitions) == null || (_theme$transitions$cr = _theme$transitions.create) == null ? void 0 : _theme$transitions$cr.call(_theme$transitions, 'fill', {
+        duration: (_theme$transitions2 = theme.transitions) == null || (_theme$transitions2 = _theme$transitions2.duration) == null ? void 0 : _theme$transitions2.shorter
+      }),
+      fontSize: {
+        inherit: 'inherit',
+        small: ((_theme$typography = theme.typography) == null || (_theme$typography$pxT = _theme$typography.pxToRem) == null ? void 0 : _theme$typography$pxT.call(_theme$typography, 20)) || '1.25rem',
+        medium: ((_theme$typography2 = theme.typography) == null || (_theme$typography2$px = _theme$typography2.pxToRem) == null ? void 0 : _theme$typography2$px.call(_theme$typography2, 24)) || '1.5rem',
+        large: ((_theme$typography3 = theme.typography) == null || (_theme$typography3$px = _theme$typography3.pxToRem) == null ? void 0 : _theme$typography3$px.call(_theme$typography3, 35)) || '2.1875rem'
+      }[ownerState.fontSize],
+      // TODO v5 deprecate, v6 remove for sx
+      color: (_palette$ownerState$c = (_palette = (theme.vars || theme).palette) == null || (_palette = _palette[ownerState.color]) == null ? void 0 : _palette.main) != null ? _palette$ownerState$c : {
+        action: (_palette2 = (theme.vars || theme).palette) == null || (_palette2 = _palette2.action) == null ? void 0 : _palette2.active,
+        disabled: (_palette3 = (theme.vars || theme).palette) == null || (_palette3 = _palette3.action) == null ? void 0 : _palette3.disabled,
+        inherit: undefined
+      }[ownerState.color]
+    };
+  });
+  const SvgIcon$1 = /*#__PURE__*/reactExports.forwardRef(function SvgIcon(inProps, ref) {
+    const props = useDefaultProps({
+      props: inProps,
+      name: 'MuiSvgIcon'
+    });
+    const {
+        children,
+        className,
+        color = 'inherit',
+        component = 'svg',
+        fontSize = 'medium',
+        htmlColor,
+        inheritViewBox = false,
+        titleAccess,
+        viewBox = '0 0 24 24'
+      } = props,
+      other = _objectWithoutPropertiesLoose(props, _excluded$7);
+    const hasSvgAsChild = /*#__PURE__*/reactExports.isValidElement(children) && children.type === 'svg';
+    const ownerState = _extends$1({}, props, {
+      color,
+      component,
+      fontSize,
+      instanceFontSize: inProps.fontSize,
+      inheritViewBox,
+      viewBox,
+      hasSvgAsChild
+    });
+    const more = {};
+    if (!inheritViewBox) {
+      more.viewBox = viewBox;
+    }
+    const classes = useUtilityClasses$6(ownerState);
+    return /*#__PURE__*/jsxRuntimeExports.jsxs(SvgIconRoot, _extends$1({
+      as: component,
+      className: clsx(classes.root, className),
+      focusable: "false",
+      color: htmlColor,
+      "aria-hidden": titleAccess ? undefined : true,
+      role: titleAccess ? 'img' : undefined,
+      ref: ref
+    }, more, other, hasSvgAsChild && children.props, {
+      ownerState: ownerState,
+      children: [hasSvgAsChild ? children.props.children : children, titleAccess ? /*#__PURE__*/jsxRuntimeExports.jsx("title", {
+        children: titleAccess
+      }) : null]
+    }));
+  });
+  SvgIcon$1.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * Node passed into the SVG element.
+     */
+    children: PropTypes.node,
+    /**
+     * Override or extend the styles applied to the component.
+     */
+    classes: PropTypes.object,
+    /**
+     * @ignore
+     */
+    className: PropTypes.string,
+    /**
+     * The color of the component.
+     * It supports both default and custom theme colors, which can be added as shown in the
+     * [palette customization guide](https://mui.com/material-ui/customization/palette/#custom-colors).
+     * You can use the `htmlColor` prop to apply a color attribute to the SVG element.
+     * @default 'inherit'
+     */
+    color: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([PropTypes.oneOf(['inherit', 'action', 'disabled', 'primary', 'secondary', 'error', 'info', 'success', 'warning']), PropTypes.string]),
+    /**
+     * The component used for the root node.
+     * Either a string to use a HTML element or a component.
+     */
+    component: PropTypes.elementType,
+    /**
+     * The fontSize applied to the icon. Defaults to 24px, but can be configure to inherit font size.
+     * @default 'medium'
+     */
+    fontSize: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([PropTypes.oneOf(['inherit', 'large', 'medium', 'small']), PropTypes.string]),
+    /**
+     * Applies a color attribute to the SVG element.
+     */
+    htmlColor: PropTypes.string,
+    /**
+     * If `true`, the root node will inherit the custom `component`'s viewBox and the `viewBox`
+     * prop will be ignored.
+     * Useful when you want to reference a custom `component` and have `SvgIcon` pass that
+     * `component`'s viewBox to the root node.
+     * @default false
+     */
+    inheritViewBox: PropTypes.bool,
+    /**
+     * The shape-rendering attribute. The behavior of the different options is described on the
+     * [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/shape-rendering).
+     * If you are having issues with blurry icons you should investigate this prop.
+     */
+    shapeRendering: PropTypes.string,
+    /**
+     * The system prop that allows defining system overrides as well as additional CSS styles.
+     */
+    sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object]),
+    /**
+     * Provides a human-readable title for the element that contains it.
+     * https://www.w3.org/TR/SVG-access/#Equivalent
+     */
+    titleAccess: PropTypes.string,
+    /**
+     * Allows you to redefine what the coordinates without units mean inside an SVG element.
+     * For example, if the SVG element is 500 (width) by 200 (height),
+     * and you pass viewBox="0 0 50 20",
+     * this means that the coordinates inside the SVG will go from the top left corner (0,0)
+     * to bottom right (50,20) and each unit will be worth 10px.
+     * @default '0 0 24 24'
+     */
+    viewBox: PropTypes.string
+  } ;
+  SvgIcon$1.muiName = 'SvgIcon';
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+    return _setPrototypeOf(o, p);
+  }
+
+  function _inheritsLoose(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    _setPrototypeOf(subClass, superClass);
+  }
+
+  var config = {
+    disabled: false
+  };
+
+  var timeoutsShape = PropTypes.oneOfType([PropTypes.number, PropTypes.shape({
+    enter: PropTypes.number,
+    exit: PropTypes.number,
+    appear: PropTypes.number
+  }).isRequired]) ;
+  PropTypes.oneOfType([PropTypes.string, PropTypes.shape({
+    enter: PropTypes.string,
+    exit: PropTypes.string,
+    active: PropTypes.string
+  }), PropTypes.shape({
+    enter: PropTypes.string,
+    enterDone: PropTypes.string,
+    enterActive: PropTypes.string,
+    exit: PropTypes.string,
+    exitDone: PropTypes.string,
+    exitActive: PropTypes.string
+  })]) ;
+
+  var TransitionGroupContext = React.createContext(null);
+
+  var forceReflow = function forceReflow(node) {
+    return node.scrollTop;
+  };
+
+  var UNMOUNTED = 'unmounted';
+  var EXITED = 'exited';
+  var ENTERING = 'entering';
+  var ENTERED = 'entered';
+  var EXITING = 'exiting';
+  /**
+   * The Transition component lets you describe a transition from one component
+   * state to another _over time_ with a simple declarative API. Most commonly
+   * it's used to animate the mounting and unmounting of a component, but can also
+   * be used to describe in-place transition states as well.
+   *
+   * ---
+   *
+   * **Note**: `Transition` is a platform-agnostic base component. If you're using
+   * transitions in CSS, you'll probably want to use
+   * [`CSSTransition`](https://reactcommunity.org/react-transition-group/css-transition)
+   * instead. It inherits all the features of `Transition`, but contains
+   * additional features necessary to play nice with CSS transitions (hence the
+   * name of the component).
+   *
+   * ---
+   *
+   * By default the `Transition` component does not alter the behavior of the
+   * component it renders, it only tracks "enter" and "exit" states for the
+   * components. It's up to you to give meaning and effect to those states. For
+   * example we can add styles to a component when it enters or exits:
+   *
+   * ```jsx
+   * import { Transition } from 'react-transition-group';
+   *
+   * const duration = 300;
+   *
+   * const defaultStyle = {
+   *   transition: `opacity ${duration}ms ease-in-out`,
+   *   opacity: 0,
+   * }
+   *
+   * const transitionStyles = {
+   *   entering: { opacity: 1 },
+   *   entered:  { opacity: 1 },
+   *   exiting:  { opacity: 0 },
+   *   exited:  { opacity: 0 },
+   * };
+   *
+   * const Fade = ({ in: inProp }) => (
+   *   <Transition in={inProp} timeout={duration}>
+   *     {state => (
+   *       <div style={{
+   *         ...defaultStyle,
+   *         ...transitionStyles[state]
+   *       }}>
+   *         I'm a fade Transition!
+   *       </div>
+   *     )}
+   *   </Transition>
+   * );
+   * ```
+   *
+   * There are 4 main states a Transition can be in:
+   *  - `'entering'`
+   *  - `'entered'`
+   *  - `'exiting'`
+   *  - `'exited'`
+   *
+   * Transition state is toggled via the `in` prop. When `true` the component
+   * begins the "Enter" stage. During this stage, the component will shift from
+   * its current transition state, to `'entering'` for the duration of the
+   * transition and then to the `'entered'` stage once it's complete. Let's take
+   * the following example (we'll use the
+   * [useState](https://reactjs.org/docs/hooks-reference.html#usestate) hook):
+   *
+   * ```jsx
+   * function App() {
+   *   const [inProp, setInProp] = useState(false);
+   *   return (
+   *     <div>
+   *       <Transition in={inProp} timeout={500}>
+   *         {state => (
+   *           // ...
+   *         )}
+   *       </Transition>
+   *       <button onClick={() => setInProp(true)}>
+   *         Click to Enter
+   *       </button>
+   *     </div>
+   *   );
+   * }
+   * ```
+   *
+   * When the button is clicked the component will shift to the `'entering'` state
+   * and stay there for 500ms (the value of `timeout`) before it finally switches
+   * to `'entered'`.
+   *
+   * When `in` is `false` the same thing happens except the state moves from
+   * `'exiting'` to `'exited'`.
+   */
+
+  var Transition = /*#__PURE__*/function (_React$Component) {
+    _inheritsLoose(Transition, _React$Component);
+
+    function Transition(props, context) {
+      var _this;
+
+      _this = _React$Component.call(this, props, context) || this;
+      var parentGroup = context; // In the context of a TransitionGroup all enters are really appears
+
+      var appear = parentGroup && !parentGroup.isMounting ? props.enter : props.appear;
+      var initialStatus;
+      _this.appearStatus = null;
+
+      if (props.in) {
+        if (appear) {
+          initialStatus = EXITED;
+          _this.appearStatus = ENTERING;
+        } else {
+          initialStatus = ENTERED;
+        }
+      } else {
+        if (props.unmountOnExit || props.mountOnEnter) {
+          initialStatus = UNMOUNTED;
+        } else {
+          initialStatus = EXITED;
+        }
+      }
+
+      _this.state = {
+        status: initialStatus
+      };
+      _this.nextCallback = null;
+      return _this;
+    }
+
+    Transition.getDerivedStateFromProps = function getDerivedStateFromProps(_ref, prevState) {
+      var nextIn = _ref.in;
+
+      if (nextIn && prevState.status === UNMOUNTED) {
+        return {
+          status: EXITED
+        };
+      }
+
+      return null;
+    } // getSnapshotBeforeUpdate(prevProps) {
+    //   let nextStatus = null
+    //   if (prevProps !== this.props) {
+    //     const { status } = this.state
+    //     if (this.props.in) {
+    //       if (status !== ENTERING && status !== ENTERED) {
+    //         nextStatus = ENTERING
+    //       }
+    //     } else {
+    //       if (status === ENTERING || status === ENTERED) {
+    //         nextStatus = EXITING
+    //       }
+    //     }
+    //   }
+    //   return { nextStatus }
+    // }
+    ;
+
+    var _proto = Transition.prototype;
+
+    _proto.componentDidMount = function componentDidMount() {
+      this.updateStatus(true, this.appearStatus);
+    };
+
+    _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
+      var nextStatus = null;
+
+      if (prevProps !== this.props) {
+        var status = this.state.status;
+
+        if (this.props.in) {
+          if (status !== ENTERING && status !== ENTERED) {
+            nextStatus = ENTERING;
+          }
+        } else {
+          if (status === ENTERING || status === ENTERED) {
+            nextStatus = EXITING;
+          }
+        }
+      }
+
+      this.updateStatus(false, nextStatus);
+    };
+
+    _proto.componentWillUnmount = function componentWillUnmount() {
+      this.cancelNextCallback();
+    };
+
+    _proto.getTimeouts = function getTimeouts() {
+      var timeout = this.props.timeout;
+      var exit, enter, appear;
+      exit = enter = appear = timeout;
+
+      if (timeout != null && typeof timeout !== 'number') {
+        exit = timeout.exit;
+        enter = timeout.enter; // TODO: remove fallback for next major
+
+        appear = timeout.appear !== undefined ? timeout.appear : enter;
+      }
+
+      return {
+        exit: exit,
+        enter: enter,
+        appear: appear
+      };
+    };
+
+    _proto.updateStatus = function updateStatus(mounting, nextStatus) {
+      if (mounting === void 0) {
+        mounting = false;
+      }
+
+      if (nextStatus !== null) {
+        // nextStatus will always be ENTERING or EXITING.
+        this.cancelNextCallback();
+
+        if (nextStatus === ENTERING) {
+          if (this.props.unmountOnExit || this.props.mountOnEnter) {
+            var node = this.props.nodeRef ? this.props.nodeRef.current : ReactDOM.findDOMNode(this); // https://github.com/reactjs/react-transition-group/pull/749
+            // With unmountOnExit or mountOnEnter, the enter animation should happen at the transition between `exited` and `entering`.
+            // To make the animation happen,  we have to separate each rendering and avoid being processed as batched.
+
+            if (node) forceReflow(node);
+          }
+
+          this.performEnter(mounting);
+        } else {
+          this.performExit();
+        }
+      } else if (this.props.unmountOnExit && this.state.status === EXITED) {
+        this.setState({
+          status: UNMOUNTED
+        });
+      }
+    };
+
+    _proto.performEnter = function performEnter(mounting) {
+      var _this2 = this;
+
+      var enter = this.props.enter;
+      var appearing = this.context ? this.context.isMounting : mounting;
+
+      var _ref2 = this.props.nodeRef ? [appearing] : [ReactDOM.findDOMNode(this), appearing],
+          maybeNode = _ref2[0],
+          maybeAppearing = _ref2[1];
+
+      var timeouts = this.getTimeouts();
+      var enterTimeout = appearing ? timeouts.appear : timeouts.enter; // no enter animation skip right to ENTERED
+      // if we are mounting and running this it means appear _must_ be set
+
+      if (!mounting && !enter || config.disabled) {
+        this.safeSetState({
+          status: ENTERED
+        }, function () {
+          _this2.props.onEntered(maybeNode);
+        });
+        return;
+      }
+
+      this.props.onEnter(maybeNode, maybeAppearing);
+      this.safeSetState({
+        status: ENTERING
+      }, function () {
+        _this2.props.onEntering(maybeNode, maybeAppearing);
+
+        _this2.onTransitionEnd(enterTimeout, function () {
+          _this2.safeSetState({
+            status: ENTERED
+          }, function () {
+            _this2.props.onEntered(maybeNode, maybeAppearing);
+          });
+        });
+      });
+    };
+
+    _proto.performExit = function performExit() {
+      var _this3 = this;
+
+      var exit = this.props.exit;
+      var timeouts = this.getTimeouts();
+      var maybeNode = this.props.nodeRef ? undefined : ReactDOM.findDOMNode(this); // no exit animation skip right to EXITED
+
+      if (!exit || config.disabled) {
+        this.safeSetState({
+          status: EXITED
+        }, function () {
+          _this3.props.onExited(maybeNode);
+        });
+        return;
+      }
+
+      this.props.onExit(maybeNode);
+      this.safeSetState({
+        status: EXITING
+      }, function () {
+        _this3.props.onExiting(maybeNode);
+
+        _this3.onTransitionEnd(timeouts.exit, function () {
+          _this3.safeSetState({
+            status: EXITED
+          }, function () {
+            _this3.props.onExited(maybeNode);
+          });
+        });
+      });
+    };
+
+    _proto.cancelNextCallback = function cancelNextCallback() {
+      if (this.nextCallback !== null) {
+        this.nextCallback.cancel();
+        this.nextCallback = null;
+      }
+    };
+
+    _proto.safeSetState = function safeSetState(nextState, callback) {
+      // This shouldn't be necessary, but there are weird race conditions with
+      // setState callbacks and unmounting in testing, so always make sure that
+      // we can cancel any pending setState callbacks after we unmount.
+      callback = this.setNextCallback(callback);
+      this.setState(nextState, callback);
+    };
+
+    _proto.setNextCallback = function setNextCallback(callback) {
+      var _this4 = this;
+
+      var active = true;
+
+      this.nextCallback = function (event) {
+        if (active) {
+          active = false;
+          _this4.nextCallback = null;
+          callback(event);
+        }
+      };
+
+      this.nextCallback.cancel = function () {
+        active = false;
+      };
+
+      return this.nextCallback;
+    };
+
+    _proto.onTransitionEnd = function onTransitionEnd(timeout, handler) {
+      this.setNextCallback(handler);
+      var node = this.props.nodeRef ? this.props.nodeRef.current : ReactDOM.findDOMNode(this);
+      var doesNotHaveTimeoutOrListener = timeout == null && !this.props.addEndListener;
+
+      if (!node || doesNotHaveTimeoutOrListener) {
+        setTimeout(this.nextCallback, 0);
+        return;
+      }
+
+      if (this.props.addEndListener) {
+        var _ref3 = this.props.nodeRef ? [this.nextCallback] : [node, this.nextCallback],
+            maybeNode = _ref3[0],
+            maybeNextCallback = _ref3[1];
+
+        this.props.addEndListener(maybeNode, maybeNextCallback);
+      }
+
+      if (timeout != null) {
+        setTimeout(this.nextCallback, timeout);
+      }
+    };
+
+    _proto.render = function render() {
+      var status = this.state.status;
+
+      if (status === UNMOUNTED) {
+        return null;
+      }
+
+      var _this$props = this.props,
+          children = _this$props.children;
+          _this$props.in;
+          _this$props.mountOnEnter;
+          _this$props.unmountOnExit;
+          _this$props.appear;
+          _this$props.enter;
+          _this$props.exit;
+          _this$props.timeout;
+          _this$props.addEndListener;
+          _this$props.onEnter;
+          _this$props.onEntering;
+          _this$props.onEntered;
+          _this$props.onExit;
+          _this$props.onExiting;
+          _this$props.onExited;
+          _this$props.nodeRef;
+          var childProps = _objectWithoutPropertiesLoose(_this$props, ["children", "in", "mountOnEnter", "unmountOnExit", "appear", "enter", "exit", "timeout", "addEndListener", "onEnter", "onEntering", "onEntered", "onExit", "onExiting", "onExited", "nodeRef"]);
+
+      return (
+        /*#__PURE__*/
+        // allows for nested Transitions
+        React.createElement(TransitionGroupContext.Provider, {
+          value: null
+        }, typeof children === 'function' ? children(status, childProps) : React.cloneElement(React.Children.only(children), childProps))
+      );
+    };
+
+    return Transition;
+  }(React.Component);
+
+  Transition.contextType = TransitionGroupContext;
+  Transition.propTypes = {
+    /**
+     * A React reference to DOM element that need to transition:
+     * https://stackoverflow.com/a/51127130/4671932
+     *
+     *   - When `nodeRef` prop is used, `node` is not passed to callback functions
+     *      (e.g. `onEnter`) because user already has direct access to the node.
+     *   - When changing `key` prop of `Transition` in a `TransitionGroup` a new
+     *     `nodeRef` need to be provided to `Transition` with changed `key` prop
+     *     (see
+     *     [test/CSSTransition-test.js](https://github.com/reactjs/react-transition-group/blob/13435f897b3ab71f6e19d724f145596f5910581c/test/CSSTransition-test.js#L362-L437)).
+     */
+    nodeRef: PropTypes.shape({
+      current: typeof Element === 'undefined' ? PropTypes.any : function (propValue, key, componentName, location, propFullName, secret) {
+        var value = propValue[key];
+        return PropTypes.instanceOf(value && 'ownerDocument' in value ? value.ownerDocument.defaultView.Element : Element)(propValue, key, componentName, location, propFullName, secret);
+      }
+    }),
+
+    /**
+     * A `function` child can be used instead of a React element. This function is
+     * called with the current transition status (`'entering'`, `'entered'`,
+     * `'exiting'`, `'exited'`), which can be used to apply context
+     * specific props to a component.
+     *
+     * ```jsx
+     * <Transition in={this.state.in} timeout={150}>
+     *   {state => (
+     *     <MyComponent className={`fade fade-${state}`} />
+     *   )}
+     * </Transition>
+     * ```
+     */
+    children: PropTypes.oneOfType([PropTypes.func.isRequired, PropTypes.element.isRequired]).isRequired,
+
+    /**
+     * Show the component; triggers the enter or exit states
+     */
+    in: PropTypes.bool,
+
+    /**
+     * By default the child component is mounted immediately along with
+     * the parent `Transition` component. If you want to "lazy mount" the component on the
+     * first `in={true}` you can set `mountOnEnter`. After the first enter transition the component will stay
+     * mounted, even on "exited", unless you also specify `unmountOnExit`.
+     */
+    mountOnEnter: PropTypes.bool,
+
+    /**
+     * By default the child component stays mounted after it reaches the `'exited'` state.
+     * Set `unmountOnExit` if you'd prefer to unmount the component after it finishes exiting.
+     */
+    unmountOnExit: PropTypes.bool,
+
+    /**
+     * By default the child component does not perform the enter transition when
+     * it first mounts, regardless of the value of `in`. If you want this
+     * behavior, set both `appear` and `in` to `true`.
+     *
+     * > **Note**: there are no special appear states like `appearing`/`appeared`, this prop
+     * > only adds an additional enter transition. However, in the
+     * > `<CSSTransition>` component that first enter transition does result in
+     * > additional `.appear-*` classes, that way you can choose to style it
+     * > differently.
+     */
+    appear: PropTypes.bool,
+
+    /**
+     * Enable or disable enter transitions.
+     */
+    enter: PropTypes.bool,
+
+    /**
+     * Enable or disable exit transitions.
+     */
+    exit: PropTypes.bool,
+
+    /**
+     * The duration of the transition, in milliseconds.
+     * Required unless `addEndListener` is provided.
+     *
+     * You may specify a single timeout for all transitions:
+     *
+     * ```jsx
+     * timeout={500}
+     * ```
+     *
+     * or individually:
+     *
+     * ```jsx
+     * timeout={{
+     *  appear: 500,
+     *  enter: 300,
+     *  exit: 500,
+     * }}
+     * ```
+     *
+     * - `appear` defaults to the value of `enter`
+     * - `enter` defaults to `0`
+     * - `exit` defaults to `0`
+     *
+     * @type {number | { enter?: number, exit?: number, appear?: number }}
+     */
+    timeout: function timeout(props) {
+      var pt = timeoutsShape;
+      if (!props.addEndListener) pt = pt.isRequired;
+
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      return pt.apply(void 0, [props].concat(args));
+    },
+
+    /**
+     * Add a custom transition end trigger. Called with the transitioning
+     * DOM node and a `done` callback. Allows for more fine grained transition end
+     * logic. Timeouts are still used as a fallback if provided.
+     *
+     * **Note**: when `nodeRef` prop is passed, `node` is not passed.
+     *
+     * ```jsx
+     * addEndListener={(node, done) => {
+     *   // use the css transitionend event to mark the finish of a transition
+     *   node.addEventListener('transitionend', done, false);
+     * }}
+     * ```
+     */
+    addEndListener: PropTypes.func,
+
+    /**
+     * Callback fired before the "entering" status is applied. An extra parameter
+     * `isAppearing` is supplied to indicate if the enter stage is occurring on the initial mount
+     *
+     * **Note**: when `nodeRef` prop is passed, `node` is not passed.
+     *
+     * @type Function(node: HtmlElement, isAppearing: bool) -> void
+     */
+    onEnter: PropTypes.func,
+
+    /**
+     * Callback fired after the "entering" status is applied. An extra parameter
+     * `isAppearing` is supplied to indicate if the enter stage is occurring on the initial mount
+     *
+     * **Note**: when `nodeRef` prop is passed, `node` is not passed.
+     *
+     * @type Function(node: HtmlElement, isAppearing: bool)
+     */
+    onEntering: PropTypes.func,
+
+    /**
+     * Callback fired after the "entered" status is applied. An extra parameter
+     * `isAppearing` is supplied to indicate if the enter stage is occurring on the initial mount
+     *
+     * **Note**: when `nodeRef` prop is passed, `node` is not passed.
+     *
+     * @type Function(node: HtmlElement, isAppearing: bool) -> void
+     */
+    onEntered: PropTypes.func,
+
+    /**
+     * Callback fired before the "exiting" status is applied.
+     *
+     * **Note**: when `nodeRef` prop is passed, `node` is not passed.
+     *
+     * @type Function(node: HtmlElement) -> void
+     */
+    onExit: PropTypes.func,
+
+    /**
+     * Callback fired after the "exiting" status is applied.
+     *
+     * **Note**: when `nodeRef` prop is passed, `node` is not passed.
+     *
+     * @type Function(node: HtmlElement) -> void
+     */
+    onExiting: PropTypes.func,
+
+    /**
+     * Callback fired after the "exited" status is applied.
+     *
+     * **Note**: when `nodeRef` prop is passed, `node` is not passed
+     *
+     * @type Function(node: HtmlElement) -> void
+     */
+    onExited: PropTypes.func
+  } ; // Name the function so it is clearer in the documentation
+
+  function noop() {}
+
+  Transition.defaultProps = {
+    in: false,
+    mountOnEnter: false,
+    unmountOnExit: false,
+    appear: false,
+    enter: true,
+    exit: true,
+    onEnter: noop,
+    onEntering: noop,
+    onEntered: noop,
+    onExit: noop,
+    onExiting: noop,
+    onExited: noop
+  };
+  Transition.UNMOUNTED = UNMOUNTED;
+  Transition.EXITED = EXITED;
+  Transition.ENTERING = ENTERING;
+  Transition.ENTERED = ENTERED;
+  Transition.EXITING = EXITING;
+
+  const reflow = node => node.scrollTop;
+  function getTransitionProps(props, options) {
+    var _style$transitionDura, _style$transitionTimi;
+    const {
+      timeout,
+      easing,
+      style = {}
+    } = props;
+    return {
+      duration: (_style$transitionDura = style.transitionDuration) != null ? _style$transitionDura : typeof timeout === 'number' ? timeout : timeout[options.mode] || 0,
+      easing: (_style$transitionTimi = style.transitionTimingFunction) != null ? _style$transitionTimi : typeof easing === 'object' ? easing[options.mode] : easing,
+      delay: style.transitionDelay
+    };
+  }
+
+  function getPaperUtilityClass(slot) {
+    return generateUtilityClass('MuiPaper', slot);
+  }
+  generateUtilityClasses('MuiPaper', ['root', 'rounded', 'outlined', 'elevation', 'elevation0', 'elevation1', 'elevation2', 'elevation3', 'elevation4', 'elevation5', 'elevation6', 'elevation7', 'elevation8', 'elevation9', 'elevation10', 'elevation11', 'elevation12', 'elevation13', 'elevation14', 'elevation15', 'elevation16', 'elevation17', 'elevation18', 'elevation19', 'elevation20', 'elevation21', 'elevation22', 'elevation23', 'elevation24']);
+
+  const _excluded$6 = ["className", "component", "elevation", "square", "variant"];
+  const useUtilityClasses$5 = ownerState => {
+    const {
+      square,
+      elevation,
+      variant,
+      classes
+    } = ownerState;
+    const slots = {
+      root: ['root', variant, !square && 'rounded', variant === 'elevation' && `elevation${elevation}`]
+    };
+    return composeClasses(slots, getPaperUtilityClass, classes);
+  };
+  const PaperRoot = styled('div', {
+    name: 'MuiPaper',
+    slot: 'Root',
+    overridesResolver: (props, styles) => {
+      const {
+        ownerState
+      } = props;
+      return [styles.root, styles[ownerState.variant], !ownerState.square && styles.rounded, ownerState.variant === 'elevation' && styles[`elevation${ownerState.elevation}`]];
+    }
+  })(({
+    theme,
+    ownerState
+  }) => {
+    var _theme$vars$overlays;
+    return _extends$1({
+      backgroundColor: (theme.vars || theme).palette.background.paper,
+      color: (theme.vars || theme).palette.text.primary,
+      transition: theme.transitions.create('box-shadow')
+    }, !ownerState.square && {
+      borderRadius: theme.shape.borderRadius
+    }, ownerState.variant === 'outlined' && {
+      border: `1px solid ${(theme.vars || theme).palette.divider}`
+    }, ownerState.variant === 'elevation' && _extends$1({
+      boxShadow: (theme.vars || theme).shadows[ownerState.elevation]
+    }, !theme.vars && theme.palette.mode === 'dark' && {
+      backgroundImage: `linear-gradient(${alpha_1('#fff', getOverlayAlpha(ownerState.elevation))}, ${alpha_1('#fff', getOverlayAlpha(ownerState.elevation))})`
+    }, theme.vars && {
+      backgroundImage: (_theme$vars$overlays = theme.vars.overlays) == null ? void 0 : _theme$vars$overlays[ownerState.elevation]
+    }));
+  });
+  const Paper$1 = /*#__PURE__*/reactExports.forwardRef(function Paper(inProps, ref) {
+    const props = useDefaultProps({
+      props: inProps,
+      name: 'MuiPaper'
+    });
+    const {
+        className,
+        component = 'div',
+        elevation = 1,
+        square = false,
+        variant = 'elevation'
+      } = props,
+      other = _objectWithoutPropertiesLoose(props, _excluded$6);
+    const ownerState = _extends$1({}, props, {
+      component,
+      elevation,
+      square,
+      variant
+    });
+    const classes = useUtilityClasses$5(ownerState);
+    {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const theme = useTheme();
+      if (theme.shadows[elevation] === undefined) {
+        console.error([`MUI: The elevation provided <Paper elevation={${elevation}}> is not available in the theme.`, `Please make sure that \`theme.shadows[${elevation}]\` is defined.`].join('\n'));
+      }
+    }
+    return /*#__PURE__*/jsxRuntimeExports.jsx(PaperRoot, _extends$1({
+      as: component,
+      ownerState: ownerState,
+      className: clsx(classes.root, className),
+      ref: ref
+    }, other));
+  });
+  Paper$1.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * The content of the component.
+     */
+    children: PropTypes.node,
+    /**
+     * Override or extend the styles applied to the component.
+     */
+    classes: PropTypes.object,
+    /**
+     * @ignore
+     */
+    className: PropTypes.string,
+    /**
+     * The component used for the root node.
+     * Either a string to use a HTML element or a component.
+     */
+    component: PropTypes.elementType,
+    /**
+     * Shadow depth, corresponds to `dp` in the spec.
+     * It accepts values between 0 and 24 inclusive.
+     * @default 1
+     */
+    elevation: chainPropTypes(integerPropType, props => {
+      const {
+        elevation,
+        variant
+      } = props;
+      if (elevation > 0 && variant === 'outlined') {
+        return new Error(`MUI: Combining \`elevation={${elevation}}\` with \`variant="${variant}"\` has no effect. Either use \`elevation={0}\` or use a different \`variant\`.`);
+      }
+      return null;
+    }),
+    /**
+     * If `true`, rounded corners are disabled.
+     * @default false
+     */
+    square: PropTypes.bool,
+    /**
+     * The system prop that allows defining system overrides as well as additional CSS styles.
+     */
+    sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object]),
+    /**
+     * The variant to use.
+     * @default 'elevation'
+     */
+    variant: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([PropTypes.oneOf(['elevation', 'outlined']), PropTypes.string])
+  } ;
+
   function getTypographyUtilityClass(slot) {
     return generateUtilityClass('MuiTypography', slot);
   }
   generateUtilityClasses('MuiTypography', ['root', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'subtitle1', 'subtitle2', 'body1', 'body2', 'inherit', 'button', 'caption', 'overline', 'alignLeft', 'alignRight', 'alignCenter', 'alignJustify', 'noWrap', 'gutterBottom', 'paragraph']);
 
-  const _excluded = ["align", "className", "component", "gutterBottom", "noWrap", "paragraph", "variant", "variantMapping"];
-  const useUtilityClasses = ownerState => {
+  const _excluded$5 = ["align", "className", "component", "gutterBottom", "noWrap", "paragraph", "variant", "variantMapping"];
+  const useUtilityClasses$4 = ownerState => {
     const {
       align,
       gutterBottom,
@@ -41780,7 +43925,7 @@ Please use another name.` );
   const transformDeprecatedColors = color => {
     return colorTransformations[color] || color;
   };
-  const Typography = /*#__PURE__*/reactExports.forwardRef(function Typography(inProps, ref) {
+  const Typography$1 = /*#__PURE__*/reactExports.forwardRef(function Typography(inProps, ref) {
     const themeProps = useDefaultProps({
       props: inProps,
       name: 'MuiTypography'
@@ -41799,7 +43944,7 @@ Please use another name.` );
         variant = 'body1',
         variantMapping = defaultVariantMapping
       } = props,
-      other = _objectWithoutPropertiesLoose(props, _excluded);
+      other = _objectWithoutPropertiesLoose(props, _excluded$5);
     const ownerState = _extends$1({}, props, {
       align,
       color,
@@ -41812,7 +43957,7 @@ Please use another name.` );
       variantMapping
     });
     const Component = component || (paragraph ? 'p' : variantMapping[variant] || defaultVariantMapping[variant]) || 'span';
-    const classes = useUtilityClasses(ownerState);
+    const classes = useUtilityClasses$4(ownerState);
     return /*#__PURE__*/jsxRuntimeExports.jsx(TypographyRoot, _extends$1({
       as: Component,
       ref: ref,
@@ -41820,7 +43965,7 @@ Please use another name.` );
       className: clsx(classes.root, className)
     }, other));
   });
-  Typography.propTypes /* remove-proptypes */ = {
+  Typography$1.propTypes /* remove-proptypes */ = {
     // ┌────────────────────────────── Warning ──────────────────────────────┐
     // │ These PropTypes are generated from the TypeScript type definitions. │
     // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
@@ -41896,13 +44041,98 @@ Please use another name.` );
     variantMapping: PropTypes /* @typescript-to-proptypes-ignore */.object
   } ;
 
-  function GlobalStyles(props) {
-    return /*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles$1, _extends$1({}, props, {
+  function getContainer$1(container) {
+    return typeof container === 'function' ? container() : container;
+  }
+
+  /**
+   * Portals provide a first-class way to render children into a DOM node
+   * that exists outside the DOM hierarchy of the parent component.
+   *
+   * Demos:
+   *
+   * - [Portal](https://mui.com/material-ui/react-portal/)
+   *
+   * API:
+   *
+   * - [Portal API](https://mui.com/material-ui/api/portal/)
+   */
+  const Portal = /*#__PURE__*/reactExports.forwardRef(function Portal(props, forwardedRef) {
+    const {
+      children,
+      container,
+      disablePortal = false
+    } = props;
+    const [mountNode, setMountNode] = reactExports.useState(null);
+    // @ts-expect-error TODO upstream fix
+    const handleRef = useForkRef( /*#__PURE__*/reactExports.isValidElement(children) ? children.ref : null, forwardedRef);
+    useEnhancedEffect(() => {
+      if (!disablePortal) {
+        setMountNode(getContainer$1(container) || document.body);
+      }
+    }, [container, disablePortal]);
+    useEnhancedEffect(() => {
+      if (mountNode && !disablePortal) {
+        setRef(forwardedRef, mountNode);
+        return () => {
+          setRef(forwardedRef, null);
+        };
+      }
+      return undefined;
+    }, [forwardedRef, mountNode, disablePortal]);
+    if (disablePortal) {
+      if ( /*#__PURE__*/reactExports.isValidElement(children)) {
+        const newProps = {
+          ref: handleRef
+        };
+        return /*#__PURE__*/reactExports.cloneElement(children, newProps);
+      }
+      return /*#__PURE__*/jsxRuntimeExports.jsx(reactExports.Fragment, {
+        children: children
+      });
+    }
+    return /*#__PURE__*/jsxRuntimeExports.jsx(reactExports.Fragment, {
+      children: mountNode ? /*#__PURE__*/reactDomExports.createPortal(children, mountNode) : mountNode
+    });
+  });
+  Portal.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │ To update them, edit the TypeScript types and run `pnpm proptypes`. │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * The children to render into the `container`.
+     */
+    children: PropTypes.node,
+    /**
+     * An HTML element or function that returns one.
+     * The `container` will have the portal children appended to it.
+     *
+     * You can also provide a callback, which is called in a React layout effect.
+     * This lets you set the container from a ref, and also makes server-side rendering possible.
+     *
+     * By default, it uses the body of the top-level document object,
+     * so it's simply `document.body` most of the time.
+     */
+    container: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([HTMLElementType, PropTypes.func]),
+    /**
+     * The `children` will be under the DOM hierarchy of the parent component.
+     * @default false
+     */
+    disablePortal: PropTypes.bool
+  } ;
+  {
+    // eslint-disable-next-line
+    Portal['propTypes' + ''] = exactProp(Portal.propTypes);
+  }
+
+  function GlobalStyles$1(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles$2, _extends$1({}, props, {
       defaultTheme: defaultTheme,
       themeId: THEME_ID
     }));
   }
-  GlobalStyles.propTypes /* remove-proptypes */ = {
+  GlobalStyles$1.propTypes /* remove-proptypes */ = {
     // ┌────────────────────────────── Warning ──────────────────────────────┐
     // │ These PropTypes are generated from the TypeScript type definitions. │
     // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
@@ -41911,6 +44141,378 @@ Please use another name.` );
      * The styles you want to apply globally.
      */
     styles: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([PropTypes.array, PropTypes.func, PropTypes.number, PropTypes.object, PropTypes.string, PropTypes.bool])
+  } ;
+
+  const _excluded$4 = ["addEndListener", "appear", "children", "easing", "in", "onEnter", "onEntered", "onEntering", "onExit", "onExited", "onExiting", "style", "timeout", "TransitionComponent"];
+  const styles$1 = {
+    entering: {
+      opacity: 1
+    },
+    entered: {
+      opacity: 1
+    }
+  };
+
+  /**
+   * The Fade transition is used by the [Modal](/material-ui/react-modal/) component.
+   * It uses [react-transition-group](https://github.com/reactjs/react-transition-group) internally.
+   */
+  const Fade = /*#__PURE__*/reactExports.forwardRef(function Fade(props, ref) {
+    const theme = useTheme();
+    const defaultTimeout = {
+      enter: theme.transitions.duration.enteringScreen,
+      exit: theme.transitions.duration.leavingScreen
+    };
+    const {
+        addEndListener,
+        appear = true,
+        children,
+        easing,
+        in: inProp,
+        onEnter,
+        onEntered,
+        onEntering,
+        onExit,
+        onExited,
+        onExiting,
+        style,
+        timeout = defaultTimeout,
+        // eslint-disable-next-line react/prop-types
+        TransitionComponent = Transition
+      } = props,
+      other = _objectWithoutPropertiesLoose(props, _excluded$4);
+    const nodeRef = reactExports.useRef(null);
+    const handleRef = useForkRef(nodeRef, children.ref, ref);
+    const normalizedTransitionCallback = callback => maybeIsAppearing => {
+      if (callback) {
+        const node = nodeRef.current;
+
+        // onEnterXxx and onExitXxx callbacks have a different arguments.length value.
+        if (maybeIsAppearing === undefined) {
+          callback(node);
+        } else {
+          callback(node, maybeIsAppearing);
+        }
+      }
+    };
+    const handleEntering = normalizedTransitionCallback(onEntering);
+    const handleEnter = normalizedTransitionCallback((node, isAppearing) => {
+      reflow(node); // So the animation always start from the start.
+
+      const transitionProps = getTransitionProps({
+        style,
+        timeout,
+        easing
+      }, {
+        mode: 'enter'
+      });
+      node.style.webkitTransition = theme.transitions.create('opacity', transitionProps);
+      node.style.transition = theme.transitions.create('opacity', transitionProps);
+      if (onEnter) {
+        onEnter(node, isAppearing);
+      }
+    });
+    const handleEntered = normalizedTransitionCallback(onEntered);
+    const handleExiting = normalizedTransitionCallback(onExiting);
+    const handleExit = normalizedTransitionCallback(node => {
+      const transitionProps = getTransitionProps({
+        style,
+        timeout,
+        easing
+      }, {
+        mode: 'exit'
+      });
+      node.style.webkitTransition = theme.transitions.create('opacity', transitionProps);
+      node.style.transition = theme.transitions.create('opacity', transitionProps);
+      if (onExit) {
+        onExit(node);
+      }
+    });
+    const handleExited = normalizedTransitionCallback(onExited);
+    const handleAddEndListener = next => {
+      if (addEndListener) {
+        // Old call signature before `react-transition-group` implemented `nodeRef`
+        addEndListener(nodeRef.current, next);
+      }
+    };
+    return /*#__PURE__*/jsxRuntimeExports.jsx(TransitionComponent, _extends$1({
+      appear: appear,
+      in: inProp,
+      nodeRef: nodeRef ,
+      onEnter: handleEnter,
+      onEntered: handleEntered,
+      onEntering: handleEntering,
+      onExit: handleExit,
+      onExited: handleExited,
+      onExiting: handleExiting,
+      addEndListener: handleAddEndListener,
+      timeout: timeout
+    }, other, {
+      children: (state, childProps) => {
+        return /*#__PURE__*/reactExports.cloneElement(children, _extends$1({
+          style: _extends$1({
+            opacity: 0,
+            visibility: state === 'exited' && !inProp ? 'hidden' : undefined
+          }, styles$1[state], style, children.props.style),
+          ref: handleRef
+        }, childProps));
+      }
+    }));
+  });
+  Fade.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * Add a custom transition end trigger. Called with the transitioning DOM
+     * node and a done callback. Allows for more fine grained transition end
+     * logic. Note: Timeouts are still used as a fallback if provided.
+     */
+    addEndListener: PropTypes.func,
+    /**
+     * Perform the enter transition when it first mounts if `in` is also `true`.
+     * Set this to `false` to disable this behavior.
+     * @default true
+     */
+    appear: PropTypes.bool,
+    /**
+     * A single child content element.
+     */
+    children: elementAcceptingRef.isRequired,
+    /**
+     * The transition timing function.
+     * You may specify a single easing or a object containing enter and exit values.
+     */
+    easing: PropTypes.oneOfType([PropTypes.shape({
+      enter: PropTypes.string,
+      exit: PropTypes.string
+    }), PropTypes.string]),
+    /**
+     * If `true`, the component will transition in.
+     */
+    in: PropTypes.bool,
+    /**
+     * @ignore
+     */
+    onEnter: PropTypes.func,
+    /**
+     * @ignore
+     */
+    onEntered: PropTypes.func,
+    /**
+     * @ignore
+     */
+    onEntering: PropTypes.func,
+    /**
+     * @ignore
+     */
+    onExit: PropTypes.func,
+    /**
+     * @ignore
+     */
+    onExited: PropTypes.func,
+    /**
+     * @ignore
+     */
+    onExiting: PropTypes.func,
+    /**
+     * @ignore
+     */
+    style: PropTypes.object,
+    /**
+     * The duration for the transition, in milliseconds.
+     * You may specify a single timeout for all transitions, or individually with an object.
+     * @default {
+     *   enter: theme.transitions.duration.enteringScreen,
+     *   exit: theme.transitions.duration.leavingScreen,
+     * }
+     */
+    timeout: PropTypes.oneOfType([PropTypes.number, PropTypes.shape({
+      appear: PropTypes.number,
+      enter: PropTypes.number,
+      exit: PropTypes.number
+    })])
+  } ;
+
+  function getBackdropUtilityClass(slot) {
+    return generateUtilityClass('MuiBackdrop', slot);
+  }
+  generateUtilityClasses('MuiBackdrop', ['root', 'invisible']);
+
+  const _excluded$3 = ["children", "className", "component", "components", "componentsProps", "invisible", "open", "slotProps", "slots", "TransitionComponent", "transitionDuration"];
+  const useUtilityClasses$3 = ownerState => {
+    const {
+      classes,
+      invisible
+    } = ownerState;
+    const slots = {
+      root: ['root', invisible && 'invisible']
+    };
+    return composeClasses(slots, getBackdropUtilityClass, classes);
+  };
+  const BackdropRoot = styled('div', {
+    name: 'MuiBackdrop',
+    slot: 'Root',
+    overridesResolver: (props, styles) => {
+      const {
+        ownerState
+      } = props;
+      return [styles.root, ownerState.invisible && styles.invisible];
+    }
+  })(({
+    ownerState
+  }) => _extends$1({
+    position: 'fixed',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 0,
+    bottom: 0,
+    top: 0,
+    left: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    WebkitTapHighlightColor: 'transparent'
+  }, ownerState.invisible && {
+    backgroundColor: 'transparent'
+  }));
+  const Backdrop$1 = /*#__PURE__*/reactExports.forwardRef(function Backdrop(inProps, ref) {
+    var _slotProps$root, _ref, _slots$root;
+    const props = useDefaultProps({
+      props: inProps,
+      name: 'MuiBackdrop'
+    });
+    const {
+        children,
+        className,
+        component = 'div',
+        components = {},
+        componentsProps = {},
+        invisible = false,
+        open,
+        slotProps = {},
+        slots = {},
+        TransitionComponent = Fade,
+        transitionDuration
+      } = props,
+      other = _objectWithoutPropertiesLoose(props, _excluded$3);
+    const ownerState = _extends$1({}, props, {
+      component,
+      invisible
+    });
+    const classes = useUtilityClasses$3(ownerState);
+    const rootSlotProps = (_slotProps$root = slotProps.root) != null ? _slotProps$root : componentsProps.root;
+    return /*#__PURE__*/jsxRuntimeExports.jsx(TransitionComponent, _extends$1({
+      in: open,
+      timeout: transitionDuration
+    }, other, {
+      children: /*#__PURE__*/jsxRuntimeExports.jsx(BackdropRoot, _extends$1({
+        "aria-hidden": true
+      }, rootSlotProps, {
+        as: (_ref = (_slots$root = slots.root) != null ? _slots$root : components.Root) != null ? _ref : component,
+        className: clsx(classes.root, className, rootSlotProps == null ? void 0 : rootSlotProps.className),
+        ownerState: _extends$1({}, ownerState, rootSlotProps == null ? void 0 : rootSlotProps.ownerState),
+        classes: classes,
+        ref: ref,
+        children: children
+      }))
+    }));
+  });
+  Backdrop$1.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * The content of the component.
+     */
+    children: PropTypes.node,
+    /**
+     * Override or extend the styles applied to the component.
+     */
+    classes: PropTypes.object,
+    /**
+     * @ignore
+     */
+    className: PropTypes.string,
+    /**
+     * The component used for the root node.
+     * Either a string to use a HTML element or a component.
+     */
+    component: PropTypes.elementType,
+    /**
+     * The components used for each slot inside.
+     *
+     * This prop is an alias for the `slots` prop.
+     * It's recommended to use the `slots` prop instead.
+     *
+     * @default {}
+     */
+    components: PropTypes.shape({
+      Root: PropTypes.elementType
+    }),
+    /**
+     * The extra props for the slot components.
+     * You can override the existing props or add new ones.
+     *
+     * This prop is an alias for the `slotProps` prop.
+     * It's recommended to use the `slotProps` prop instead, as `componentsProps` will be deprecated in the future.
+     *
+     * @default {}
+     */
+    componentsProps: PropTypes.shape({
+      root: PropTypes.object
+    }),
+    /**
+     * If `true`, the backdrop is invisible.
+     * It can be used when rendering a popover or a custom select component.
+     * @default false
+     */
+    invisible: PropTypes.bool,
+    /**
+     * If `true`, the component is shown.
+     */
+    open: PropTypes.bool.isRequired,
+    /**
+     * The extra props for the slot components.
+     * You can override the existing props or add new ones.
+     *
+     * This prop is an alias for the `componentsProps` prop, which will be deprecated in the future.
+     *
+     * @default {}
+     */
+    slotProps: PropTypes.shape({
+      root: PropTypes.object
+    }),
+    /**
+     * The components used for each slot inside.
+     *
+     * This prop is an alias for the `components` prop, which will be deprecated in the future.
+     *
+     * @default {}
+     */
+    slots: PropTypes.shape({
+      root: PropTypes.elementType
+    }),
+    /**
+     * The system prop that allows defining system overrides as well as additional CSS styles.
+     */
+    sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object]),
+    /**
+     * The component used for the transition.
+     * [Follow this guide](/material-ui/transitions/#transitioncomponent-prop) to learn more about the requirements for this component.
+     * @default Fade
+     */
+    TransitionComponent: PropTypes.elementType,
+    /**
+     * The duration for the transition, in milliseconds.
+     * You may specify a single timeout for all transitions, or individually with an object.
+     */
+    transitionDuration: PropTypes.oneOfType([PropTypes.number, PropTypes.shape({
+      appear: PropTypes.number,
+      enter: PropTypes.number,
+      exit: PropTypes.number
+    })])
   } ;
 
   const html = (theme, enableColorScheme) => _extends$1({
@@ -41984,7 +44586,7 @@ Please use another name.` );
       enableColorScheme = false
     } = props;
     return /*#__PURE__*/jsxRuntimeExports.jsxs(reactExports.Fragment, {
-      children: [/*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles, {
+      children: [/*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles$1, {
         styles: theme => styles(theme, enableColorScheme)
       }), children]
     });
@@ -42007,15 +44609,3984 @@ Please use another name.` );
     enableColorScheme: PropTypes.bool
   } ;
 
-  const theme = createTheme({});
-  function Main() {
-    return /*#__PURE__*/jsxRuntimeExports.jsxs(ThemeProvider, {
-      theme: theme,
-      children: [/*#__PURE__*/jsxRuntimeExports.jsx(CssBaseline, {}), /*#__PURE__*/jsxRuntimeExports.jsx(Typography, {
-        variant: "h1",
-        sx: {},
-        children: "Hello, world!"
+  // Is a vertical scrollbar displayed?
+  function isOverflowing(container) {
+    const doc = ownerDocument(container);
+    if (doc.body === container) {
+      return ownerWindow(container).innerWidth > doc.documentElement.clientWidth;
+    }
+    return container.scrollHeight > container.clientHeight;
+  }
+  function ariaHidden(element, show) {
+    if (show) {
+      element.setAttribute('aria-hidden', 'true');
+    } else {
+      element.removeAttribute('aria-hidden');
+    }
+  }
+  function getPaddingRight(element) {
+    return parseInt(ownerWindow(element).getComputedStyle(element).paddingRight, 10) || 0;
+  }
+  function isAriaHiddenForbiddenOnElement(element) {
+    // The forbidden HTML tags are the ones from ARIA specification that
+    // can be children of body and can't have aria-hidden attribute.
+    // cf. https://www.w3.org/TR/html-aria/#docconformance
+    const forbiddenTagNames = ['TEMPLATE', 'SCRIPT', 'STYLE', 'LINK', 'MAP', 'META', 'NOSCRIPT', 'PICTURE', 'COL', 'COLGROUP', 'PARAM', 'SLOT', 'SOURCE', 'TRACK'];
+    const isForbiddenTagName = forbiddenTagNames.indexOf(element.tagName) !== -1;
+    const isInputHidden = element.tagName === 'INPUT' && element.getAttribute('type') === 'hidden';
+    return isForbiddenTagName || isInputHidden;
+  }
+  function ariaHiddenSiblings(container, mountElement, currentElement, elementsToExclude, show) {
+    const blacklist = [mountElement, currentElement, ...elementsToExclude];
+    [].forEach.call(container.children, element => {
+      const isNotExcludedElement = blacklist.indexOf(element) === -1;
+      const isNotForbiddenElement = !isAriaHiddenForbiddenOnElement(element);
+      if (isNotExcludedElement && isNotForbiddenElement) {
+        ariaHidden(element, show);
+      }
+    });
+  }
+  function findIndexOf(items, callback) {
+    let idx = -1;
+    items.some((item, index) => {
+      if (callback(item)) {
+        idx = index;
+        return true;
+      }
+      return false;
+    });
+    return idx;
+  }
+  function handleContainer(containerInfo, props) {
+    const restoreStyle = [];
+    const container = containerInfo.container;
+    if (!props.disableScrollLock) {
+      if (isOverflowing(container)) {
+        // Compute the size before applying overflow hidden to avoid any scroll jumps.
+        const scrollbarSize = getScrollbarSize(ownerDocument(container));
+        restoreStyle.push({
+          value: container.style.paddingRight,
+          property: 'padding-right',
+          el: container
+        });
+        // Use computed style, here to get the real padding to add our scrollbar width.
+        container.style.paddingRight = `${getPaddingRight(container) + scrollbarSize}px`;
+
+        // .mui-fixed is a global helper.
+        const fixedElements = ownerDocument(container).querySelectorAll('.mui-fixed');
+        [].forEach.call(fixedElements, element => {
+          restoreStyle.push({
+            value: element.style.paddingRight,
+            property: 'padding-right',
+            el: element
+          });
+          element.style.paddingRight = `${getPaddingRight(element) + scrollbarSize}px`;
+        });
+      }
+      let scrollContainer;
+      if (container.parentNode instanceof DocumentFragment) {
+        scrollContainer = ownerDocument(container).body;
+      } else {
+        // Support html overflow-y: auto for scroll stability between pages
+        // https://css-tricks.com/snippets/css/force-vertical-scrollbar/
+        const parent = container.parentElement;
+        const containerWindow = ownerWindow(container);
+        scrollContainer = (parent == null ? void 0 : parent.nodeName) === 'HTML' && containerWindow.getComputedStyle(parent).overflowY === 'scroll' ? parent : container;
+      }
+
+      // Block the scroll even if no scrollbar is visible to account for mobile keyboard
+      // screensize shrink.
+      restoreStyle.push({
+        value: scrollContainer.style.overflow,
+        property: 'overflow',
+        el: scrollContainer
+      }, {
+        value: scrollContainer.style.overflowX,
+        property: 'overflow-x',
+        el: scrollContainer
+      }, {
+        value: scrollContainer.style.overflowY,
+        property: 'overflow-y',
+        el: scrollContainer
+      });
+      scrollContainer.style.overflow = 'hidden';
+    }
+    const restore = () => {
+      restoreStyle.forEach(({
+        value,
+        el,
+        property
+      }) => {
+        if (value) {
+          el.style.setProperty(property, value);
+        } else {
+          el.style.removeProperty(property);
+        }
+      });
+    };
+    return restore;
+  }
+  function getHiddenSiblings(container) {
+    const hiddenSiblings = [];
+    [].forEach.call(container.children, element => {
+      if (element.getAttribute('aria-hidden') === 'true') {
+        hiddenSiblings.push(element);
+      }
+    });
+    return hiddenSiblings;
+  }
+  /**
+   * @ignore - do not document.
+   *
+   * Proper state management for containers and the modals in those containers.
+   * Simplified, but inspired by react-overlay's ModalManager class.
+   * Used by the Modal to ensure proper styling of containers.
+   */
+  class ModalManager {
+    constructor() {
+      this.containers = void 0;
+      this.modals = void 0;
+      this.modals = [];
+      this.containers = [];
+    }
+    add(modal, container) {
+      let modalIndex = this.modals.indexOf(modal);
+      if (modalIndex !== -1) {
+        return modalIndex;
+      }
+      modalIndex = this.modals.length;
+      this.modals.push(modal);
+
+      // If the modal we are adding is already in the DOM.
+      if (modal.modalRef) {
+        ariaHidden(modal.modalRef, false);
+      }
+      const hiddenSiblings = getHiddenSiblings(container);
+      ariaHiddenSiblings(container, modal.mount, modal.modalRef, hiddenSiblings, true);
+      const containerIndex = findIndexOf(this.containers, item => item.container === container);
+      if (containerIndex !== -1) {
+        this.containers[containerIndex].modals.push(modal);
+        return modalIndex;
+      }
+      this.containers.push({
+        modals: [modal],
+        container,
+        restore: null,
+        hiddenSiblings
+      });
+      return modalIndex;
+    }
+    mount(modal, props) {
+      const containerIndex = findIndexOf(this.containers, item => item.modals.indexOf(modal) !== -1);
+      const containerInfo = this.containers[containerIndex];
+      if (!containerInfo.restore) {
+        containerInfo.restore = handleContainer(containerInfo, props);
+      }
+    }
+    remove(modal, ariaHiddenState = true) {
+      const modalIndex = this.modals.indexOf(modal);
+      if (modalIndex === -1) {
+        return modalIndex;
+      }
+      const containerIndex = findIndexOf(this.containers, item => item.modals.indexOf(modal) !== -1);
+      const containerInfo = this.containers[containerIndex];
+      containerInfo.modals.splice(containerInfo.modals.indexOf(modal), 1);
+      this.modals.splice(modalIndex, 1);
+
+      // If that was the last modal in a container, clean up the container.
+      if (containerInfo.modals.length === 0) {
+        // The modal might be closed before it had the chance to be mounted in the DOM.
+        if (containerInfo.restore) {
+          containerInfo.restore();
+        }
+        if (modal.modalRef) {
+          // In case the modal wasn't in the DOM yet.
+          ariaHidden(modal.modalRef, ariaHiddenState);
+        }
+        ariaHiddenSiblings(containerInfo.container, modal.mount, modal.modalRef, containerInfo.hiddenSiblings, false);
+        this.containers.splice(containerIndex, 1);
+      } else {
+        // Otherwise make sure the next top modal is visible to a screen reader.
+        const nextTop = containerInfo.modals[containerInfo.modals.length - 1];
+        // as soon as a modal is adding its modalRef is undefined. it can't set
+        // aria-hidden because the dom element doesn't exist either
+        // when modal was unmounted before modalRef gets null
+        if (nextTop.modalRef) {
+          ariaHidden(nextTop.modalRef, false);
+        }
+      }
+      return modalIndex;
+    }
+    isTopModal(modal) {
+      return this.modals.length > 0 && this.modals[this.modals.length - 1] === modal;
+    }
+  }
+
+  // Inspired by https://github.com/focus-trap/tabbable
+  const candidatesSelector = ['input', 'select', 'textarea', 'a[href]', 'button', '[tabindex]', 'audio[controls]', 'video[controls]', '[contenteditable]:not([contenteditable="false"])'].join(',');
+  function getTabIndex(node) {
+    const tabindexAttr = parseInt(node.getAttribute('tabindex') || '', 10);
+    if (!Number.isNaN(tabindexAttr)) {
+      return tabindexAttr;
+    }
+
+    // Browsers do not return `tabIndex` correctly for contentEditable nodes;
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=661108&q=contenteditable%20tabindex&can=2
+    // so if they don't have a tabindex attribute specifically set, assume it's 0.
+    // in Chrome, <details/>, <audio controls/> and <video controls/> elements get a default
+    //  `tabIndex` of -1 when the 'tabindex' attribute isn't specified in the DOM,
+    //  yet they are still part of the regular tab order; in FF, they get a default
+    //  `tabIndex` of 0; since Chrome still puts those elements in the regular tab
+    //  order, consider their tab index to be 0.
+    if (node.contentEditable === 'true' || (node.nodeName === 'AUDIO' || node.nodeName === 'VIDEO' || node.nodeName === 'DETAILS') && node.getAttribute('tabindex') === null) {
+      return 0;
+    }
+    return node.tabIndex;
+  }
+  function isNonTabbableRadio(node) {
+    if (node.tagName !== 'INPUT' || node.type !== 'radio') {
+      return false;
+    }
+    if (!node.name) {
+      return false;
+    }
+    const getRadio = selector => node.ownerDocument.querySelector(`input[type="radio"]${selector}`);
+    let roving = getRadio(`[name="${node.name}"]:checked`);
+    if (!roving) {
+      roving = getRadio(`[name="${node.name}"]`);
+    }
+    return roving !== node;
+  }
+  function isNodeMatchingSelectorFocusable(node) {
+    if (node.disabled || node.tagName === 'INPUT' && node.type === 'hidden' || isNonTabbableRadio(node)) {
+      return false;
+    }
+    return true;
+  }
+  function defaultGetTabbable(root) {
+    const regularTabNodes = [];
+    const orderedTabNodes = [];
+    Array.from(root.querySelectorAll(candidatesSelector)).forEach((node, i) => {
+      const nodeTabIndex = getTabIndex(node);
+      if (nodeTabIndex === -1 || !isNodeMatchingSelectorFocusable(node)) {
+        return;
+      }
+      if (nodeTabIndex === 0) {
+        regularTabNodes.push(node);
+      } else {
+        orderedTabNodes.push({
+          documentOrder: i,
+          tabIndex: nodeTabIndex,
+          node: node
+        });
+      }
+    });
+    return orderedTabNodes.sort((a, b) => a.tabIndex === b.tabIndex ? a.documentOrder - b.documentOrder : a.tabIndex - b.tabIndex).map(a => a.node).concat(regularTabNodes);
+  }
+  function defaultIsEnabled() {
+    return true;
+  }
+
+  /**
+   * @ignore - internal component.
+   */
+  function FocusTrap(props) {
+    const {
+      children,
+      disableAutoFocus = false,
+      disableEnforceFocus = false,
+      disableRestoreFocus = false,
+      getTabbable = defaultGetTabbable,
+      isEnabled = defaultIsEnabled,
+      open
+    } = props;
+    const ignoreNextEnforceFocus = reactExports.useRef(false);
+    const sentinelStart = reactExports.useRef(null);
+    const sentinelEnd = reactExports.useRef(null);
+    const nodeToRestore = reactExports.useRef(null);
+    const reactFocusEventTarget = reactExports.useRef(null);
+    // This variable is useful when disableAutoFocus is true.
+    // It waits for the active element to move into the component to activate.
+    const activated = reactExports.useRef(false);
+    const rootRef = reactExports.useRef(null);
+    // @ts-expect-error TODO upstream fix
+    const handleRef = useForkRef(children.ref, rootRef);
+    const lastKeydown = reactExports.useRef(null);
+    reactExports.useEffect(() => {
+      // We might render an empty child.
+      if (!open || !rootRef.current) {
+        return;
+      }
+      activated.current = !disableAutoFocus;
+    }, [disableAutoFocus, open]);
+    reactExports.useEffect(() => {
+      // We might render an empty child.
+      if (!open || !rootRef.current) {
+        return;
+      }
+      const doc = ownerDocument(rootRef.current);
+      if (!rootRef.current.contains(doc.activeElement)) {
+        if (!rootRef.current.hasAttribute('tabIndex')) {
+          {
+            console.error(['MUI: The modal content node does not accept focus.', 'For the benefit of assistive technologies, ' + 'the tabIndex of the node is being set to "-1".'].join('\n'));
+          }
+          rootRef.current.setAttribute('tabIndex', '-1');
+        }
+        if (activated.current) {
+          rootRef.current.focus();
+        }
+      }
+      return () => {
+        // restoreLastFocus()
+        if (!disableRestoreFocus) {
+          // In IE11 it is possible for document.activeElement to be null resulting
+          // in nodeToRestore.current being null.
+          // Not all elements in IE11 have a focus method.
+          // Once IE11 support is dropped the focus() call can be unconditional.
+          if (nodeToRestore.current && nodeToRestore.current.focus) {
+            ignoreNextEnforceFocus.current = true;
+            nodeToRestore.current.focus();
+          }
+          nodeToRestore.current = null;
+        }
+      };
+      // Missing `disableRestoreFocus` which is fine.
+      // We don't support changing that prop on an open FocusTrap
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
+    reactExports.useEffect(() => {
+      // We might render an empty child.
+      if (!open || !rootRef.current) {
+        return;
+      }
+      const doc = ownerDocument(rootRef.current);
+      const loopFocus = nativeEvent => {
+        lastKeydown.current = nativeEvent;
+        if (disableEnforceFocus || !isEnabled() || nativeEvent.key !== 'Tab') {
+          return;
+        }
+
+        // Make sure the next tab starts from the right place.
+        // doc.activeElement refers to the origin.
+        if (doc.activeElement === rootRef.current && nativeEvent.shiftKey) {
+          // We need to ignore the next contain as
+          // it will try to move the focus back to the rootRef element.
+          ignoreNextEnforceFocus.current = true;
+          if (sentinelEnd.current) {
+            sentinelEnd.current.focus();
+          }
+        }
+      };
+      const contain = () => {
+        const rootElement = rootRef.current;
+
+        // Cleanup functions are executed lazily in React 17.
+        // Contain can be called between the component being unmounted and its cleanup function being run.
+        if (rootElement === null) {
+          return;
+        }
+        if (!doc.hasFocus() || !isEnabled() || ignoreNextEnforceFocus.current) {
+          ignoreNextEnforceFocus.current = false;
+          return;
+        }
+
+        // The focus is already inside
+        if (rootElement.contains(doc.activeElement)) {
+          return;
+        }
+
+        // The disableEnforceFocus is set and the focus is outside of the focus trap (and sentinel nodes)
+        if (disableEnforceFocus && doc.activeElement !== sentinelStart.current && doc.activeElement !== sentinelEnd.current) {
+          return;
+        }
+
+        // if the focus event is not coming from inside the children's react tree, reset the refs
+        if (doc.activeElement !== reactFocusEventTarget.current) {
+          reactFocusEventTarget.current = null;
+        } else if (reactFocusEventTarget.current !== null) {
+          return;
+        }
+        if (!activated.current) {
+          return;
+        }
+        let tabbable = [];
+        if (doc.activeElement === sentinelStart.current || doc.activeElement === sentinelEnd.current) {
+          tabbable = getTabbable(rootRef.current);
+        }
+
+        // one of the sentinel nodes was focused, so move the focus
+        // to the first/last tabbable element inside the focus trap
+        if (tabbable.length > 0) {
+          var _lastKeydown$current, _lastKeydown$current2;
+          const isShiftTab = Boolean(((_lastKeydown$current = lastKeydown.current) == null ? void 0 : _lastKeydown$current.shiftKey) && ((_lastKeydown$current2 = lastKeydown.current) == null ? void 0 : _lastKeydown$current2.key) === 'Tab');
+          const focusNext = tabbable[0];
+          const focusPrevious = tabbable[tabbable.length - 1];
+          if (typeof focusNext !== 'string' && typeof focusPrevious !== 'string') {
+            if (isShiftTab) {
+              focusPrevious.focus();
+            } else {
+              focusNext.focus();
+            }
+          }
+          // no tabbable elements in the trap focus or the focus was outside of the focus trap
+        } else {
+          rootElement.focus();
+        }
+      };
+      doc.addEventListener('focusin', contain);
+      doc.addEventListener('keydown', loopFocus, true);
+
+      // With Edge, Safari and Firefox, no focus related events are fired when the focused area stops being a focused area.
+      // for example https://bugzilla.mozilla.org/show_bug.cgi?id=559561.
+      // Instead, we can look if the active element was restored on the BODY element.
+      //
+      // The whatwg spec defines how the browser should behave but does not explicitly mention any events:
+      // https://html.spec.whatwg.org/multipage/interaction.html#focus-fixup-rule.
+      const interval = setInterval(() => {
+        if (doc.activeElement && doc.activeElement.tagName === 'BODY') {
+          contain();
+        }
+      }, 50);
+      return () => {
+        clearInterval(interval);
+        doc.removeEventListener('focusin', contain);
+        doc.removeEventListener('keydown', loopFocus, true);
+      };
+    }, [disableAutoFocus, disableEnforceFocus, disableRestoreFocus, isEnabled, open, getTabbable]);
+    const onFocus = event => {
+      if (nodeToRestore.current === null) {
+        nodeToRestore.current = event.relatedTarget;
+      }
+      activated.current = true;
+      reactFocusEventTarget.current = event.target;
+      const childrenPropsHandler = children.props.onFocus;
+      if (childrenPropsHandler) {
+        childrenPropsHandler(event);
+      }
+    };
+    const handleFocusSentinel = event => {
+      if (nodeToRestore.current === null) {
+        nodeToRestore.current = event.relatedTarget;
+      }
+      activated.current = true;
+    };
+    return /*#__PURE__*/jsxRuntimeExports.jsxs(reactExports.Fragment, {
+      children: [/*#__PURE__*/jsxRuntimeExports.jsx("div", {
+        tabIndex: open ? 0 : -1,
+        onFocus: handleFocusSentinel,
+        ref: sentinelStart,
+        "data-testid": "sentinelStart"
+      }), /*#__PURE__*/reactExports.cloneElement(children, {
+        ref: handleRef,
+        onFocus
+      }), /*#__PURE__*/jsxRuntimeExports.jsx("div", {
+        tabIndex: open ? 0 : -1,
+        onFocus: handleFocusSentinel,
+        ref: sentinelEnd,
+        "data-testid": "sentinelEnd"
       })]
+    });
+  }
+  FocusTrap.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │ To update them, edit the TypeScript types and run `pnpm proptypes`. │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * A single child content element.
+     */
+    children: elementAcceptingRef,
+    /**
+     * If `true`, the focus trap will not automatically shift focus to itself when it opens, and
+     * replace it to the last focused element when it closes.
+     * This also works correctly with any focus trap children that have the `disableAutoFocus` prop.
+     *
+     * Generally this should never be set to `true` as it makes the focus trap less
+     * accessible to assistive technologies, like screen readers.
+     * @default false
+     */
+    disableAutoFocus: PropTypes.bool,
+    /**
+     * If `true`, the focus trap will not prevent focus from leaving the focus trap while open.
+     *
+     * Generally this should never be set to `true` as it makes the focus trap less
+     * accessible to assistive technologies, like screen readers.
+     * @default false
+     */
+    disableEnforceFocus: PropTypes.bool,
+    /**
+     * If `true`, the focus trap will not restore focus to previously focused element once
+     * focus trap is hidden or unmounted.
+     * @default false
+     */
+    disableRestoreFocus: PropTypes.bool,
+    /**
+     * Returns an array of ordered tabbable nodes (i.e. in tab order) within the root.
+     * For instance, you can provide the "tabbable" npm dependency.
+     * @param {HTMLElement} root
+     */
+    getTabbable: PropTypes.func,
+    /**
+     * This prop extends the `open` prop.
+     * It allows to toggle the open state without having to wait for a rerender when changing the `open` prop.
+     * This prop should be memoized.
+     * It can be used to support multiple focus trap mounted at the same time.
+     * @default function defaultIsEnabled(): boolean {
+     *   return true;
+     * }
+     */
+    isEnabled: PropTypes.func,
+    /**
+     * If `true`, focus is locked.
+     */
+    open: PropTypes.bool.isRequired
+  } ;
+  {
+    // eslint-disable-next-line
+    FocusTrap['propTypes' + ''] = exactProp(FocusTrap.propTypes);
+  }
+
+  function getContainer(container) {
+    return typeof container === 'function' ? container() : container;
+  }
+  function getHasTransition(children) {
+    return children ? children.props.hasOwnProperty('in') : false;
+  }
+
+  // A modal manager used to track and manage the state of open Modals.
+  // Modals don't open on the server so this won't conflict with concurrent requests.
+  const defaultManager = new ModalManager();
+  /**
+   *
+   * Demos:
+   *
+   * - [Modal](https://mui.com/base-ui/react-modal/#hook)
+   *
+   * API:
+   *
+   * - [useModal API](https://mui.com/base-ui/react-modal/hooks-api/#use-modal)
+   */
+  function useModal(parameters) {
+    const {
+      container,
+      disableEscapeKeyDown = false,
+      disableScrollLock = false,
+      // @ts-ignore internal logic - Base UI supports the manager as a prop too
+      manager = defaultManager,
+      closeAfterTransition = false,
+      onTransitionEnter,
+      onTransitionExited,
+      children,
+      onClose,
+      open,
+      rootRef
+    } = parameters;
+
+    // @ts-ignore internal logic
+    const modal = reactExports.useRef({});
+    const mountNodeRef = reactExports.useRef(null);
+    const modalRef = reactExports.useRef(null);
+    const handleRef = useForkRef(modalRef, rootRef);
+    const [exited, setExited] = reactExports.useState(!open);
+    const hasTransition = getHasTransition(children);
+    let ariaHiddenProp = true;
+    if (parameters['aria-hidden'] === 'false' || parameters['aria-hidden'] === false) {
+      ariaHiddenProp = false;
+    }
+    const getDoc = () => ownerDocument(mountNodeRef.current);
+    const getModal = () => {
+      modal.current.modalRef = modalRef.current;
+      modal.current.mount = mountNodeRef.current;
+      return modal.current;
+    };
+    const handleMounted = () => {
+      manager.mount(getModal(), {
+        disableScrollLock
+      });
+
+      // Fix a bug on Chrome where the scroll isn't initially 0.
+      if (modalRef.current) {
+        modalRef.current.scrollTop = 0;
+      }
+    };
+    const handleOpen = useEventCallback(() => {
+      const resolvedContainer = getContainer(container) || getDoc().body;
+      manager.add(getModal(), resolvedContainer);
+
+      // The element was already mounted.
+      if (modalRef.current) {
+        handleMounted();
+      }
+    });
+    const isTopModal = reactExports.useCallback(() => manager.isTopModal(getModal()), [manager]);
+    const handlePortalRef = useEventCallback(node => {
+      mountNodeRef.current = node;
+      if (!node) {
+        return;
+      }
+      if (open && isTopModal()) {
+        handleMounted();
+      } else if (modalRef.current) {
+        ariaHidden(modalRef.current, ariaHiddenProp);
+      }
+    });
+    const handleClose = reactExports.useCallback(() => {
+      manager.remove(getModal(), ariaHiddenProp);
+    }, [ariaHiddenProp, manager]);
+    reactExports.useEffect(() => {
+      return () => {
+        handleClose();
+      };
+    }, [handleClose]);
+    reactExports.useEffect(() => {
+      if (open) {
+        handleOpen();
+      } else if (!hasTransition || !closeAfterTransition) {
+        handleClose();
+      }
+    }, [open, handleClose, hasTransition, closeAfterTransition, handleOpen]);
+    const createHandleKeyDown = otherHandlers => event => {
+      var _otherHandlers$onKeyD;
+      (_otherHandlers$onKeyD = otherHandlers.onKeyDown) == null || _otherHandlers$onKeyD.call(otherHandlers, event);
+
+      // The handler doesn't take event.defaultPrevented into account:
+      //
+      // event.preventDefault() is meant to stop default behaviors like
+      // clicking a checkbox to check it, hitting a button to submit a form,
+      // and hitting left arrow to move the cursor in a text input etc.
+      // Only special HTML elements have these default behaviors.
+      if (event.key !== 'Escape' || event.which === 229 ||
+      // Wait until IME is settled.
+      !isTopModal()) {
+        return;
+      }
+      if (!disableEscapeKeyDown) {
+        // Swallow the event, in case someone is listening for the escape key on the body.
+        event.stopPropagation();
+        if (onClose) {
+          onClose(event, 'escapeKeyDown');
+        }
+      }
+    };
+    const createHandleBackdropClick = otherHandlers => event => {
+      var _otherHandlers$onClic;
+      (_otherHandlers$onClic = otherHandlers.onClick) == null || _otherHandlers$onClic.call(otherHandlers, event);
+      if (event.target !== event.currentTarget) {
+        return;
+      }
+      if (onClose) {
+        onClose(event, 'backdropClick');
+      }
+    };
+    const getRootProps = (otherHandlers = {}) => {
+      const propsEventHandlers = extractEventHandlers(parameters);
+
+      // The custom event handlers shouldn't be spread on the root element
+      delete propsEventHandlers.onTransitionEnter;
+      delete propsEventHandlers.onTransitionExited;
+      const externalEventHandlers = _extends$1({}, propsEventHandlers, otherHandlers);
+      return _extends$1({
+        role: 'presentation'
+      }, externalEventHandlers, {
+        onKeyDown: createHandleKeyDown(externalEventHandlers),
+        ref: handleRef
+      });
+    };
+    const getBackdropProps = (otherHandlers = {}) => {
+      const externalEventHandlers = otherHandlers;
+      return _extends$1({
+        'aria-hidden': true
+      }, externalEventHandlers, {
+        onClick: createHandleBackdropClick(externalEventHandlers),
+        open
+      });
+    };
+    const getTransitionProps = () => {
+      const handleEnter = () => {
+        setExited(false);
+        if (onTransitionEnter) {
+          onTransitionEnter();
+        }
+      };
+      const handleExited = () => {
+        setExited(true);
+        if (onTransitionExited) {
+          onTransitionExited();
+        }
+        if (closeAfterTransition) {
+          handleClose();
+        }
+      };
+      return {
+        onEnter: createChainedFunction(handleEnter, children == null ? void 0 : children.props.onEnter),
+        onExited: createChainedFunction(handleExited, children == null ? void 0 : children.props.onExited)
+      };
+    };
+    return {
+      getRootProps,
+      getBackdropProps,
+      getTransitionProps,
+      rootRef: handleRef,
+      portalRef: handlePortalRef,
+      isTopModal,
+      exited,
+      hasTransition
+    };
+  }
+
+  function getModalUtilityClass(slot) {
+    return generateUtilityClass('MuiModal', slot);
+  }
+  generateUtilityClasses('MuiModal', ['root', 'hidden', 'backdrop']);
+
+  const _excluded$2 = ["BackdropComponent", "BackdropProps", "classes", "className", "closeAfterTransition", "children", "container", "component", "components", "componentsProps", "disableAutoFocus", "disableEnforceFocus", "disableEscapeKeyDown", "disablePortal", "disableRestoreFocus", "disableScrollLock", "hideBackdrop", "keepMounted", "onBackdropClick", "onClose", "onTransitionEnter", "onTransitionExited", "open", "slotProps", "slots", "theme"];
+  const useUtilityClasses$2 = ownerState => {
+    const {
+      open,
+      exited,
+      classes
+    } = ownerState;
+    const slots = {
+      root: ['root', !open && exited && 'hidden'],
+      backdrop: ['backdrop']
+    };
+    return composeClasses(slots, getModalUtilityClass, classes);
+  };
+  const ModalRoot = styled('div', {
+    name: 'MuiModal',
+    slot: 'Root',
+    overridesResolver: (props, styles) => {
+      const {
+        ownerState
+      } = props;
+      return [styles.root, !ownerState.open && ownerState.exited && styles.hidden];
+    }
+  })(({
+    theme,
+    ownerState
+  }) => _extends$1({
+    position: 'fixed',
+    zIndex: (theme.vars || theme).zIndex.modal,
+    right: 0,
+    bottom: 0,
+    top: 0,
+    left: 0
+  }, !ownerState.open && ownerState.exited && {
+    visibility: 'hidden'
+  }));
+  const ModalBackdrop = styled(Backdrop$1, {
+    name: 'MuiModal',
+    slot: 'Backdrop',
+    overridesResolver: (props, styles) => {
+      return styles.backdrop;
+    }
+  })({
+    zIndex: -1
+  });
+
+  /**
+   * Modal is a lower-level construct that is leveraged by the following components:
+   *
+   * - [Dialog](/material-ui/api/dialog/)
+   * - [Drawer](/material-ui/api/drawer/)
+   * - [Menu](/material-ui/api/menu/)
+   * - [Popover](/material-ui/api/popover/)
+   *
+   * If you are creating a modal dialog, you probably want to use the [Dialog](/material-ui/api/dialog/) component
+   * rather than directly using Modal.
+   *
+   * This component shares many concepts with [react-overlays](https://react-bootstrap.github.io/react-overlays/#modals).
+   */
+  const Modal = /*#__PURE__*/reactExports.forwardRef(function Modal(inProps, ref) {
+    var _ref, _slots$root, _ref2, _slots$backdrop, _slotProps$root, _slotProps$backdrop;
+    const props = useDefaultProps({
+      name: 'MuiModal',
+      props: inProps
+    });
+    const {
+        BackdropComponent = ModalBackdrop,
+        BackdropProps,
+        className,
+        closeAfterTransition = false,
+        children,
+        container,
+        component,
+        components = {},
+        componentsProps = {},
+        disableAutoFocus = false,
+        disableEnforceFocus = false,
+        disableEscapeKeyDown = false,
+        disablePortal = false,
+        disableRestoreFocus = false,
+        disableScrollLock = false,
+        hideBackdrop = false,
+        keepMounted = false,
+        onBackdropClick,
+        open,
+        slotProps,
+        slots
+        // eslint-disable-next-line react/prop-types
+      } = props,
+      other = _objectWithoutPropertiesLoose(props, _excluded$2);
+    const propsWithDefaults = _extends$1({}, props, {
+      closeAfterTransition,
+      disableAutoFocus,
+      disableEnforceFocus,
+      disableEscapeKeyDown,
+      disablePortal,
+      disableRestoreFocus,
+      disableScrollLock,
+      hideBackdrop,
+      keepMounted
+    });
+    const {
+      getRootProps,
+      getBackdropProps,
+      getTransitionProps,
+      portalRef,
+      isTopModal,
+      exited,
+      hasTransition
+    } = useModal(_extends$1({}, propsWithDefaults, {
+      rootRef: ref
+    }));
+    const ownerState = _extends$1({}, propsWithDefaults, {
+      exited
+    });
+    const classes = useUtilityClasses$2(ownerState);
+    const childProps = {};
+    if (children.props.tabIndex === undefined) {
+      childProps.tabIndex = '-1';
+    }
+
+    // It's a Transition like component
+    if (hasTransition) {
+      const {
+        onEnter,
+        onExited
+      } = getTransitionProps();
+      childProps.onEnter = onEnter;
+      childProps.onExited = onExited;
+    }
+    const RootSlot = (_ref = (_slots$root = slots == null ? void 0 : slots.root) != null ? _slots$root : components.Root) != null ? _ref : ModalRoot;
+    const BackdropSlot = (_ref2 = (_slots$backdrop = slots == null ? void 0 : slots.backdrop) != null ? _slots$backdrop : components.Backdrop) != null ? _ref2 : BackdropComponent;
+    const rootSlotProps = (_slotProps$root = slotProps == null ? void 0 : slotProps.root) != null ? _slotProps$root : componentsProps.root;
+    const backdropSlotProps = (_slotProps$backdrop = slotProps == null ? void 0 : slotProps.backdrop) != null ? _slotProps$backdrop : componentsProps.backdrop;
+    const rootProps = useSlotProps({
+      elementType: RootSlot,
+      externalSlotProps: rootSlotProps,
+      externalForwardedProps: other,
+      getSlotProps: getRootProps,
+      additionalProps: {
+        ref,
+        as: component
+      },
+      ownerState,
+      className: clsx(className, rootSlotProps == null ? void 0 : rootSlotProps.className, classes == null ? void 0 : classes.root, !ownerState.open && ownerState.exited && (classes == null ? void 0 : classes.hidden))
+    });
+    const backdropProps = useSlotProps({
+      elementType: BackdropSlot,
+      externalSlotProps: backdropSlotProps,
+      additionalProps: BackdropProps,
+      getSlotProps: otherHandlers => {
+        return getBackdropProps(_extends$1({}, otherHandlers, {
+          onClick: e => {
+            if (onBackdropClick) {
+              onBackdropClick(e);
+            }
+            if (otherHandlers != null && otherHandlers.onClick) {
+              otherHandlers.onClick(e);
+            }
+          }
+        }));
+      },
+      className: clsx(backdropSlotProps == null ? void 0 : backdropSlotProps.className, BackdropProps == null ? void 0 : BackdropProps.className, classes == null ? void 0 : classes.backdrop),
+      ownerState
+    });
+    if (!keepMounted && !open && (!hasTransition || exited)) {
+      return null;
+    }
+    return /*#__PURE__*/jsxRuntimeExports.jsx(Portal, {
+      ref: portalRef,
+      container: container,
+      disablePortal: disablePortal,
+      children: /*#__PURE__*/jsxRuntimeExports.jsxs(RootSlot, _extends$1({}, rootProps, {
+        children: [!hideBackdrop && BackdropComponent ? /*#__PURE__*/jsxRuntimeExports.jsx(BackdropSlot, _extends$1({}, backdropProps)) : null, /*#__PURE__*/jsxRuntimeExports.jsx(FocusTrap, {
+          disableEnforceFocus: disableEnforceFocus,
+          disableAutoFocus: disableAutoFocus,
+          disableRestoreFocus: disableRestoreFocus,
+          isEnabled: isTopModal,
+          open: open,
+          children: /*#__PURE__*/reactExports.cloneElement(children, childProps)
+        })]
+      }))
+    });
+  });
+  Modal.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * A backdrop component. This prop enables custom backdrop rendering.
+     * @deprecated Use `slots.backdrop` instead. While this prop currently works, it will be removed in the next major version.
+     * Use the `slots.backdrop` prop to make your application ready for the next version of Material UI.
+     * @default styled(Backdrop, {
+     *   name: 'MuiModal',
+     *   slot: 'Backdrop',
+     *   overridesResolver: (props, styles) => {
+     *     return styles.backdrop;
+     *   },
+     * })({
+     *   zIndex: -1,
+     * })
+     */
+    BackdropComponent: PropTypes.elementType,
+    /**
+     * Props applied to the [`Backdrop`](/material-ui/api/backdrop/) element.
+     * @deprecated Use `slotProps.backdrop` instead.
+     */
+    BackdropProps: PropTypes.object,
+    /**
+     * A single child content element.
+     */
+    children: elementAcceptingRef.isRequired,
+    /**
+     * Override or extend the styles applied to the component.
+     */
+    classes: PropTypes.object,
+    /**
+     * @ignore
+     */
+    className: PropTypes.string,
+    /**
+     * When set to true the Modal waits until a nested Transition is completed before closing.
+     * @default false
+     */
+    closeAfterTransition: PropTypes.bool,
+    /**
+     * The component used for the root node.
+     * Either a string to use a HTML element or a component.
+     */
+    component: PropTypes.elementType,
+    /**
+     * The components used for each slot inside.
+     *
+     * This prop is an alias for the `slots` prop.
+     * It's recommended to use the `slots` prop instead.
+     *
+     * @default {}
+     */
+    components: PropTypes.shape({
+      Backdrop: PropTypes.elementType,
+      Root: PropTypes.elementType
+    }),
+    /**
+     * The extra props for the slot components.
+     * You can override the existing props or add new ones.
+     *
+     * This prop is an alias for the `slotProps` prop.
+     * It's recommended to use the `slotProps` prop instead, as `componentsProps` will be deprecated in the future.
+     *
+     * @default {}
+     */
+    componentsProps: PropTypes.shape({
+      backdrop: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+      root: PropTypes.oneOfType([PropTypes.func, PropTypes.object])
+    }),
+    /**
+     * An HTML element or function that returns one.
+     * The `container` will have the portal children appended to it.
+     *
+     * You can also provide a callback, which is called in a React layout effect.
+     * This lets you set the container from a ref, and also makes server-side rendering possible.
+     *
+     * By default, it uses the body of the top-level document object,
+     * so it's simply `document.body` most of the time.
+     */
+    container: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([HTMLElementType, PropTypes.func]),
+    /**
+     * If `true`, the modal will not automatically shift focus to itself when it opens, and
+     * replace it to the last focused element when it closes.
+     * This also works correctly with any modal children that have the `disableAutoFocus` prop.
+     *
+     * Generally this should never be set to `true` as it makes the modal less
+     * accessible to assistive technologies, like screen readers.
+     * @default false
+     */
+    disableAutoFocus: PropTypes.bool,
+    /**
+     * If `true`, the modal will not prevent focus from leaving the modal while open.
+     *
+     * Generally this should never be set to `true` as it makes the modal less
+     * accessible to assistive technologies, like screen readers.
+     * @default false
+     */
+    disableEnforceFocus: PropTypes.bool,
+    /**
+     * If `true`, hitting escape will not fire the `onClose` callback.
+     * @default false
+     */
+    disableEscapeKeyDown: PropTypes.bool,
+    /**
+     * The `children` will be under the DOM hierarchy of the parent component.
+     * @default false
+     */
+    disablePortal: PropTypes.bool,
+    /**
+     * If `true`, the modal will not restore focus to previously focused element once
+     * modal is hidden or unmounted.
+     * @default false
+     */
+    disableRestoreFocus: PropTypes.bool,
+    /**
+     * Disable the scroll lock behavior.
+     * @default false
+     */
+    disableScrollLock: PropTypes.bool,
+    /**
+     * If `true`, the backdrop is not rendered.
+     * @default false
+     */
+    hideBackdrop: PropTypes.bool,
+    /**
+     * Always keep the children in the DOM.
+     * This prop can be useful in SEO situation or
+     * when you want to maximize the responsiveness of the Modal.
+     * @default false
+     */
+    keepMounted: PropTypes.bool,
+    /**
+     * Callback fired when the backdrop is clicked.
+     * @deprecated Use the `onClose` prop with the `reason` argument to handle the `backdropClick` events.
+     */
+    onBackdropClick: PropTypes.func,
+    /**
+     * Callback fired when the component requests to be closed.
+     * The `reason` parameter can optionally be used to control the response to `onClose`.
+     *
+     * @param {object} event The event source of the callback.
+     * @param {string} reason Can be: `"escapeKeyDown"`, `"backdropClick"`.
+     */
+    onClose: PropTypes.func,
+    /**
+     * A function called when a transition enters.
+     */
+    onTransitionEnter: PropTypes.func,
+    /**
+     * A function called when a transition has exited.
+     */
+    onTransitionExited: PropTypes.func,
+    /**
+     * If `true`, the component is shown.
+     */
+    open: PropTypes.bool.isRequired,
+    /**
+     * The props used for each slot inside the Modal.
+     * @default {}
+     */
+    slotProps: PropTypes.shape({
+      backdrop: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+      root: PropTypes.oneOfType([PropTypes.func, PropTypes.object])
+    }),
+    /**
+     * The components used for each slot inside the Modal.
+     * Either a string to use a HTML element or a component.
+     * @default {}
+     */
+    slots: PropTypes.shape({
+      backdrop: PropTypes.elementType,
+      root: PropTypes.elementType
+    }),
+    /**
+     * The system prop that allows defining system overrides as well as additional CSS styles.
+     */
+    sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object])
+  } ;
+
+  function getDialogUtilityClass(slot) {
+    return generateUtilityClass('MuiDialog', slot);
+  }
+  const dialogClasses = generateUtilityClasses('MuiDialog', ['root', 'scrollPaper', 'scrollBody', 'container', 'paper', 'paperScrollPaper', 'paperScrollBody', 'paperWidthFalse', 'paperWidthXs', 'paperWidthSm', 'paperWidthMd', 'paperWidthLg', 'paperWidthXl', 'paperFullWidth', 'paperFullScreen']);
+
+  const DialogContext = /*#__PURE__*/reactExports.createContext({});
+  {
+    DialogContext.displayName = 'DialogContext';
+  }
+
+  const _excluded$1 = ["aria-describedby", "aria-labelledby", "BackdropComponent", "BackdropProps", "children", "className", "disableEscapeKeyDown", "fullScreen", "fullWidth", "maxWidth", "onBackdropClick", "onClick", "onClose", "open", "PaperComponent", "PaperProps", "scroll", "TransitionComponent", "transitionDuration", "TransitionProps"];
+  const DialogBackdrop = styled(Backdrop$1, {
+    name: 'MuiDialog',
+    slot: 'Backdrop',
+    overrides: (props, styles) => styles.backdrop
+  })({
+    // Improve scrollable dialog support.
+    zIndex: -1
+  });
+  const useUtilityClasses$1 = ownerState => {
+    const {
+      classes,
+      scroll,
+      maxWidth,
+      fullWidth,
+      fullScreen
+    } = ownerState;
+    const slots = {
+      root: ['root'],
+      container: ['container', `scroll${capitalize$1(scroll)}`],
+      paper: ['paper', `paperScroll${capitalize$1(scroll)}`, `paperWidth${capitalize$1(String(maxWidth))}`, fullWidth && 'paperFullWidth', fullScreen && 'paperFullScreen']
+    };
+    return composeClasses(slots, getDialogUtilityClass, classes);
+  };
+  const DialogRoot = styled(Modal, {
+    name: 'MuiDialog',
+    slot: 'Root',
+    overridesResolver: (props, styles) => styles.root
+  })({
+    '@media print': {
+      // Use !important to override the Modal inline-style.
+      position: 'absolute !important'
+    }
+  });
+  const DialogContainer = styled('div', {
+    name: 'MuiDialog',
+    slot: 'Container',
+    overridesResolver: (props, styles) => {
+      const {
+        ownerState
+      } = props;
+      return [styles.container, styles[`scroll${capitalize$1(ownerState.scroll)}`]];
+    }
+  })(({
+    ownerState
+  }) => _extends$1({
+    height: '100%',
+    '@media print': {
+      height: 'auto'
+    },
+    // We disable the focus ring for mouse, touch and keyboard users.
+    outline: 0
+  }, ownerState.scroll === 'paper' && {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  }, ownerState.scroll === 'body' && {
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    textAlign: 'center',
+    '&::after': {
+      content: '""',
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      height: '100%',
+      width: '0'
+    }
+  }));
+  const DialogPaper = styled(Paper$1, {
+    name: 'MuiDialog',
+    slot: 'Paper',
+    overridesResolver: (props, styles) => {
+      const {
+        ownerState
+      } = props;
+      return [styles.paper, styles[`scrollPaper${capitalize$1(ownerState.scroll)}`], styles[`paperWidth${capitalize$1(String(ownerState.maxWidth))}`], ownerState.fullWidth && styles.paperFullWidth, ownerState.fullScreen && styles.paperFullScreen];
+    }
+  })(({
+    theme,
+    ownerState
+  }) => _extends$1({
+    margin: 32,
+    position: 'relative',
+    overflowY: 'auto',
+    // Fix IE11 issue, to remove at some point.
+    '@media print': {
+      overflowY: 'visible',
+      boxShadow: 'none'
+    }
+  }, ownerState.scroll === 'paper' && {
+    display: 'flex',
+    flexDirection: 'column',
+    maxHeight: 'calc(100% - 64px)'
+  }, ownerState.scroll === 'body' && {
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    textAlign: 'left' // 'initial' doesn't work on IE11
+  }, !ownerState.maxWidth && {
+    maxWidth: 'calc(100% - 64px)'
+  }, ownerState.maxWidth === 'xs' && {
+    maxWidth: theme.breakpoints.unit === 'px' ? Math.max(theme.breakpoints.values.xs, 444) : `max(${theme.breakpoints.values.xs}${theme.breakpoints.unit}, 444px)`,
+    [`&.${dialogClasses.paperScrollBody}`]: {
+      [theme.breakpoints.down(Math.max(theme.breakpoints.values.xs, 444) + 32 * 2)]: {
+        maxWidth: 'calc(100% - 64px)'
+      }
+    }
+  }, ownerState.maxWidth && ownerState.maxWidth !== 'xs' && {
+    maxWidth: `${theme.breakpoints.values[ownerState.maxWidth]}${theme.breakpoints.unit}`,
+    [`&.${dialogClasses.paperScrollBody}`]: {
+      [theme.breakpoints.down(theme.breakpoints.values[ownerState.maxWidth] + 32 * 2)]: {
+        maxWidth: 'calc(100% - 64px)'
+      }
+    }
+  }, ownerState.fullWidth && {
+    width: 'calc(100% - 64px)'
+  }, ownerState.fullScreen && {
+    margin: 0,
+    width: '100%',
+    maxWidth: '100%',
+    height: '100%',
+    maxHeight: 'none',
+    borderRadius: 0,
+    [`&.${dialogClasses.paperScrollBody}`]: {
+      margin: 0,
+      maxWidth: '100%'
+    }
+  }));
+
+  /**
+   * Dialogs are overlaid modal paper based components with a backdrop.
+   */
+  const Dialog$1 = /*#__PURE__*/reactExports.forwardRef(function Dialog(inProps, ref) {
+    const props = useDefaultProps({
+      props: inProps,
+      name: 'MuiDialog'
+    });
+    const theme = useTheme();
+    const defaultTransitionDuration = {
+      enter: theme.transitions.duration.enteringScreen,
+      exit: theme.transitions.duration.leavingScreen
+    };
+    const {
+        'aria-describedby': ariaDescribedby,
+        'aria-labelledby': ariaLabelledbyProp,
+        BackdropComponent,
+        BackdropProps,
+        children,
+        className,
+        disableEscapeKeyDown = false,
+        fullScreen = false,
+        fullWidth = false,
+        maxWidth = 'sm',
+        onBackdropClick,
+        onClick,
+        onClose,
+        open,
+        PaperComponent = Paper$1,
+        PaperProps = {},
+        scroll = 'paper',
+        TransitionComponent = Fade,
+        transitionDuration = defaultTransitionDuration,
+        TransitionProps
+      } = props,
+      other = _objectWithoutPropertiesLoose(props, _excluded$1);
+    const ownerState = _extends$1({}, props, {
+      disableEscapeKeyDown,
+      fullScreen,
+      fullWidth,
+      maxWidth,
+      scroll
+    });
+    const classes = useUtilityClasses$1(ownerState);
+    const backdropClick = reactExports.useRef();
+    const handleMouseDown = event => {
+      // We don't want to close the dialog when clicking the dialog content.
+      // Make sure the event starts and ends on the same DOM element.
+      backdropClick.current = event.target === event.currentTarget;
+    };
+    const handleBackdropClick = event => {
+      if (onClick) {
+        onClick(event);
+      }
+
+      // Ignore the events not coming from the "backdrop".
+      if (!backdropClick.current) {
+        return;
+      }
+      backdropClick.current = null;
+      if (onBackdropClick) {
+        onBackdropClick(event);
+      }
+      if (onClose) {
+        onClose(event, 'backdropClick');
+      }
+    };
+    const ariaLabelledby = useId(ariaLabelledbyProp);
+    const dialogContextValue = reactExports.useMemo(() => {
+      return {
+        titleId: ariaLabelledby
+      };
+    }, [ariaLabelledby]);
+    return /*#__PURE__*/jsxRuntimeExports.jsx(DialogRoot, _extends$1({
+      className: clsx(classes.root, className),
+      closeAfterTransition: true,
+      components: {
+        Backdrop: DialogBackdrop
+      },
+      componentsProps: {
+        backdrop: _extends$1({
+          transitionDuration,
+          as: BackdropComponent
+        }, BackdropProps)
+      },
+      disableEscapeKeyDown: disableEscapeKeyDown,
+      onClose: onClose,
+      open: open,
+      ref: ref,
+      onClick: handleBackdropClick,
+      ownerState: ownerState
+    }, other, {
+      children: /*#__PURE__*/jsxRuntimeExports.jsx(TransitionComponent, _extends$1({
+        appear: true,
+        in: open,
+        timeout: transitionDuration,
+        role: "presentation"
+      }, TransitionProps, {
+        children: /*#__PURE__*/jsxRuntimeExports.jsx(DialogContainer, {
+          className: clsx(classes.container),
+          onMouseDown: handleMouseDown,
+          ownerState: ownerState,
+          children: /*#__PURE__*/jsxRuntimeExports.jsx(DialogPaper, _extends$1({
+            as: PaperComponent,
+            elevation: 24,
+            role: "dialog",
+            "aria-describedby": ariaDescribedby,
+            "aria-labelledby": ariaLabelledby
+          }, PaperProps, {
+            className: clsx(classes.paper, PaperProps.className),
+            ownerState: ownerState,
+            children: /*#__PURE__*/jsxRuntimeExports.jsx(DialogContext.Provider, {
+              value: dialogContextValue,
+              children: children
+            })
+          }))
+        })
+      }))
+    }));
+  });
+  Dialog$1.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * The id(s) of the element(s) that describe the dialog.
+     */
+    'aria-describedby': PropTypes.string,
+    /**
+     * The id(s) of the element(s) that label the dialog.
+     */
+    'aria-labelledby': PropTypes.string,
+    /**
+     * A backdrop component. This prop enables custom backdrop rendering.
+     * @deprecated Use `slots.backdrop` instead. While this prop currently works, it will be removed in the next major version.
+     * Use the `slots.backdrop` prop to make your application ready for the next version of Material UI.
+     * @default styled(Backdrop, {
+     *   name: 'MuiModal',
+     *   slot: 'Backdrop',
+     *   overridesResolver: (props, styles) => {
+     *     return styles.backdrop;
+     *   },
+     * })({
+     *   zIndex: -1,
+     * })
+     */
+    BackdropComponent: PropTypes.elementType,
+    /**
+     * @ignore
+     */
+    BackdropProps: PropTypes.object,
+    /**
+     * Dialog children, usually the included sub-components.
+     */
+    children: PropTypes.node,
+    /**
+     * Override or extend the styles applied to the component.
+     */
+    classes: PropTypes.object,
+    /**
+     * @ignore
+     */
+    className: PropTypes.string,
+    /**
+     * If `true`, hitting escape will not fire the `onClose` callback.
+     * @default false
+     */
+    disableEscapeKeyDown: PropTypes.bool,
+    /**
+     * If `true`, the dialog is full-screen.
+     * @default false
+     */
+    fullScreen: PropTypes.bool,
+    /**
+     * If `true`, the dialog stretches to `maxWidth`.
+     *
+     * Notice that the dialog width grow is limited by the default margin.
+     * @default false
+     */
+    fullWidth: PropTypes.bool,
+    /**
+     * Determine the max-width of the dialog.
+     * The dialog width grows with the size of the screen.
+     * Set to `false` to disable `maxWidth`.
+     * @default 'sm'
+     */
+    maxWidth: PropTypes /* @typescript-to-proptypes-ignore */.oneOfType([PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl', false]), PropTypes.string]),
+    /**
+     * Callback fired when the backdrop is clicked.
+     * @deprecated Use the `onClose` prop with the `reason` argument to handle the `backdropClick` events.
+     */
+    onBackdropClick: PropTypes.func,
+    /**
+     * @ignore
+     */
+    onClick: PropTypes.func,
+    /**
+     * Callback fired when the component requests to be closed.
+     *
+     * @param {object} event The event source of the callback.
+     * @param {string} reason Can be: `"escapeKeyDown"`, `"backdropClick"`.
+     */
+    onClose: PropTypes.func,
+    /**
+     * If `true`, the component is shown.
+     */
+    open: PropTypes.bool.isRequired,
+    /**
+     * The component used to render the body of the dialog.
+     * @default Paper
+     */
+    PaperComponent: PropTypes.elementType,
+    /**
+     * Props applied to the [`Paper`](/material-ui/api/paper/) element.
+     * @default {}
+     */
+    PaperProps: PropTypes.object,
+    /**
+     * Determine the container for scrolling the dialog.
+     * @default 'paper'
+     */
+    scroll: PropTypes.oneOf(['body', 'paper']),
+    /**
+     * The system prop that allows defining system overrides as well as additional CSS styles.
+     */
+    sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object]),
+    /**
+     * The component used for the transition.
+     * [Follow this guide](/material-ui/transitions/#transitioncomponent-prop) to learn more about the requirements for this component.
+     * @default Fade
+     */
+    TransitionComponent: PropTypes.elementType,
+    /**
+     * The duration for the transition, in milliseconds.
+     * You may specify a single timeout for all transitions, or individually with an object.
+     * @default {
+     *   enter: theme.transitions.duration.enteringScreen,
+     *   exit: theme.transitions.duration.leavingScreen,
+     * }
+     */
+    transitionDuration: PropTypes.oneOfType([PropTypes.number, PropTypes.shape({
+      appear: PropTypes.number,
+      enter: PropTypes.number,
+      exit: PropTypes.number
+    })]),
+    /**
+     * Props applied to the transition element.
+     * By default, the element is based on this [`Transition`](https://reactcommunity.org/react-transition-group/transition/) component.
+     */
+    TransitionProps: PropTypes.object
+  } ;
+
+  function getDialogTitleUtilityClass(slot) {
+    return generateUtilityClass('MuiDialogTitle', slot);
+  }
+  generateUtilityClasses('MuiDialogTitle', ['root']);
+
+  const _excluded = ["className", "id"];
+  const useUtilityClasses = ownerState => {
+    const {
+      classes
+    } = ownerState;
+    const slots = {
+      root: ['root']
+    };
+    return composeClasses(slots, getDialogTitleUtilityClass, classes);
+  };
+  const DialogTitleRoot = styled(Typography$1, {
+    name: 'MuiDialogTitle',
+    slot: 'Root',
+    overridesResolver: (props, styles) => styles.root
+  })({
+    padding: '16px 24px',
+    flex: '0 0 auto'
+  });
+  const DialogTitle = /*#__PURE__*/reactExports.forwardRef(function DialogTitle(inProps, ref) {
+    const props = useDefaultProps({
+      props: inProps,
+      name: 'MuiDialogTitle'
+    });
+    const {
+        className,
+        id: idProp
+      } = props,
+      other = _objectWithoutPropertiesLoose(props, _excluded);
+    const ownerState = props;
+    const classes = useUtilityClasses(ownerState);
+    const {
+      titleId = idProp
+    } = reactExports.useContext(DialogContext);
+    return /*#__PURE__*/jsxRuntimeExports.jsx(DialogTitleRoot, _extends$1({
+      component: "h2",
+      className: clsx(classes.root, className),
+      ownerState: ownerState,
+      ref: ref,
+      variant: "h6",
+      id: idProp != null ? idProp : titleId
+    }, other));
+  });
+  DialogTitle.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * The content of the component.
+     */
+    children: PropTypes.node,
+    /**
+     * Override or extend the styles applied to the component.
+     */
+    classes: PropTypes.object,
+    /**
+     * @ignore
+     */
+    className: PropTypes.string,
+    /**
+     * @ignore
+     */
+    id: PropTypes.string,
+    /**
+     * The system prop that allows defining system overrides as well as additional CSS styles.
+     */
+    sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object])
+  } ;
+
+  const Stack = createStack({
+    createStyledComponent: styled('div', {
+      name: 'MuiStack',
+      slot: 'Root',
+      overridesResolver: (props, styles) => styles.root
+    }),
+    useThemeProps: inProps => useDefaultProps({
+      props: inProps,
+      name: 'MuiStack'
+    })
+  });
+  Stack.propTypes /* remove-proptypes */ = {
+    // ┌────────────────────────────── Warning ──────────────────────────────┐
+    // │ These PropTypes are generated from the TypeScript type definitions. │
+    // │    To update them, edit the d.ts file and run `pnpm proptypes`.     │
+    // └─────────────────────────────────────────────────────────────────────┘
+    /**
+     * The content of the component.
+     */
+    children: PropTypes.node,
+    /**
+     * The component used for the root node.
+     * Either a string to use a HTML element or a component.
+     */
+    component: PropTypes.elementType,
+    /**
+     * Defines the `flex-direction` style property.
+     * It is applied for all screen sizes.
+     * @default 'column'
+     */
+    direction: PropTypes.oneOfType([PropTypes.oneOf(['column-reverse', 'column', 'row-reverse', 'row']), PropTypes.arrayOf(PropTypes.oneOf(['column-reverse', 'column', 'row-reverse', 'row'])), PropTypes.object]),
+    /**
+     * Add an element between each child.
+     */
+    divider: PropTypes.node,
+    /**
+     * Defines the space between immediate children.
+     * @default 0
+     */
+    spacing: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])), PropTypes.number, PropTypes.object, PropTypes.string]),
+    /**
+     * The system prop, which allows defining system overrides as well as additional CSS styles.
+     */
+    sx: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.func, PropTypes.object, PropTypes.bool])), PropTypes.func, PropTypes.object]),
+    /**
+     * If `true`, the CSS flexbox `gap` is used instead of applying `margin` to children.
+     *
+     * While CSS `gap` removes the [known limitations](https://mui.com/joy-ui/react-stack/#limitations),
+     * it is not fully supported in some browsers. We recommend checking https://caniuse.com/?search=flex%20gap before using this flag.
+     *
+     * To enable this flag globally, follow the [theme's default props](https://mui.com/material-ui/customization/theme-components/#default-props) configuration.
+     * @default false
+     */
+    useFlexGap: PropTypes.bool
+  } ;
+
+  // ----------------------------------------------------------------------
+
+  // SETUP COLORS
+
+  const GREY = {
+    0: '#FFFFFF',
+    100: '#F9FAFB',
+    200: '#F4F6F8',
+    300: '#DFE3E8',
+    400: '#C4CDD5',
+    500: '#919EAB',
+    600: '#637381',
+    700: '#454F5B',
+    800: '#212B36',
+    900: '#161C24'
+  };
+  const PRIMARY = {
+    lighter: '#C8FACD',
+    light: '#5BE584',
+    main: '#00AB55',
+    dark: '#007B55',
+    darker: '#005249',
+    contrastText: '#FFFFFF'
+  };
+  const SECONDARY = {
+    lighter: '#D6E4FF',
+    light: '#84A9FF',
+    main: '#3366FF',
+    dark: '#1939B7',
+    darker: '#091A7A',
+    contrastText: '#FFFFFF'
+  };
+  const INFO = {
+    lighter: '#CAFDF5',
+    light: '#61F3F3',
+    main: '#00B8D9',
+    dark: '#006C9C',
+    darker: '#003768',
+    contrastText: '#FFFFFF'
+  };
+  const SUCCESS = {
+    lighter: '#D8FBDE',
+    light: '#86E8AB',
+    main: '#36B37E',
+    dark: '#1B806A',
+    darker: '#0A5554',
+    contrastText: '#FFFFFF'
+  };
+  const WARNING = {
+    lighter: '#FFF5CC',
+    light: '#FFD666',
+    main: '#FFAB00',
+    dark: '#B76E00',
+    darker: '#7A4100',
+    contrastText: GREY[800]
+  };
+  const ERROR = {
+    lighter: '#FFE9D5',
+    light: '#FFAC82',
+    main: '#FF5630',
+    dark: '#B71D18',
+    darker: '#7A0916',
+    contrastText: '#FFFFFF'
+  };
+  const PURPLE = {
+    lighter: '#EBD6FD',
+    light: '#B985F4',
+    main: '#7635dc',
+    dark: '#431A9E',
+    darker: '#200A69',
+    contrastText: '#FFFFFF'
+  };
+  const CYAN = {
+    lighter: '#CCF4FE',
+    light: '#68CDF9',
+    main: '#078DEE',
+    dark: '#0351AB',
+    darker: '#012972',
+    contrastText: '#FFFFFF'
+  };
+  const ORANGE = {
+    name: 'orange',
+    lighter: '#FEF4D4',
+    light: '#FED680',
+    main: '#fda92d',
+    dark: '#B66816',
+    darker: '#793908',
+    contrastText: GREY[800]
+  };
+  const COMMON = {
+    common: {
+      black: '#000000',
+      white: '#FFFFFF'
+    },
+    primary: PRIMARY,
+    secondary: SECONDARY,
+    info: INFO,
+    success: SUCCESS,
+    warning: WARNING,
+    error: ERROR,
+    purple: PURPLE,
+    cyan: CYAN,
+    orange: ORANGE,
+    grey: GREY,
+    divider: alpha$1(GREY[500], 0.24),
+    action: {
+      hover: alpha$1(GREY[500], 0.08),
+      selected: alpha$1(GREY[500], 0.16),
+      disabled: alpha$1(GREY[500], 0.8),
+      disabledBackground: alpha$1(GREY[500], 0.24),
+      focus: alpha$1(GREY[500], 0.24),
+      hoverOpacity: 0.08,
+      disabledOpacity: 0.48
+    }
+  };
+  function palette(themeMode) {
+    const light = {
+      ...COMMON,
+      mode: 'light',
+      text: {
+        primary: GREY[800],
+        secondary: GREY[600],
+        disabled: GREY[500]
+      },
+      background: {
+        paper: '#FFFFFF',
+        default: '#FFFFFF',
+        neutral: GREY[200]
+      },
+      action: {
+        ...COMMON.action,
+        active: GREY[600]
+      }
+    };
+    const dark = {
+      ...COMMON,
+      mode: 'dark',
+      text: {
+        primary: '#FFFFFF',
+        secondary: GREY[500],
+        disabled: GREY[600]
+      },
+      background: {
+        paper: GREY[800],
+        default: GREY[900],
+        neutral: alpha$1(GREY[500], 0.16)
+      },
+      action: {
+        ...COMMON.action,
+        active: GREY[500]
+      }
+    };
+    return themeMode === 'light' ? light : dark;
+  }
+
+  // ----------------------------------------------------------------------
+
+  function pxToRem(value) {
+    return `${value / 16}rem`;
+  }
+  function responsiveFontSizes(_ref) {
+    let {
+      sm,
+      md,
+      lg
+    } = _ref;
+    return {
+      "@media (min-width:600px)": {
+        fontSize: pxToRem(sm)
+      },
+      "@media (min-width:900px)": {
+        fontSize: pxToRem(md)
+      },
+      "@media (min-width:1200px)": {
+        fontSize: pxToRem(lg)
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  // LEARN MORE
+  // https://nextjs.org/docs/basic-features/font-optimization#google-fonts
+
+  const typography = {
+    fontFamily: ["Public Sans", "Helvetica", "Arial", "sans-serif"].join(","),
+    fontWeightRegular: 400,
+    fontWeightMedium: 600,
+    fontWeightBold: 700,
+    h1: {
+      fontWeight: 800,
+      lineHeight: 80 / 64,
+      fontSize: pxToRem(40),
+      ...responsiveFontSizes({
+        sm: 52,
+        md: 58,
+        lg: 64
+      })
+    },
+    h2: {
+      fontWeight: 800,
+      lineHeight: 64 / 48,
+      fontSize: pxToRem(32),
+      ...responsiveFontSizes({
+        sm: 40,
+        md: 44,
+        lg: 48
+      })
+    },
+    h3: {
+      fontWeight: 700,
+      lineHeight: 1.5,
+      fontSize: pxToRem(24),
+      ...responsiveFontSizes({
+        sm: 26,
+        md: 30,
+        lg: 32
+      })
+    },
+    h4: {
+      fontWeight: 700,
+      lineHeight: 1.5,
+      fontSize: pxToRem(20),
+      ...responsiveFontSizes({
+        sm: 20,
+        md: 24,
+        lg: 24
+      })
+    },
+    h5: {
+      fontWeight: 700,
+      lineHeight: 1.5,
+      fontSize: pxToRem(18),
+      ...responsiveFontSizes({
+        sm: 19,
+        md: 20,
+        lg: 20
+      })
+    },
+    h6: {
+      fontWeight: 700,
+      lineHeight: 28 / 18,
+      fontSize: pxToRem(17),
+      ...responsiveFontSizes({
+        sm: 18,
+        md: 18,
+        lg: 18
+      })
+    },
+    subtitle1: {
+      fontWeight: 600,
+      lineHeight: 1.5,
+      fontSize: pxToRem(16)
+    },
+    subtitle2: {
+      fontWeight: 600,
+      lineHeight: 22 / 14,
+      fontSize: pxToRem(14)
+    },
+    body1: {
+      lineHeight: 1.5,
+      fontSize: pxToRem(16)
+    },
+    body2: {
+      lineHeight: 22 / 14,
+      fontSize: pxToRem(14)
+    },
+    caption: {
+      lineHeight: 1.5,
+      fontSize: pxToRem(12)
+    },
+    overline: {
+      fontWeight: 700,
+      lineHeight: 1.5,
+      fontSize: pxToRem(12),
+      textTransform: "uppercase"
+    },
+    button: {
+      fontWeight: 700,
+      lineHeight: 24 / 14,
+      fontSize: pxToRem(14),
+      textTransform: "capitalize"
+    }
+  };
+
+  // @mui
+
+  // ----------------------------------------------------------------------
+
+  const themeColor$1 = palette('light');
+  const LIGHT_MODE$1 = themeColor$1.grey[500];
+  const DARK_MODE$1 = themeColor$1.common.black;
+  function createShadow$1(color) {
+    const transparent1 = alpha$1(color, 0.2);
+    const transparent2 = alpha$1(color, 0.14);
+    const transparent3 = alpha$1(color, 0.12);
+    return ['none', `0px 2px 1px -1px ${transparent1},0px 1px 1px 0px ${transparent2},0px 1px 3px 0px ${transparent3}`, `0px 3px 1px -2px ${transparent1},0px 2px 2px 0px ${transparent2},0px 1px 5px 0px ${transparent3}`, `0px 3px 3px -2px ${transparent1},0px 3px 4px 0px ${transparent2},0px 1px 8px 0px ${transparent3}`, `0px 2px 4px -1px ${transparent1},0px 4px 5px 0px ${transparent2},0px 1px 10px 0px ${transparent3}`, `0px 3px 5px -1px ${transparent1},0px 5px 8px 0px ${transparent2},0px 1px 14px 0px ${transparent3}`, `0px 3px 5px -1px ${transparent1},0px 6px 10px 0px ${transparent2},0px 1px 18px 0px ${transparent3}`, `0px 4px 5px -2px ${transparent1},0px 7px 10px 1px ${transparent2},0px 2px 16px 1px ${transparent3}`, `0px 5px 5px -3px ${transparent1},0px 8px 10px 1px ${transparent2},0px 3px 14px 2px ${transparent3}`, `0px 5px 6px -3px ${transparent1},0px 9px 12px 1px ${transparent2},0px 3px 16px 2px ${transparent3}`, `0px 6px 6px -3px ${transparent1},0px 10px 14px 1px ${transparent2},0px 4px 18px 3px ${transparent3}`, `0px 6px 7px -4px ${transparent1},0px 11px 15px 1px ${transparent2},0px 4px 20px 3px ${transparent3}`, `0px 7px 8px -4px ${transparent1},0px 12px 17px 2px ${transparent2},0px 5px 22px 4px ${transparent3}`, `0px 7px 8px -4px ${transparent1},0px 13px 19px 2px ${transparent2},0px 5px 24px 4px ${transparent3}`, `0px 7px 9px -4px ${transparent1},0px 14px 21px 2px ${transparent2},0px 5px 26px 4px ${transparent3}`, `0px 8px 9px -5px ${transparent1},0px 15px 22px 2px ${transparent2},0px 6px 28px 5px ${transparent3}`, `0px 8px 10px -5px ${transparent1},0px 16px 24px 2px ${transparent2},0px 6px 30px 5px ${transparent3}`, `0px 8px 11px -5px ${transparent1},0px 17px 26px 2px ${transparent2},0px 6px 32px 5px ${transparent3}`, `0px 9px 11px -5px ${transparent1},0px 18px 28px 2px ${transparent2},0px 7px 34px 6px ${transparent3}`, `0px 9px 12px -6px ${transparent1},0px 19px 29px 2px ${transparent2},0px 7px 36px 6px ${transparent3}`, `0px 10px 13px -6px ${transparent1},0px 20px 31px 3px ${transparent2},0px 8px 38px 7px ${transparent3}`, `0px 10px 13px -6px ${transparent1},0px 21px 33px 3px ${transparent2},0px 8px 40px 7px ${transparent3}`, `0px 10px 14px -6px ${transparent1},0px 22px 35px 3px ${transparent2},0px 8px 42px 7px ${transparent3}`, `0px 11px 14px -7px ${transparent1},0px 23px 36px 3px ${transparent2},0px 9px 44px 8px ${transparent3}`, `0px 11px 15px -7px ${transparent1},0px 24px 38px 3px ${transparent2},0px 9px 46px 8px ${transparent3}`];
+  }
+  function shadows(themeMode) {
+    return themeMode === 'light' ? createShadow$1(LIGHT_MODE$1) : createShadow$1(DARK_MODE$1);
+  }
+
+  // ----------------------------------------------------------------------
+
+  const COLORS$7 = ['primary', 'secondary', 'info', 'success', 'warning', 'error'];
+
+  // NEW VARIANT
+
+  function Fab(theme) {
+    const isLight = theme.palette.mode === 'light';
+    const rootStyle = ownerState => {
+      const defaultColor = ownerState.color === 'default';
+      const inheritColor = ownerState.color === 'inherit';
+      const circularVariant = ownerState.variant === 'circular';
+      const extendedVariant = ownerState.variant === 'extended';
+      const outlinedVariant = ownerState.variant === 'outlined';
+      const outlinedExtendedVariant = ownerState.variant === 'outlinedExtended';
+      const softVariant = ownerState.variant === 'soft';
+      const softExtendedVariant = ownerState.variant === 'softExtended';
+      const defaultStyle = {
+        '&:hover, &:active': {
+          boxShadow: 'none'
+        },
+        ...((circularVariant || extendedVariant) && {
+          ...((defaultColor || inheritColor) && {
+            color: theme.palette.grey[800],
+            boxShadow: theme.customShadows.z8,
+            '&:hover': {
+              backgroundColor: theme.palette.grey[400]
+            }
+          }),
+          ...(inheritColor && {
+            ...(!isLight && {
+              color: 'inherit',
+              backgroundColor: theme.palette.grey[800],
+              '&:hover': {
+                backgroundColor: theme.palette.grey[700]
+              }
+            })
+          })
+        }),
+        ...((outlinedVariant || outlinedExtendedVariant) && {
+          boxShadow: 'none',
+          backgroundColor: 'transparent',
+          ...((defaultColor || inheritColor) && {
+            border: `solid 1px ${alpha$1(theme.palette.grey[500], 0.32)}`,
+            '&:hover': {
+              backgroundColor: theme.palette.action.hover
+            }
+          }),
+          ...(defaultColor && {
+            ...(!isLight && {
+              color: theme.palette.text.secondary
+            })
+          })
+        }),
+        ...((softVariant || softExtendedVariant) && {
+          boxShadow: 'none',
+          ...(defaultColor && {
+            color: theme.palette.grey[800],
+            backgroundColor: theme.palette.grey[300],
+            '&:hover': {
+              backgroundColor: theme.palette.grey[400]
+            }
+          }),
+          ...(inheritColor && {
+            backgroundColor: alpha$1(theme.palette.grey[500], 0.08),
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette.grey[500], 0.24)
+            }
+          })
+        })
+      };
+      const colorStyle = COLORS$7.map(color => ({
+        ...(ownerState.color === color && {
+          ...((circularVariant || extendedVariant) && {
+            boxShadow: theme.customShadows[color],
+            '&:hover': {
+              backgroundColor: theme.palette[color].dark
+            }
+          }),
+          ...((outlinedVariant || outlinedExtendedVariant) && {
+            color: theme.palette[color].main,
+            border: `solid 1px ${alpha$1(theme.palette[color].main, 0.48)}`,
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette[color].main, 0.08),
+              border: `solid 1px ${theme.palette[color].main}`
+            }
+          }),
+          ...((softVariant || softExtendedVariant) && {
+            color: theme.palette[color][isLight ? 'dark' : 'light'],
+            backgroundColor: alpha$1(theme.palette[color].main, 0.16),
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette[color].main, 0.32)
+            }
+          })
+        })
+      }));
+      const disabledState = {
+        '&.Mui-disabled': {
+          ...((outlinedVariant || outlinedExtendedVariant) && {
+            backgroundColor: 'transparent',
+            border: `solid 1px ${theme.palette.action.disabledBackground}`
+          })
+        }
+      };
+      const size = {
+        ...((extendedVariant || outlinedExtendedVariant || softExtendedVariant) && {
+          width: 'auto',
+          '& svg': {
+            marginRight: theme.spacing(1)
+          },
+          ...(ownerState.size === 'small' && {
+            height: 34,
+            minHeight: 34,
+            borderRadius: 17,
+            padding: theme.spacing(0, 1)
+          }),
+          ...(ownerState.size === 'medium' && {
+            height: 40,
+            minHeight: 40,
+            borderRadius: 20,
+            padding: theme.spacing(0, 2)
+          }),
+          ...(ownerState.size === 'large' && {
+            height: 48,
+            minHeight: 48,
+            borderRadius: 24,
+            padding: theme.spacing(0, 2)
+          })
+        })
+      };
+      return [...colorStyle, defaultStyle, disabledState, size];
+    };
+    return {
+      MuiFab: {
+        defaultProps: {
+          color: 'primary'
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Card(theme) {
+    return {
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            position: 'relative',
+            boxShadow: theme.customShadows.card,
+            borderRadius: Number(theme.shape.borderRadius) * 2,
+            zIndex: 0 // Fix Safari overflow: hidden with border radius
+          }
+        }
+      },
+      MuiCardHeader: {
+        defaultProps: {
+          titleTypographyProps: {
+            variant: 'h6'
+          },
+          subheaderTypographyProps: {
+            variant: 'body2',
+            marginTop: theme.spacing(0.5)
+          }
+        },
+        styleOverrides: {
+          root: {
+            padding: theme.spacing(3, 3, 0)
+          }
+        }
+      },
+      MuiCardContent: {
+        styleOverrides: {
+          root: {
+            padding: theme.spacing(3)
+          }
+        }
+      }
+    };
+  }
+
+  function CloseIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M12,2 C6.4771525,2 2,6.4771525 2,12 C2,17.5228475 6.4771525,22 12,22 C17.5228475,22 22,17.5228475 22,12 C22,9.3478351 20.9464316,6.80429597 19.0710678,4.92893219 C17.195704,3.0535684 14.6521649,2 12,2 Z M14.71,13.29 C14.8993127,13.4777666 15.0057983,13.7333625 15.0057983,14 C15.0057983,14.2666375 14.8993127,14.5222334 14.71,14.71 C14.5222334,14.8993127 14.2666375,15.0057983 14,15.0057983 C13.7333625,15.0057983 13.4777666,14.8993127 13.29,14.71 L12,13.41 L10.71,14.71 C10.5222334,14.8993127 10.2666375,15.0057983 10,15.0057983 C9.73336246,15.0057983 9.4777666,14.8993127 9.29,14.71 C9.10068735,14.5222334 8.99420168,14.2666375 8.99420168,14 C8.99420168,13.7333625 9.10068735,13.4777666 9.29,13.29 L10.59,12 L9.29,10.71 C8.89787783,10.3178778 8.89787783,9.68212217 9.29,9.29 C9.68212217,8.89787783 10.3178778,8.89787783 10.71,9.29 L12,10.59 L13.29,9.29 C13.6821222,8.89787783 14.3178778,8.89787783 14.71,9.29 C15.1021222,9.68212217 15.1021222,10.3178778 14.71,10.71 L13.41,12 L14.71,13.29 Z"
+      })
+    });
+  }
+
+  // StarIcon
+  function StarIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M17.56,21 C17.4000767,21.0006435 17.2423316,20.9629218 17.1,20.89 L12,18.22 L6.9,20.89 C6.56213339,21.067663 6.15259539,21.0374771 5.8444287,20.8121966 C5.53626201,20.5869161 5.38323252,20.2058459 5.45,19.83 L6.45,14.2 L2.33,10.2 C2.06805623,9.93860108 1.9718844,9.55391377 2.08,9.2 C2.19824414,8.83742187 2.51242293,8.57366684 2.89,8.52 L8.59,7.69 L11.1,2.56 C11.2670864,2.21500967 11.6166774,1.99588989 12,1.99588989 C12.3833226,1.99588989 12.7329136,2.21500967 12.9,2.56 L15.44,7.68 L21.14,8.51 C21.5175771,8.56366684 21.8317559,8.82742187 21.95,9.19 C22.0581156,9.54391377 21.9619438,9.92860108 21.7,10.19 L17.58,14.19 L18.58,19.82 C18.652893,20.2027971 18.4967826,20.5930731 18.18,20.82 C17.9989179,20.9468967 17.7808835,21.010197 17.56,21 L17.56,21 Z"
+      })
+    });
+  }
+
+  // Using for Alert
+  function InfoIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M12,2 C6.4771525,2 2,6.4771525 2,12 C2,17.5228475 6.4771525,22 12,22 C17.5228475,22 22,17.5228475 22,12 C22,9.3478351 20.9464316,6.80429597 19.0710678,4.92893219 C17.195704,3.0535684 14.6521649,2 12,2 Z M13,16 C13,16.5522847 12.5522847,17 12,17 C11.4477153,17 11,16.5522847 11,16 L11,11 C11,10.4477153 11.4477153,10 12,10 C12.5522847,10 13,10.4477153 13,11 L13,16 Z M12,9 C11.4477153,9 11,8.55228475 11,8 C11,7.44771525 11.4477153,7 12,7 C12.5522847,7 13,7.44771525 13,8 C13,8.55228475 12.5522847,9 12,9 Z"
+      })
+    });
+  }
+  function WarningIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M22.56,16.3 L14.89,3.58 C14.2597186,2.59400001 13.1702353,1.99737652 12,1.99737652 C10.8297647,1.99737652 9.74028139,2.59400001 9.11,3.58 L1.44,16.3 C0.888546003,17.2192471 0.869485343,18.3628867 1.39,19.3 C1.99197363,20.3551378 3.11522982,21.0046397 4.33,21 L19.67,21 C20.8765042,21.0128744 21.9978314,20.3797441 22.61,19.34 C23.146086,18.3926382 23.1269508,17.2292197 22.56,16.3 L22.56,16.3 Z M12,17 C11.4477153,17 11,16.5522847 11,16 C11,15.4477153 11.4477153,15 12,15 C12.5522847,15 13,15.4477153 13,16 C13,16.5522847 12.5522847,17 12,17 Z M13,13 C13,13.5522847 12.5522847,14 12,14 C11.4477153,14 11,13.5522847 11,13 L11,9 C11,8.44771525 11.4477153,8 12,8 C12.5522847,8 13,8.44771525 13,9 L13,13 Z"
+      })
+    });
+  }
+  function SuccessIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M12,2 C6.4771525,2 2,6.4771525 2,12 C2,17.5228475 6.4771525,22 12,22 C17.5228475,22 22,17.5228475 22,12 C22,9.3478351 20.9464316,6.80429597 19.0710678,4.92893219 C17.195704,3.0535684 14.6521649,2 12,2 Z M16.3,9.61 L11.73,15.61 C11.5412074,15.855247 11.2494966,15.9992561 10.94,16.0000145 C10.6322197,16.001658 10.3408221,15.861492 10.15,15.62 L7.71,12.51 C7.49028166,12.2277602 7.43782669,11.8497415 7.57239438,11.5183399 C7.70696206,11.1869384 8.00810836,10.9525017 8.36239438,10.9033399 C8.7166804,10.8541782 9.07028166,10.9977602 9.29,11.28 L10.92,13.36 L14.7,8.36 C14.917932,8.07418751 15.2717886,7.92635122 15.6282755,7.97217964 C15.9847624,8.01800806 16.2897207,8.25053875 16.4282755,8.58217966 C16.5668304,8.91382056 16.517932,9.29418753 16.3,9.58 L16.3,9.61 Z"
+      })
+    });
+  }
+  function ErrorIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M12,2 C6.4771525,2 2,6.4771525 2,12 C2,17.5228475 6.4771525,22 12,22 C17.5228475,22 22,17.5228475 22,12 C22,9.3478351 20.9464316,6.80429597 19.0710678,4.92893219 C17.195704,3.0535684 14.6521649,2 12,2 Z M12,17 C11.4477153,17 11,16.5522847 11,16 C11,15.4477153 11.4477153,15 12,15 C12.5522847,15 13,15.4477153 13,16 C13,16.5522847 12.5522847,17 12,17 Z M13,13 C13,13.5522847 12.5522847,14 12,14 C11.4477153,14 11,13.5522847 11,13 L11,8 C11,7.44771525 11.4477153,7 12,7 C12.5522847,7 13,7.44771525 13,8 L13,13 Z"
+      })
+    });
+  }
+
+  // Using for Checkbox
+  function CheckboxIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M17.9 2.318A5 5 0 0 1 22.895 7.1l.005.217v10a5 5 0 0 1-4.783 4.995l-.217.005h-10a5 5 0 0 1-4.995-4.783l-.005-.217v-10a5 5 0 0 1 4.783-4.996l.217-.004h10Zm-.5 1.5h-9a4 4 0 0 0-4 4v9a4 4 0 0 0 4 4h9a4 4 0 0 0 4-4v-9a4 4 0 0 0-4-4Z"
+      })
+    });
+  }
+  function CheckboxCheckedIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M17 2a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm-1.625 7.255-4.13 4.13-1.75-1.75a.881.881 0 0 0-1.24 0c-.34.34-.34.89 0 1.24l2.38 2.37c.17.17.39.25.61.25.23 0 .45-.08.62-.25l4.75-4.75c.34-.34.34-.89 0-1.24a.881.881 0 0 0-1.24 0Z"
+      })
+    });
+  }
+  function CheckboxIndeterminateIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M17,2 C19.7614,2 22,4.23858 22,7 L22,7 L22,17 C22,19.7614 19.7614,22 17,22 L17,22 L7,22 C4.23858,22 2,19.7614 2,17 L2,17 L2,7 C2,4.23858 4.23858,2 7,2 L7,2 Z M15,11 L9,11 C8.44772,11 8,11.4477 8,12 C8,12.5523 8.44772,13 9,13 L15,13 C15.5523,13 16,12.5523 16,12 C16,11.4477 15.5523,11 15,11 Z"
+      })
+    });
+  }
+
+  // Using for Radio Button
+  function RadioIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M12 2A10 10 0 1 1 2 12C2 6.477 6.477 2 12 2Zm0 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Z"
+      })
+    });
+  }
+  function RadioCheckedIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M12 2A10 10 0 1 1 2 12C2 6.477 6.477 2 12 2Zm0 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"
+      })
+    });
+  }
+
+  // Using for Select Input
+  function InputSelectIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      sx: {
+        right: 12,
+        fontSize: 16,
+        position: 'absolute',
+        pointerEvents: 'none'
+      },
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M12,16 C11.7663478,16.0004565 11.5399121,15.9190812 11.36,15.77 L5.36,10.77 C4.93474074,10.4165378 4.87653776,9.78525926 5.23,9.36 C5.58346224,8.93474074 6.21474074,8.87653776 6.64,9.23 L12,13.71 L17.36,9.39 C17.5665934,9.2222295 17.8315409,9.14373108 18.0961825,9.17188444 C18.3608241,9.2000378 18.6033268,9.33252029 18.77,9.54 C18.9551341,9.74785947 19.0452548,10.0234772 19.0186853,10.3005589 C18.9921158,10.5776405 18.8512608,10.8311099 18.63,11 L12.63,15.83 C12.444916,15.955516 12.2231011,16.0153708 12,16 Z"
+      })
+    });
+  }
+
+  //  Using for TreeView
+  function TreeViewCollapseIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M18,3 C19.6568542,3 21,4.34314575 21,6 L21,6 L21,18 C21,19.6568542 19.6568542,21 18,21 L18,21 L6,21 C4.34314575,21 3,19.6568542 3,18 L3,18 L3,6 C3,4.34314575 4.34314575,3 6,3 L6,3 Z M18,5 L6,5 C5.44771525,5 5,5.44771525 5,6 L5,6 L5,18 C5,18.5522847 5.44771525,19 6,19 L6,19 L18,19 C18.5522847,19 19,18.5522847 19,18 L19,18 L19,6 C19,5.44771525 18.5522847,5 18,5 L18,5 Z M12,8 C12.5522847,8 13,8.44771525 13,9 L13,9 L13,11 L15,11 C15.5522847,11 16,11.4477153 16,12 C16,12.5522847 15.5522847,13 15,13 L15,13 L13,13 L13,15 C13,15.5522847 12.5522847,16 12,16 C11.4477153,16 11,15.5522847 11,15 L11,15 L11,13 L9,13 C8.44771525,13 8,12.5522847 8,12 C8,11.4477153 8.44771525,11 9,11 L9,11 L11,11 L11,9 C11,8.44771525 11.4477153,8 12,8 Z"
+      })
+    });
+  }
+  function TreeViewExpandIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M18,3 C19.6568542,3 21,4.34314575 21,6 L21,6 L21,18 C21,19.6568542 19.6568542,21 18,21 L18,21 L6,21 C4.34314575,21 3,19.6568542 3,18 L3,18 L3,6 C3,4.34314575 4.34314575,3 6,3 L6,3 Z M18,5 L6,5 C5.44771525,5 5,5.44771525 5,6 L5,6 L5,18 C5,18.5522847 5.44771525,19 6,19 L6,19 L18,19 C18.5522847,19 19,18.5522847 19,18 L19,18 L19,6 C19,5.44771525 18.5522847,5 18,5 L18,5 Z M15,11 C15.5522847,11 16,11.4477153 16,12 C16,12.5522847 15.5522847,13 15,13 L15,13 L9,13 C8.44771525,13 8,12.5522847 8,12 C8,11.4477153 8.44771525,11 9,11 L9,11 Z"
+      })
+    });
+  }
+  function TreeViewEndIcon(props) {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(SvgIcon$1, {
+      ...props,
+      children: /*#__PURE__*/jsxRuntimeExports.jsx("path", {
+        d: "M18,3 C19.6568542,3 21,4.34314575 21,6 L21,6 L21,18 C21,19.6568542 19.6568542,21 18,21 L18,21 L6,21 C4.34314575,21 3,19.6568542 3,18 L3,18 L3,6 C3,4.34314575 4.34314575,3 6,3 L6,3 Z M18,5 L6,5 C5.44771525,5 5,5.44771525 5,6 L5,6 L5,18 C5,18.5522847 5.44771525,19 6,19 L6,19 L18,19 C18.5522847,19 19,18.5522847 19,18 L19,18 L19,6 C19,5.44771525 18.5522847,5 18,5 L18,5 Z M14,8.99420168 C14.2666375,8.99420168 14.5222334,9.10068735 14.71,9.29 C14.8993127,9.4777666 15.0057983,9.73336246 15.0057983,10 C15.0057983,10.2666375 14.8993127,10.5222334 14.71,10.71 L14.71,10.71 L13.41,12 L14.71,13.29 C14.8993127,13.4777666 15.0057983,13.7333625 15.0057983,14 C15.0057983,14.2666375 14.8993127,14.5222334 14.71,14.71 C14.5222334,14.8993127 14.2666375,15.0057983 14,15.0057983 C13.7333625,15.0057983 13.4777666,14.8993127 13.29,14.71 L13.29,14.71 L12,13.41 L10.71,14.71 C10.5222334,14.8993127 10.2666375,15.0057983 10,15.0057983 C9.73336246,15.0057983 9.4777666,14.8993127 9.29,14.71 C9.10068735,14.5222334 8.99420168,14.2666375 8.99420168,14 C8.99420168,13.7333625 9.10068735,13.4777666 9.29,13.29 L9.29,13.29 L10.59,12 L9.29,10.71 C8.89787783,10.3178778 8.89787783,9.68212217 9.29,9.29 C9.68212217,8.89787783 10.3178778,8.89787783 10.71,9.29 L10.71,9.29 L12,10.59 L13.29,9.29 C13.4777666,9.10068735 13.7333625,8.99420168 14,8.99420168 Z"
+      })
+    });
+  }
+
+  const COLORS$6 = ['primary', 'secondary', 'info', 'success', 'warning', 'error'];
+
+  // NEW VARIANT
+
+  function Chip(theme) {
+    const isLight = theme.palette.mode === 'light';
+    const rootStyle = ownerState => {
+      const defaultColor = ownerState.color === 'default';
+      const filledVariant = ownerState.variant === 'filled';
+      const outlinedVariant = ownerState.variant === 'outlined';
+      const softVariant = ownerState.variant === 'soft';
+      const defaultStyle = {
+        ...(defaultColor && {
+          '& .MuiChip-avatar': {
+            color: theme.palette.text[isLight ? 'secondary' : 'primary'],
+            backgroundColor: alpha$1(theme.palette.grey[500], 0.48)
+          },
+          // OUTLINED
+          ...(outlinedVariant && {
+            border: `solid 1px ${alpha$1(theme.palette.grey[500], 0.32)}`
+          }),
+          // SOFT
+          ...(softVariant && {
+            color: theme.palette.text.primary,
+            backgroundColor: alpha$1(theme.palette.grey[500], 0.16),
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette.grey[500], 0.32)
+            }
+          })
+        })
+      };
+      const colorStyle = COLORS$6.map(color => ({
+        ...(ownerState.color === color && {
+          '& .MuiChip-avatar': {
+            color: theme.palette[color].lighter,
+            backgroundColor: theme.palette[color].dark
+          },
+          // FILLED
+          ...(filledVariant && {
+            '& .MuiChip-deleteIcon': {
+              color: alpha$1(theme.palette[color].contrastText, 0.56),
+              '&:hover': {
+                color: theme.palette[color].contrastText
+              }
+            }
+          }),
+          // SOFT
+          ...(softVariant && {
+            color: theme.palette[color][isLight ? 'dark' : 'light'],
+            backgroundColor: alpha$1(theme.palette[color].main, 0.16),
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette[color].main, 0.32)
+            },
+            '& .MuiChip-deleteIcon': {
+              color: alpha$1(theme.palette[color][isLight ? 'dark' : 'light'], 0.48),
+              '&:hover': {
+                color: theme.palette[color].dark
+              }
+            }
+          })
+        })
+      }));
+      return [...colorStyle, defaultStyle];
+    };
+    return {
+      MuiChip: {
+        defaultProps: {
+          deleteIcon: /*#__PURE__*/jsxRuntimeExports.jsx(CloseIcon, {})
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Tabs(theme) {
+    return {
+      MuiTabs: {
+        defaultProps: {
+          textColor: 'inherit',
+          allowScrollButtonsMobile: true,
+          variant: 'scrollable'
+        },
+        styleOverrides: {
+          scrollButtons: {
+            width: 48,
+            borderRadius: '50%'
+          }
+        }
+      },
+      MuiTab: {
+        defaultProps: {
+          disableRipple: true,
+          iconPosition: 'start'
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return {
+              padding: 0,
+              opacity: 1,
+              minWidth: 48,
+              fontWeight: theme.typography.fontWeightMedium,
+              '&:not(:last-of-type)': {
+                marginRight: theme.spacing(3),
+                [theme.breakpoints.up('sm')]: {
+                  marginRight: theme.spacing(5)
+                }
+              },
+              '&:not(.Mui-selected)': {
+                color: theme.palette.text.secondary
+              },
+              ...((ownerState.iconPosition === 'start' || ownerState.iconPosition === 'end') && {
+                minHeight: 48
+              })
+            };
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Menu(theme) {
+    return {
+      MuiMenuItem: {
+        styleOverrides: {
+          root: {
+            '&.Mui-selected': {
+              backgroundColor: theme.palette.action.selected,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Link(theme) {
+    return {
+      MuiLink: {
+        defaultProps: {
+          underline: 'hover'
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function List(theme) {
+    return {
+      MuiListItemIcon: {
+        styleOverrides: {
+          root: {
+            color: 'inherit',
+            minWidth: 'auto',
+            marginRight: theme.spacing(2)
+          }
+        }
+      },
+      MuiListItemAvatar: {
+        styleOverrides: {
+          root: {
+            minWidth: 'auto',
+            marginRight: theme.spacing(2)
+          }
+        }
+      },
+      MuiListItemText: {
+        styleOverrides: {
+          root: {
+            marginTop: 0,
+            marginBottom: 0
+          },
+          multiline: {
+            marginTop: 0,
+            marginBottom: 0
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Table(theme) {
+    return {
+      MuiTableContainer: {
+        styleOverrides: {
+          root: {
+            position: 'relative'
+          }
+        }
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            '&.Mui-selected': {
+              backgroundColor: theme.palette.action.selected,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover
+              }
+            }
+          }
+        }
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            borderBottom: 'none'
+          },
+          head: {
+            color: theme.palette.text.secondary,
+            backgroundColor: theme.palette.background.neutral
+          },
+          stickyHeader: {
+            backgroundColor: theme.palette.background.paper,
+            backgroundImage: `linear-gradient(to bottom, ${theme.palette.background.neutral} 0%, ${theme.palette.background.neutral} 100%)`
+          },
+          paddingCheckbox: {
+            paddingLeft: theme.spacing(1)
+          }
+        }
+      },
+      MuiTablePagination: {
+        defaultProps: {
+          backIconButtonProps: {
+            size: 'small'
+          },
+          nextIconButtonProps: {
+            size: 'small'
+          },
+          SelectProps: {
+            MenuProps: {
+              MenuListProps: {
+                sx: {
+                  '& .MuiMenuItem-root': {
+                    ...theme.typography.body2
+                  }
+                }
+              }
+            }
+          }
+        },
+        styleOverrides: {
+          root: {
+            borderTop: `solid 1px ${theme.palette.divider}`
+          },
+          toolbar: {
+            height: 64
+          },
+          actions: {
+            marginRight: theme.spacing(1)
+          },
+          select: {
+            '&:focus': {
+              borderRadius: theme.shape.borderRadius
+            }
+          }
+        }
+      }
+    };
+  }
+
+  //
+  const COLORS$5 = ['info', 'success', 'warning', 'error'];
+  function Alert(theme) {
+    const isLight = theme.palette.mode === 'light';
+    const rootStyle = ownerState => {
+      const standardVariant = ownerState.variant === 'standard';
+      const filledVariant = ownerState.variant === 'filled';
+      const outlinedVariant = ownerState.variant === 'outlined';
+      const colorStyle = COLORS$5.map(color => ({
+        ...(ownerState.severity === color && {
+          // STANDARD
+          ...(standardVariant && {
+            color: theme.palette[color][isLight ? 'darker' : 'lighter'],
+            backgroundColor: theme.palette[color][isLight ? 'lighter' : 'darker'],
+            '& .MuiAlert-icon': {
+              color: theme.palette[color][isLight ? 'main' : 'light']
+            }
+          }),
+          // FILLED
+          ...(filledVariant && {
+            color: theme.palette[color].contrastText,
+            backgroundColor: theme.palette[color].main
+          }),
+          // OUTLINED
+          ...(outlinedVariant && {
+            color: theme.palette[color][isLight ? 'dark' : 'light'],
+            border: `solid 1px ${theme.palette[color].main}`,
+            '& .MuiAlert-icon': {
+              color: theme.palette[color].main
+            }
+          })
+        })
+      }));
+      return [...colorStyle];
+    };
+    return {
+      MuiAlert: {
+        defaultProps: {
+          iconMapping: {
+            info: /*#__PURE__*/jsxRuntimeExports.jsx(InfoIcon, {}),
+            success: /*#__PURE__*/jsxRuntimeExports.jsx(SuccessIcon, {}),
+            warning: /*#__PURE__*/jsxRuntimeExports.jsx(WarningIcon, {}),
+            error: /*#__PURE__*/jsxRuntimeExports.jsx(ErrorIcon, {})
+          }
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          },
+          icon: {
+            opacity: 1
+          }
+        }
+      },
+      MuiAlertTitle: {
+        styleOverrides: {
+          root: {
+            marginBottom: theme.spacing(0.5)
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Badge(theme) {
+    return {
+      MuiBadge: {
+        styleOverrides: {
+          dot: {
+            width: 10,
+            height: 10,
+            borderRadius: '50%'
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Paper(theme) {
+    return {
+      MuiPaper: {
+        defaultProps: {
+          elevation: 0
+        },
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none'
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Input(theme) {
+    return {
+      MuiInputBase: {
+        styleOverrides: {
+          root: {
+            '&.Mui-disabled': {
+              '& svg': {
+                color: theme.palette.text.disabled
+              }
+            }
+          },
+          input: {
+            '&::placeholder': {
+              opacity: 1,
+              color: theme.palette.text.disabled
+            }
+          }
+        }
+      },
+      MuiInput: {
+        styleOverrides: {
+          underline: {
+            '&:before': {
+              borderBottomColor: alpha$1(theme.palette.grey[500], 0.56)
+            },
+            '&:after': {
+              borderBottomColor: theme.palette.text.primary
+            }
+          }
+        }
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: theme.palette.text.primary
+            }
+          }
+        }
+      },
+      MuiFilledInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: theme.shape.borderRadius,
+            backgroundColor: alpha$1(theme.palette.grey[500], 0.08),
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette.grey[500], 0.16)
+            },
+            '&.Mui-focused': {
+              backgroundColor: alpha$1(theme.palette.grey[500], 0.16)
+            },
+            '&.Mui-disabled': {
+              backgroundColor: theme.palette.action.disabledBackground
+            }
+          },
+          underline: {
+            '&:before, :after': {
+              display: 'none'
+            }
+          }
+        }
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: alpha$1(theme.palette.grey[500], 0.32)
+            },
+            '&.Mui-focused': {
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderWidth: 1,
+                borderColor: theme.palette.text.primary
+              }
+            },
+            '&.Mui-disabled': {
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: theme.palette.action.disabledBackground
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  //
+  // ----------------------------------------------------------------------
+
+  function Radio(theme) {
+    return {
+      MuiRadio: {
+        defaultProps: {
+          icon: /*#__PURE__*/jsxRuntimeExports.jsx(RadioIcon, {}),
+          checkedIcon: /*#__PURE__*/jsxRuntimeExports.jsx(RadioCheckedIcon, {})
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return {
+              padding: theme.spacing(1),
+              ...(ownerState.size === 'small' && {
+                '& svg': {
+                  width: 20,
+                  height: 20
+                }
+              }),
+              ...(ownerState.size === 'medium' && {
+                '& svg': {
+                  width: 24,
+                  height: 24
+                }
+              })
+            };
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Drawer(theme) {
+    const isLight = theme.palette.mode === 'light';
+    return {
+      MuiDrawer: {
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return {
+              ...(ownerState.variant === 'temporary' && {
+                '& .MuiDrawer-paper': {
+                  boxShadow: `-40px 40px 80px -8px ${alpha$1(isLight ? theme.palette.grey[500] : theme.palette.common.black, 0.24)}`
+                }
+              })
+            };
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Dialog(theme) {
+    return {
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            boxShadow: theme.customShadows.dialog,
+            '&.MuiPaper-rounded': {
+              borderRadius: Number(theme.shape.borderRadius) * 2
+            },
+            '&.MuiDialog-paperFullScreen': {
+              borderRadius: 0
+            },
+            '&.MuiDialog-paper .MuiDialogActions-root': {
+              padding: theme.spacing(3)
+            },
+            '@media (max-width: 600px)': {
+              margin: theme.spacing(2)
+            },
+            '@media (max-width: 663.95px)': {
+              '&.MuiDialog-paperWidthSm.MuiDialog-paperScrollBody': {
+                maxWidth: '100%'
+              }
+            }
+          },
+          paperFullWidth: {
+            width: '100%'
+          }
+        }
+      },
+      MuiDialogTitle: {
+        styleOverrides: {
+          root: {
+            padding: theme.spacing(3)
+          }
+        }
+      },
+      MuiDialogContent: {
+        styleOverrides: {
+          root: {
+            padding: theme.spacing(0, 3)
+          },
+          dividers: {
+            borderTop: 0,
+            borderBottomStyle: 'dashed',
+            paddingBottom: theme.spacing(3)
+          }
+        }
+      },
+      MuiDialogActions: {
+        styleOverrides: {
+          root: {
+            '& > :not(:first-of-type)': {
+              marginLeft: theme.spacing(1.5)
+            }
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Avatar(theme) {
+    return {
+      MuiAvatar: {
+        styleOverrides: {
+          colorDefault: {
+            color: theme.palette.text.secondary,
+            backgroundColor: alpha$1(theme.palette.grey[500], 0.24)
+          }
+        }
+      },
+      MuiAvatarGroup: {
+        defaultProps: {
+          max: 4
+        },
+        styleOverrides: {
+          root: {
+            justifyContent: 'flex-end'
+          },
+          avatar: {
+            fontSize: 16,
+            fontWeight: theme.typography.fontWeightMedium,
+            '&:first-of-type': {
+              fontSize: 12,
+              color: theme.palette.primary.main,
+              backgroundColor: theme.palette.primary.lighter
+            }
+          }
+        }
+      }
+    };
+  }
+
+  function Rating(theme) {
+    return {
+      MuiRating: {
+        defaultProps: {
+          emptyIcon: /*#__PURE__*/jsxRuntimeExports.jsx(StarIcon, {}),
+          icon: /*#__PURE__*/jsxRuntimeExports.jsx(StarIcon, {})
+        },
+        styleOverrides: {
+          root: {
+            '&.Mui-disabled': {
+              opacity: 0.48
+            }
+          },
+          iconEmpty: {
+            color: alpha$1(theme.palette.grey[500], 0.48)
+          },
+          sizeSmall: {
+            '& svg': {
+              width: 20,
+              height: 20
+            }
+          },
+          sizeLarge: {
+            '& svg': {
+              width: 28,
+              height: 28
+            }
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Slider(theme) {
+    const isLight = theme.palette.mode === 'light';
+    return {
+      MuiSlider: {
+        defaultProps: {
+          size: 'small'
+        },
+        styleOverrides: {
+          root: {
+            '&.Mui-disabled': {
+              color: theme.palette.action.disabled
+            }
+          },
+          rail: {
+            opacity: 0.32
+          },
+          markLabel: {
+            fontSize: 13,
+            color: theme.palette.text.disabled
+          },
+          valueLabel: {
+            borderRadius: 8,
+            backgroundColor: theme.palette.grey[isLight ? 800 : 700]
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  const COLORS$4 = ['primary', 'secondary', 'info', 'success', 'warning', 'error', 'purple', 'cyan', 'orange'];
+
+  // NEW VARIANT
+
+  function Button(theme) {
+    const isLight = theme.palette.mode === 'light';
+    const rootStyle = ownerState => {
+      const inheritColor = ownerState.color === 'inherit';
+      const containedVariant = ownerState.variant === 'contained';
+      const outlinedVariant = ownerState.variant === 'outlined';
+      const textVariant = ownerState.variant === 'text';
+      const softVariant = ownerState.variant === 'soft';
+      const smallSize = ownerState.size === 'small';
+      const largeSize = ownerState.size === 'large';
+      const defaultStyle = {
+        ...(inheritColor && {
+          // CONTAINED
+          ...(containedVariant && {
+            color: theme.palette.grey[800],
+            '&:hover': {
+              boxShadow: theme.customShadows.z8,
+              backgroundColor: theme.palette.grey[400]
+            }
+          }),
+          // OUTLINED
+          ...(outlinedVariant && {
+            borderColor: alpha$1(theme.palette.grey[500], 0.32),
+            '&:hover': {
+              borderColor: theme.palette.text.primary,
+              backgroundColor: theme.palette.action.hover
+            }
+          }),
+          // TEXT
+          ...(textVariant && {
+            '&:hover': {
+              backgroundColor: theme.palette.action.hover
+            }
+          }),
+          // SOFT
+          ...(softVariant && {
+            color: theme.palette.text.primary,
+            backgroundColor: alpha$1(theme.palette.grey[500], 0.08),
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette.grey[500], 0.24)
+            }
+          })
+        })
+      };
+      const colorStyle = COLORS$4.map(color => ({
+        ...(ownerState.color === color && {
+          // CONTAINED
+          ...(containedVariant && {
+            '&:hover': {
+              boxShadow: theme.customShadows[color]
+            }
+          }),
+          // SOFT
+          ...(softVariant && {
+            color: theme.palette[color][isLight ? 'dark' : 'light'],
+            backgroundColor: alpha$1(theme.palette[color].main, 0.16),
+            '&:hover': {
+              backgroundColor: alpha$1(theme.palette[color].main, 0.32)
+            }
+          })
+        })
+      }));
+      const disabledState = {
+        '&.Mui-disabled': {
+          // SOFT
+          ...(softVariant && {
+            backgroundColor: theme.palette.action.disabledBackground
+          })
+        }
+      };
+      const size = {
+        ...(smallSize && {
+          height: 30,
+          fontSize: 13,
+          ...(softVariant && {
+            padding: '4px 10px'
+          })
+        }),
+        ...(largeSize && {
+          height: 48,
+          fontSize: 15,
+          ...(softVariant && {
+            padding: '8px 22px'
+          })
+        })
+      };
+      return [...colorStyle, defaultStyle, disabledState, size];
+    };
+    return {
+      MuiButton: {
+        defaultProps: {
+          disableElevation: true
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Switch(theme) {
+    const isLight = theme.palette.mode === 'light';
+    const rootStyle = ownerState => ({
+      padding: '9px 13px 9px 12px',
+      width: 58,
+      height: 38,
+      ...(ownerState.size === 'small' && {
+        padding: '4px 8px 4px 7px',
+        width: 40,
+        height: 24
+      }),
+      '& .MuiSwitch-thumb': {
+        width: 14,
+        height: 14,
+        boxShadow: 'none',
+        color: `${theme.palette.common.white} !important`,
+        ...(ownerState.size === 'small' && {
+          width: 10,
+          height: 10
+        })
+      },
+      '& .MuiSwitch-track': {
+        opacity: 1,
+        borderRadius: 14,
+        backgroundColor: alpha$1(theme.palette.grey[500], 0.48)
+      },
+      '& .MuiSwitch-switchBase': {
+        left: 3,
+        padding: 12,
+        ...(ownerState.size === 'small' && {
+          padding: 7
+        }),
+        '&.Mui-checked': {
+          transform: 'translateX(13px)',
+          '&+.MuiSwitch-track': {
+            opacity: 1
+          },
+          ...(ownerState.size === 'small' && {
+            transform: 'translateX(9px)'
+          })
+        },
+        '&.Mui-disabled': {
+          '& .MuiSwitch-thumb': {
+            opacity: isLight ? 1 : 0.48
+          },
+          '&+.MuiSwitch-track': {
+            opacity: 0.48
+          }
+        }
+      }
+    });
+    return {
+      MuiSwitch: {
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      }
+    };
+  }
+
+  //
+
+  // ----------------------------------------------------------------------
+
+  function Select(theme) {
+    return {
+      MuiSelect: {
+        defaultProps: {
+          IconComponent: InputSelectIcon
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function SvgIcon(theme) {
+    return {
+      MuiSvgIcon: {
+        styleOverrides: {
+          fontSizeLarge: {
+            width: 32,
+            height: 32,
+            fontSize: 'inherit'
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Tooltip(theme) {
+    const isLight = theme.palette.mode === 'light';
+    return {
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            backgroundColor: theme.palette.grey[isLight ? 800 : 700]
+          },
+          arrow: {
+            color: theme.palette.grey[isLight ? 800 : 700]
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Popover(theme) {
+    return {
+      MuiPopover: {
+        styleOverrides: {
+          paper: {
+            boxShadow: theme.customShadows.dropdown,
+            borderRadius: Number(theme.shape.borderRadius) * 1.5
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Stepper(theme) {
+    return {
+      MuiStepConnector: {
+        styleOverrides: {
+          line: {
+            borderColor: theme.palette.divider
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function DataGrid(theme) {
+    return {
+      MuiDataGrid: {
+        styleOverrides: {
+          root: {
+            borderRadius: 0,
+            border: `1px solid transparent`,
+            '& .MuiTablePagination-root': {
+              borderTop: 0
+            }
+          },
+          cell: {
+            borderBottom: `1px solid ${theme.palette.divider}`
+          },
+          columnSeparator: {
+            color: theme.palette.divider
+          },
+          toolbarContainer: {
+            padding: theme.spacing(2),
+            backgroundColor: theme.palette.background.neutral,
+            '& .MuiButton-root': {
+              marginRight: theme.spacing(1.5),
+              color: theme.palette.text.primary,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover
+              }
+            }
+          },
+          paper: {
+            boxShadow: theme.customShadows.dropdown
+          },
+          menu: {
+            '& .MuiPaper-root': {
+              boxShadow: theme.customShadows.dropdown
+            },
+            '& .MuiMenuItem-root': {
+              ...theme.typography.body2,
+              '& .MuiListItemIcon-root': {
+                minWidth: 'auto'
+              }
+            }
+          },
+          panelFooter: {
+            padding: theme.spacing(2),
+            justifyContent: 'flex-end',
+            borderTop: `1px solid ${theme.palette.divider}`,
+            '& .MuiButton-root': {
+              '&:first-of-type': {
+                marginRight: theme.spacing(1.5),
+                color: theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover
+                }
+              },
+              '&:last-of-type': {
+                color: theme.palette.common.white,
+                backgroundColor: theme.palette.primary.main,
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.dark
+                }
+              }
+            }
+          },
+          filterForm: {
+            padding: theme.spacing(1.5, 0),
+            '& .MuiFormControl-root': {
+              margin: theme.spacing(0, 0.5)
+            },
+            '& .MuiInput-root': {
+              marginTop: theme.spacing(3),
+              '&::before, &::after': {
+                display: 'none'
+              },
+              '& .MuiNativeSelect-select, .MuiInput-input': {
+                ...theme.typography.body2,
+                padding: theme.spacing(0.75, 1),
+                borderRadius: theme.shape.borderRadius,
+                backgroundColor: theme.palette.background.neutral
+              },
+              '& .MuiSvgIcon-root': {
+                right: 4
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Skeleton(theme) {
+    return {
+      MuiSkeleton: {
+        defaultProps: {
+          animation: 'wave'
+        },
+        styleOverrides: {
+          root: {
+            backgroundColor: theme.palette.background.neutral
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Backdrop(theme) {
+    return {
+      MuiBackdrop: {
+        styleOverrides: {
+          root: {
+            backgroundColor: alpha$1(theme.palette.grey[800], 0.8)
+          },
+          invisible: {
+            background: 'transparent'
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  const COLORS$3 = ['primary', 'secondary', 'info', 'success', 'warning', 'error'];
+  function Progress(theme) {
+    const rootStyle = ownerState => {
+      const bufferVariant = ownerState.variant === 'buffer';
+      const defaultStyle = {
+        borderRadius: 4,
+        '& .MuiLinearProgress-bar': {
+          borderRadius: 4
+        },
+        ...(bufferVariant && {
+          backgroundColor: 'transparent'
+        })
+      };
+      const colorStyle = COLORS$3.map(color => ({
+        ...(ownerState.color === color && {
+          backgroundColor: alpha$1(theme.palette[color].main, 0.24)
+        })
+      }));
+      return [...colorStyle, defaultStyle];
+    };
+    return {
+      MuiLinearProgress: {
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Timeline(theme) {
+    return {
+      MuiTimelineDot: {
+        styleOverrides: {
+          root: {
+            boxShadow: 'none'
+          }
+        }
+      },
+      MuiTimelineConnector: {
+        styleOverrides: {
+          root: {
+            backgroundColor: theme.palette.divider
+          }
+        }
+      }
+    };
+  }
+
+  //
+  function TreeView(theme) {
+    return {
+      MuiTreeView: {
+        defaultProps: {
+          defaultCollapseIcon: /*#__PURE__*/jsxRuntimeExports.jsx(TreeViewCollapseIcon, {
+            sx: {
+              width: 20,
+              height: 20
+            }
+          }),
+          defaultExpandIcon: /*#__PURE__*/jsxRuntimeExports.jsx(TreeViewExpandIcon, {
+            sx: {
+              width: 20,
+              height: 20
+            }
+          }),
+          defaultEndIcon: /*#__PURE__*/jsxRuntimeExports.jsx(TreeViewEndIcon, {
+            sx: {
+              color: 'text.secondary',
+              width: 20,
+              height: 20
+            }
+          })
+        }
+      },
+      MuiTreeItem: {
+        styleOverrides: {
+          label: {
+            ...theme.typography.body2
+          },
+          iconContainer: {
+            width: 'auto'
+          }
+        }
+      }
+    };
+  }
+
+  //
+  function Checkbox(theme) {
+    return {
+      MuiCheckbox: {
+        defaultProps: {
+          icon: /*#__PURE__*/jsxRuntimeExports.jsx(CheckboxIcon, {}),
+          checkedIcon: /*#__PURE__*/jsxRuntimeExports.jsx(CheckboxCheckedIcon, {}),
+          indeterminateIcon: /*#__PURE__*/jsxRuntimeExports.jsx(CheckboxIndeterminateIcon, {})
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return {
+              padding: theme.spacing(1),
+              ...(ownerState.size === 'small' && {
+                '& svg': {
+                  width: 20,
+                  height: 20
+                }
+              }),
+              ...(ownerState.size === 'medium' && {
+                '& svg': {
+                  width: 24,
+                  height: 24
+                }
+              })
+            };
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Accordion(theme) {
+    return {
+      MuiAccordion: {
+        styleOverrides: {
+          root: {
+            backgroundColor: 'transparent',
+            '&.Mui-expanded': {
+              boxShadow: theme.customShadows.z8,
+              borderRadius: theme.shape.borderRadius,
+              backgroundColor: theme.palette.background.paper
+            },
+            '&.Mui-disabled': {
+              backgroundColor: 'transparent'
+            }
+          }
+        }
+      },
+      MuiAccordionSummary: {
+        styleOverrides: {
+          root: {
+            paddingLeft: theme.spacing(2),
+            paddingRight: theme.spacing(1),
+            '&.Mui-disabled': {
+              opacity: 1,
+              color: theme.palette.action.disabled,
+              '& .MuiTypography-root': {
+                color: 'inherit'
+              }
+            }
+          },
+          expandIconWrapper: {
+            color: 'inherit'
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Typography(theme) {
+    return {
+      MuiTypography: {
+        styleOverrides: {
+          paragraph: {
+            marginBottom: theme.spacing(2)
+          },
+          gutterBottom: {
+            marginBottom: theme.spacing(1)
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  const COLORS$2 = ['primary', 'secondary', 'info', 'success', 'warning', 'error'];
+
+  // NEW VARIANT
+
+  function Pagination(theme) {
+    const isLight = theme.palette.mode === 'light';
+    const rootStyle = ownerState => {
+      const outlinedVariant = ownerState.variant === 'outlined';
+      const softVariant = ownerState.variant === 'soft';
+      const defaultStyle = {
+        '& .MuiPaginationItem-root': {
+          ...(outlinedVariant && {
+            borderColor: alpha$1(theme.palette.grey[500], 0.32)
+          }),
+          '&.Mui-selected': {
+            fontWeight: theme.typography.fontWeightMedium
+          }
+        }
+      };
+      const colorStyle = COLORS$2.map(color => ({
+        ...(ownerState.color === color && {
+          ...(softVariant && {
+            '& .MuiPaginationItem-root': {
+              '&.Mui-selected': {
+                color: theme.palette[color][isLight ? 'dark' : 'light'],
+                backgroundColor: alpha$1(theme.palette[color].main, 0.16),
+                '&:hover': {
+                  backgroundColor: alpha$1(theme.palette[color].main, 0.32)
+                }
+              }
+            }
+          })
+        })
+      }));
+      return [...colorStyle, defaultStyle];
+    };
+    return {
+      MuiPagination: {
+        defaultProps: {
+          color: 'primary'
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Breadcrumbs(theme) {
+    return {
+      MuiBreadcrumbs: {
+        styleOverrides: {
+          separator: {
+            marginLeft: theme.spacing(2),
+            marginRight: theme.spacing(2)
+          },
+          li: {
+            display: 'inline-flex',
+            margin: theme.spacing(0.25, 0),
+            '& > *': {
+              ...theme.typography.body2
+            }
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  const COLORS$1 = ['primary', 'secondary', 'info', 'success', 'warning', 'error'];
+
+  // NEW VARIANT
+
+  function ButtonGroup(theme) {
+    const rootStyle = ownerState => {
+      const inheritColor = ownerState.color === 'inherit';
+      const containedVariant = ownerState.variant === 'contained';
+      const outlinedVariant = ownerState.variant === 'outlined';
+      const textVariant = ownerState.variant === 'text';
+      const softVariant = ownerState.variant === 'soft';
+      const horizontalOrientation = ownerState.orientation === 'horizontal';
+      const verticalOrientation = ownerState.orientation === 'vertical';
+      const defaultStyle = {
+        '& .MuiButtonGroup-grouped': {
+          '&:not(:last-of-type)': {
+            ...(!outlinedVariant && {
+              borderStyle: 'solid',
+              ...(inheritColor && {
+                borderColor: alpha$1(theme.palette.grey[500], 0.32)
+              }),
+              // HORIZONTAL
+              ...(horizontalOrientation && {
+                borderWidth: '0px 1px 0px 0px'
+              }),
+              // VERTICAL
+              ...(verticalOrientation && {
+                borderWidth: '0px 0px 1px 0px'
+              })
+            })
+          }
+        }
+      };
+      const colorStyle = COLORS$1.map(color => ({
+        '& .MuiButtonGroup-grouped': {
+          '&:not(:last-of-type)': {
+            ...(!outlinedVariant && {
+              ...(ownerState.color === color && {
+                // CONTAINED
+                ...(containedVariant && {
+                  borderColor: alpha$1(theme.palette[color].dark, 0.48)
+                }),
+                // TEXT
+                ...(textVariant && {
+                  borderColor: alpha$1(theme.palette[color].main, 0.48)
+                }),
+                // SOFT
+                ...(softVariant && {
+                  borderColor: alpha$1(theme.palette[color].dark, 0.24)
+                })
+              })
+            })
+          }
+        }
+      }));
+      const disabledState = {
+        '& .MuiButtonGroup-grouped.Mui-disabled': {
+          '&:not(:last-of-type)': {
+            borderColor: theme.palette.action.disabledBackground
+          }
+        }
+      };
+      return [...colorStyle, defaultStyle, disabledState];
+    };
+    return {
+      MuiButtonGroup: {
+        defaultProps: {
+          disableElevation: true
+        },
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function Autocomplete(theme) {
+    return {
+      MuiAutocomplete: {
+        styleOverrides: {
+          root: {
+            '& span.MuiAutocomplete-tag': {
+              ...theme.typography.body2,
+              width: 24,
+              height: 24,
+              lineHeight: '24px',
+              textAlign: 'center',
+              borderRadius: theme.shape.borderRadius,
+              backgroundColor: alpha$1(theme.palette.grey[500], 0.16)
+            }
+          },
+          paper: {
+            boxShadow: theme.customShadows.dropdown
+          },
+          listbox: {
+            padding: theme.spacing(0, 1)
+          },
+          option: {
+            ...theme.typography.body2,
+            padding: theme.spacing(1),
+            margin: theme.spacing(0.75, 0),
+            borderRadius: theme.shape.borderRadius
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  const COLORS = ['primary', 'secondary', 'info', 'success', 'warning', 'error'];
+  function ToggleButton(theme) {
+    const rootStyle = ownerState => {
+      const standardColor = ownerState.color === 'standard';
+      const defaultStyle = {
+        ...(standardColor && {
+          '&.Mui-selected': {
+            borderColor: 'inherit'
+          }
+        })
+      };
+      const colorStyle = COLORS.map(color => ({
+        ...(ownerState.color === color && {
+          '&:hover': {
+            borderColor: alpha$1(theme.palette[color].main, 0.48),
+            backgroundColor: alpha$1(theme.palette[color].main, theme.palette.action.hoverOpacity)
+          },
+          '&.Mui-selected': {
+            borderColor: theme.palette[color].main
+          }
+        })
+      }));
+      const disabledState = {
+        '&.Mui-disabled': {
+          '&.Mui-selected': {
+            color: theme.palette.action.disabled,
+            backgroundColor: theme.palette.action.selected,
+            borderColor: theme.palette.action.disabledBackground
+          }
+        }
+      };
+      return [...colorStyle, defaultStyle, disabledState];
+    };
+    return {
+      MuiToggleButton: {
+        styleOverrides: {
+          root: _ref => {
+            let {
+              ownerState
+            } = _ref;
+            return rootStyle(ownerState);
+          }
+        }
+      },
+      MuiToggleButtonGroup: {
+        styleOverrides: {
+          root: {
+            borderRadius: theme.shape.borderRadius,
+            backgroundColor: theme.palette.background.paper,
+            border: `solid 1px ${alpha$1(theme.palette.grey[500], 0.16)}`
+          },
+          grouped: {
+            margin: 4,
+            borderColor: 'transparent !important',
+            borderRadius: `${theme.shape.borderRadius}px !important`
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function ControlLabel(theme) {
+    return {
+      MuiFormControlLabel: {
+        styleOverrides: {
+          label: {
+            ...theme.typography.body2
+          }
+        }
+      },
+      MuiFormHelperText: {
+        defaultProps: {
+          component: 'div'
+        },
+        styleOverrides: {
+          root: {
+            marginTop: theme.spacing(1)
+          }
+        }
+      },
+      MuiFormLabel: {
+        styleOverrides: {
+          root: {
+            color: theme.palette.text.disabled
+          }
+        }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------
+
+  function LoadingButton(theme) {
+    return {
+      MuiLoadingButton: {
+        variants: [{
+          props: {
+            loading: true,
+            loadingPosition: 'start',
+            size: 'small'
+          },
+          style: {
+            '& .MuiLoadingButton-loadingIndicatorStart': {
+              left: 10
+            }
+          }
+        }, {
+          props: {
+            loading: true,
+            loadingPosition: 'end',
+            size: 'small'
+          },
+          style: {
+            '& .MuiLoadingButton-loadingIndicatorEnd': {
+              right: 10
+            }
+          }
+        }],
+        styleOverrides: {
+          loadingIndicatorStart: {
+            left: 14
+          },
+          loadingIndicatorEnd: {
+            right: 14
+          }
+        }
+      }
+    };
+  }
+
+  //
+
+  // ----------------------------------------------------------------------
+
+  function ComponentsOverrides(theme) {
+    return Object.assign(Fab(theme), Tabs(theme), Chip(theme), Card(theme), Menu(theme), Link(), Input(theme), Radio(theme), Badge(), List(theme), Table(theme), Paper(), Alert(theme), Switch(theme), Select(), Button(theme), Rating(theme), Dialog(theme), Avatar(theme), Slider(theme), Drawer(theme), Stepper(theme), Tooltip(theme), Popover(theme), SvgIcon(), Checkbox(theme), DataGrid(theme), Skeleton(theme), Timeline(theme), TreeView(theme), Backdrop(theme), Progress(theme), Accordion(theme), Typography(theme), Pagination(theme), ButtonGroup(theme), Breadcrumbs(theme), Autocomplete(theme), ControlLabel(theme), ToggleButton(theme), LoadingButton());
+  }
+
+  // @mui
+
+  // ----------------------------------------------------------------------
+
+  // ----------------------------------------------------------------------
+
+  const themeColor = palette('light');
+  const LIGHT_MODE = themeColor.grey[500];
+  const DARK_MODE = themeColor.common.black;
+  function createShadow(color) {
+    const transparent = alpha$1(color, 0.16);
+    return {
+      z1: `0 1px 2px 0 ${transparent}`,
+      z4: `0 4px 8px 0 ${transparent}`,
+      z8: `0 8px 16px 0 ${transparent}`,
+      z12: `0 12px 24px -4px ${transparent}`,
+      z16: `0 16px 32px -4px ${transparent}`,
+      z20: `0 20px 40px -4px ${transparent}`,
+      z24: `0 24px 48px 0 ${transparent}`,
+      //
+      primary: `0 8px 16px 0 ${alpha$1(themeColor.primary.main, 0.24)}`,
+      info: `0 8px 16px 0 ${alpha$1(themeColor.info.main, 0.24)}`,
+      secondary: `0 8px 16px 0 ${alpha$1(themeColor.secondary.main, 0.24)}`,
+      success: `0 8px 16px 0 ${alpha$1(themeColor.success.main, 0.24)}`,
+      warning: `0 8px 16px 0 ${alpha$1(themeColor.warning.main, 0.24)}`,
+      error: `0 8px 16px 0 ${alpha$1(themeColor.error.main, 0.24)}`,
+      purple: `0 8px 16px 0 ${alpha$1(themeColor.purple.main, 0.24)}`,
+      cyan: `0 8px 16px 0 ${alpha$1(themeColor.cyan.main, 0.24)}`,
+      orange: `0 8px 16px 0 ${alpha$1(themeColor.orange.main, 0.24)}`,
+      //
+      card: `0 0 2px 0 ${alpha$1(color, 0.2)}, 0 12px 24px -4px ${alpha$1(color, 0.12)}`,
+      dialog: `-40px 40px 80px -8px ${alpha$1(color, 0.24)}`,
+      dropdown: `0 0 2px 0 ${alpha$1(color, 0.24)}, -20px 20px 40px -4px ${alpha$1(color, 0.24)}`
+    };
+  }
+  function customShadows(themeMode) {
+    return themeMode === 'light' ? createShadow(LIGHT_MODE) : createShadow(DARK_MODE);
+  }
+
+  // @mui
+  function GlobalStyles() {
+    const inputGlobalStyles = /*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles$1, {
+      styles: {
+        '*': {
+          boxSizing: 'border-box'
+        },
+        html: {
+          margin: 0,
+          padding: 0,
+          width: '100%',
+          height: '100%',
+          WebkitOverflowScrolling: 'touch'
+        },
+        body: {
+          margin: 0,
+          padding: 0,
+          width: '100%',
+          height: '100%'
+        },
+        '#__next': {
+          width: '100%',
+          height: '100%'
+        },
+        input: {
+          '&[type=number]': {
+            MozAppearance: 'textfield',
+            '&::-webkit-outer-spin-button': {
+              margin: 0,
+              WebkitAppearance: 'none'
+            },
+            '&::-webkit-inner-spin-button': {
+              margin: 0,
+              WebkitAppearance: 'none'
+            }
+          }
+        },
+        img: {
+          display: 'block',
+          maxWidth: '100%'
+        },
+        ul: {
+          margin: 0,
+          padding: 0
+        }
+      }
+    });
+    return inputGlobalStyles;
+  }
+
+  function ThemeProvider(_ref) {
+    let {
+      children,
+      themeMode
+    } = _ref;
+    const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+    if (!themeMode) {
+      themeMode = prefersDarkMode ? "dark" : "light";
+    }
+    const meetingPalette = palette(themeMode);
+    const theme = createTheme({
+      palette: {
+        ...meetingPalette,
+        primary: meetingPalette.secondary
+      },
+      typography,
+      shape: {
+        borderRadius: 8
+      },
+      direction: "ltr",
+      shadows: shadows(themeMode),
+      customShadows: customShadows(themeMode)
+    });
+    theme.components = ComponentsOverrides(theme);
+    return /*#__PURE__*/jsxRuntimeExports.jsxs(ThemeProvider$1, {
+      theme: theme,
+      children: [/*#__PURE__*/jsxRuntimeExports.jsx(CssBaseline, {}), /*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles, {}), children]
+    });
+  }
+
+  function Main() {
+    return /*#__PURE__*/jsxRuntimeExports.jsx(ThemeProvider, {
+      themeMode: "light",
+      children: /*#__PURE__*/jsxRuntimeExports.jsxs(Dialog$1, {
+        open: true,
+        children: [/*#__PURE__*/jsxRuntimeExports.jsx(DialogTitle, {
+          children: /*#__PURE__*/jsxRuntimeExports.jsx(Typography$1, {
+            variant: "h6",
+            children: "Hello, world!"
+          })
+        }), /*#__PURE__*/jsxRuntimeExports.jsxs(Stack, {
+          spacing: 3,
+          p: 3,
+          children: [/*#__PURE__*/jsxRuntimeExports.jsx(Typography$1, {
+            variant: "body1",
+            children: "This is a dialog box rendered using Material-UI."
+          }), /*#__PURE__*/jsxRuntimeExports.jsx(Typography$1, {
+            variant: "body1",
+            children: "It is styled using the default theme."
+          })]
+        })]
+      })
     });
   }
 

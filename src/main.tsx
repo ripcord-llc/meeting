@@ -1,15 +1,30 @@
-import { CssBaseline, Typography } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import {
+  CssBaseline,
+  Typography,
+  Dialog,
+  DialogTitle,
+  Stack,
+  Button,
+} from "@mui/material";
 
-const theme = createTheme({});
+import ThemeProvider from "./theme";
 
 export default function Main() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Typography variant="h1" sx={{}}>
-        Hello, world!
-      </Typography>
+    <ThemeProvider themeMode="light">
+      <Dialog open>
+        <DialogTitle>
+          <Typography variant="h6">Hello, world!</Typography>
+        </DialogTitle>
+        <Stack spacing={3} p={3}>
+          <Typography variant="body1">
+            This is a dialog box rendered using Material-UI.
+          </Typography>
+          <Typography variant="body1">
+            It is styled using the default theme.
+          </Typography>
+        </Stack>
+      </Dialog>
     </ThemeProvider>
   );
 }

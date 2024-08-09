@@ -71,6 +71,6 @@ class Ripcord {
   }
 }
 
-export { Ripcord };
+export { default as BookingWidget } from "./BookingWidget";
 
-export * from "./BookingWidget";
+export { Ripcord };

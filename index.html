@@ -8,12 +8,15 @@
 </head>
 
 <body style="height: 100%">
-  <div id="app"></div>
+  <div>
+    <button id="open-modal">Open Modal</button>
+  </div>
   <script src="/dist/index.umd.js"></script>
   <script>
-    let app = document.getElementById('app');
-    const ripcord = new Ripcord(app)
-    ripcord.open()
+    const instance = new ripcord.Ripcord("routing-id")
+    const button = document.getElementById('open-modal')
+
+    button.addEventListener('click', () => instance.openWidget())
   </script>
 </body>
 

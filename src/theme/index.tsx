@@ -1,4 +1,4 @@
-import { CssBaseline, useMediaQuery } from "@mui/material";
+import { ScopedCssBaseline, useMediaQuery } from "@mui/material";
 import {
   createTheme,
   ThemeProvider as MUIThemeProvider,
@@ -9,7 +9,6 @@ import typography from "./typography";
 import shadows from "./shadows";
 import componentsOverride from "./overrides";
 import customShadows from "./customShadows";
-import GlobalStyles from "./globalStyles";
 
 // ----------------------------------------------------------------------
 
@@ -44,10 +43,8 @@ export default function ThemeProvider({
   theme.components = componentsOverride(theme);
 
   return (
-    <MUIThemeProvider theme={theme}>
-      <CssBaseline />
-      <GlobalStyles />
-      {children}
-    </MUIThemeProvider>
+    <ScopedCssBaseline>
+      <MUIThemeProvider theme={theme}>{children}</MUIThemeProvider>
+    </ScopedCssBaseline>
   );
 }

@@ -1,16 +1,76 @@
 import "./index.css";
 import { createRoot, Root } from "react-dom/client";
 
-import Main from "./main";
+import BookingWidget from "./BookingWidget";
 
-export default class Ripcord {
+class Ripcord {
+  private el: HTMLElement;
   private root: Root;
+  private open: boolean = false;
+  private destroyed: boolean = false;
 
-  constructor(el: HTMLElement) {
+  constructor(private routingId: string, private productId?: string) {
+    const el = document.createElement("div");
+    el.id = `ripcord-${routingId}`;
+    document.body.appendChild(el);
+
+    this.el = el;
     this.root = createRoot(el);
   }
 
-  public open() {
-    this.root.render(<Main />);
+  public openWidget() {
+    this.destoryCheck();
+
+    if (this.open) {
+      return;
+    }
+
+    this.open = true;
+    this.root.render(
+      <BookingWidget
+        open={this.open}
+        onClose={this.closeWidget.bind(this)}
+        routingId={this.routingId}
+        productId={this.productId}
+      />
+    );
+  }
+
+  public closeWidget() {
+    this.destoryCheck();
+
+    if (!this.open) {
+      return;
+    }
+
+    this.open = false;
+    this.root.render(
+      <BookingWidget
+        open={this.open}
+        onClose={this.closeWidget.bind(this)}
+        routingId={this.routingId}
+        productId={this.productId}
+      />
+    );
+  }
+
+  public destroy() {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.destroyed = true;
+    this.root.unmount();
+    this.el.remove();
+  }
+
+  private destoryCheck() {
+    if (this.destroyed) {
+      throw new Error("Ripcord instance has been destroyed");
+    }
   }
 }
+
+export { Ripcord };
+
+export * from "./BookingWidget";

@@ -22,7 +22,7 @@ const plugins = [
     exclude: "node_modules/**",
     extensions: [".js", ".jsx", ".ts", ".tsx"],
   }), // Transpiles JSX and TS
-  typescript({ noForceEmit: true }), // Only for type checking and declaration file generation
+  // typescript({ noForceEmit: true }), // Only for type checking and declaration file generation
   postcss({
     plugins: [],
   }),
@@ -35,7 +35,7 @@ export default [
       {
         file: pkj.browser,
         format: "iife",
-        name: "Ripcord",
+        name: "ripcord",
       },
     ],
     plugins,

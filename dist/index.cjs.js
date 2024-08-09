@@ -7480,56 +7480,6 @@ function customShadows(themeMode) {
   return themeMode === 'light' ? createShadow(LIGHT_MODE) : createShadow(DARK_MODE);
 }
 
-// @mui
-function GlobalStyles() {
-  const inputGlobalStyles = /*#__PURE__*/jsxRuntimeExports.jsx(material.GlobalStyles, {
-    styles: {
-      '*': {
-        boxSizing: 'border-box'
-      },
-      html: {
-        margin: 0,
-        padding: 0,
-        width: '100%',
-        height: '100%',
-        WebkitOverflowScrolling: 'touch'
-      },
-      body: {
-        margin: 0,
-        padding: 0,
-        width: '100%',
-        height: '100%'
-      },
-      '#__next': {
-        width: '100%',
-        height: '100%'
-      },
-      input: {
-        '&[type=number]': {
-          MozAppearance: 'textfield',
-          '&::-webkit-outer-spin-button': {
-            margin: 0,
-            WebkitAppearance: 'none'
-          },
-          '&::-webkit-inner-spin-button': {
-            margin: 0,
-            WebkitAppearance: 'none'
-          }
-        }
-      },
-      img: {
-        display: 'block',
-        maxWidth: '100%'
-      },
-      ul: {
-        margin: 0,
-        padding: 0
-      }
-    }
-  });
-  return inputGlobalStyles;
-}
-
 function ThemeProvider(_ref) {
   let {
     children,
@@ -7554,44 +7504,91 @@ function ThemeProvider(_ref) {
     customShadows: customShadows(themeMode)
   });
   theme.components = ComponentsOverrides(theme);
-  return /*#__PURE__*/jsxRuntimeExports.jsxs(ThemeProvider$1, {
-    theme: theme,
-    children: [/*#__PURE__*/jsxRuntimeExports.jsx(material.CssBaseline, {}), /*#__PURE__*/jsxRuntimeExports.jsx(GlobalStyles, {}), children]
+  return /*#__PURE__*/jsxRuntimeExports.jsx(material.ScopedCssBaseline, {
+    children: /*#__PURE__*/jsxRuntimeExports.jsx(ThemeProvider$1, {
+      theme: theme,
+      children: children
+    })
   });
 }
 
-function Main() {
+function BookingWidget(_ref) {
+  let {
+    open,
+    onClose
+  } = _ref;
   return /*#__PURE__*/jsxRuntimeExports.jsx(ThemeProvider, {
     themeMode: "light",
     children: /*#__PURE__*/jsxRuntimeExports.jsxs(material.Dialog, {
-      open: true,
+      open: open,
+      fullWidth: true,
+      maxWidth: "sm",
+      disablePortal: true,
       children: [/*#__PURE__*/jsxRuntimeExports.jsx(material.DialogTitle, {
-        children: /*#__PURE__*/jsxRuntimeExports.jsx(material.Typography, {
-          variant: "h6",
-          children: "Hello, world!"
+        children: "Hello, world!"
+      }), /*#__PURE__*/jsxRuntimeExports.jsx(material.DialogActions, {
+        children: /*#__PURE__*/jsxRuntimeExports.jsx(material.Button, {
+          variant: "contained",
+          onClick: onClose,
+          color: "primary",
+          children: "Close"
         })
-      }), /*#__PURE__*/jsxRuntimeExports.jsxs(material.Stack, {
-        spacing: 3,
-        p: 3,
-        children: [/*#__PURE__*/jsxRuntimeExports.jsx(material.Typography, {
-          variant: "body1",
-          children: "This is a dialog box rendered using Material-UI."
-        }), /*#__PURE__*/jsxRuntimeExports.jsx(material.Typography, {
-          variant: "body1",
-          children: "It is styled using the default theme."
-        })]
       })]
     })
   });
 }
 
 class Ripcord {
-  constructor(el) {
+  open = false;
+  destroyed = false;
+  constructor(routingId, productId) {
+    this.routingId = routingId;
+    this.productId = productId;
+    const el = document.createElement("div");
+    el.id = `ripcord-${routingId}`;
+    document.body.appendChild(el);
+    this.el = el;
     this.root = createRoot(el);
   }
-  open() {
-    this.root.render( /*#__PURE__*/jsxRuntimeExports.jsx(Main, {}));
+  openWidget() {
+    this.destoryCheck();
+    if (this.open) {
+      return;
+    }
+    this.open = true;
+    this.root.render( /*#__PURE__*/jsxRuntimeExports.jsx(BookingWidget, {
+      open: this.open,
+      onClose: this.closeWidget.bind(this),
+      routingId: this.routingId,
+      productId: this.productId
+    }));
+  }
+  closeWidget() {
+    this.destoryCheck();
+    if (!this.open) {
+      return;
+    }
+    this.open = false;
+    this.root.render( /*#__PURE__*/jsxRuntimeExports.jsx(BookingWidget, {
+      open: this.open,
+      onClose: this.closeWidget.bind(this),
+      routingId: this.routingId,
+      productId: this.productId
+    }));
+  }
+  destroy() {
+    if (this.destroyed) {
+      return;
+    }
+    this.destroyed = true;
+    this.root.unmount();
+    this.el.remove();
+  }
+  destoryCheck() {
+    if (this.destroyed) {
+      throw new Error("Ripcord instance has been destroyed");
+    }
   }
 }
 
-module.exports = Ripcord;
+exports.Ripcord = Ripcord;

@@ -47,6 +47,8 @@ export default [
       "@mui/material",
       "@emotion/styled",
       "@emotion/react",
+      "date-fns",
+      "@mui/x-date-pickers",
     ],
     input: "src/index.tsx",
     output: [

@@ -16,9 +16,9 @@ import {
 import { DateCalendar } from "@mui/x-date-pickers";
 import CloseIcon from "@mui/icons-material/Close";
 
-import PoweredByRipcordIcon from "./components/PoweredByRipcordIcon";
+import ConfigurationProvider from "./config";
 
-import ConfigurationProvider from "./ConfigurationProvider";
+import PoweredByRipcordIcon from "./components/PoweredByRipcordIcon";
 
 export interface BookingWidgetProps {
   open: boolean;

@@ -18,7 +18,7 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import ConfigurationProvider from "./config";
 
-import PoweredByRipcordIcon from "./components/PoweredByRipcordIcon";
+import PoweredByRipcordIcon from "./components/icons/PoweredByRipcordIcon";
 
 export interface BookingWidgetProps {
   open: boolean;

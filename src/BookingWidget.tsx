@@ -1,3 +1,4 @@
+"use client";
 import {
   Box,
   Typography,
@@ -8,7 +9,14 @@ import {
   DialogActions,
   Avatar,
   TextField,
+  Divider,
+  IconButton,
+  BoxProps,
 } from "@mui/material";
+import { DateCalendar } from "@mui/x-date-pickers";
+import CloseIcon from "@mui/icons-material/Close";
+
+import PoweredByRipcordIcon from "./components/PoweredByRipcordIcon";
 
 import ConfigurationProvider from "./ConfigurationProvider";
 
@@ -19,6 +27,21 @@ export interface BookingWidgetProps {
   productId?: string;
 }
 
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Stack gap={0.5}>
+      <Typography variant="subtitle2">{label}</Typography>
+      {children}
+    </Stack>
+  );
+}
+
 export default function BookingWidget({ open, onClose }: BookingWidgetProps) {
   return (
     <ConfigurationProvider>
@@ -26,32 +49,102 @@ export default function BookingWidget({ open, onClose }: BookingWidgetProps) {
         open={open}
         onClose={onClose}
         fullWidth
-        maxWidth="sm"
+        maxWidth="md"
         disablePortal
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="center"
-          gap={1}
-          pt={3}
-          px={3}
-        >
-          <Avatar
-            src="https://cdn.trendhunterstatic.com/thumbs/510/oatmilk-cheese-square.jpeg?auto=webp"
-            sx={{
-              width: 48,
-              height: 48,
-            }}
-          />
-          <Typography variant="subtitle1">Cheese Corp</Typography>
-        </Stack>
-        <Stack gap={3} p={3}>
-          <TextField label="Email" fullWidth />
-          <TextField label="Url" fullWidth />
-          <Button variant="outlined" fullWidth color="inherit">
-            Next
-          </Button>
+        <Stack divider={<Divider flexItem />}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            px={4}
+            py={1}
+          >
+            <Stack direction="row" gap={1} alignItems="center">
+              <Avatar
+                src="https://www.shutterstock.com/image-vector/vector-realistic-illustration-square-piece-260nw-121510897.jpg"
+                sx={{
+                  width: 32,
+                  height: 32,
+                }}
+              />
+              <Typography variant="subtitle2">Cheese Corp</Typography>
+            </Stack>
+            <IconButton size="small" onClick={onClose}>
+              <CloseIcon sx={{ width: 20, height: 20 }} />
+            </IconButton>
+          </Stack>
+          <Stack
+            direction="row"
+            divider={<Divider flexItem orientation="vertical" />}
+          >
+            <Box p={4} flex={1}>
+              <Typography variant="h5">Book a Meeting</Typography>
+              <Typography variant="body1" color="text.secondary">
+                Schedule a demo with Cheese Corp now.
+              </Typography>
+              <Stack gap={2} mt={3}>
+                <Field label="Email">
+                  <TextField fullWidth variant="outlined" />
+                </Field>
+                <Field label="Company Website">
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: "https://",
+                    }}
+                  />
+                </Field>
+                <Field label="Full Name">
+                  <TextField fullWidth variant="outlined" />
+                </Field>
+                <Field label="Cell Number">
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    helperText="For meeting reminders"
+                  />
+                </Field>
+              </Stack>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="inherit"
+                sx={{ mt: 3 }}
+              >
+                Continue
+              </Button>
+            </Box>
+            <Box p={4} flex={1}>
+              <Typography variant="subtitle2" textAlign="center">
+                Select a Date
+              </Typography>
+              <DateCalendar disablePast disabled />
+            </Box>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="flex-end"
+            px={4}
+            py={2}
+          >
+            <PoweredByRipcordIcon
+              component="a"
+              href="https://www.ripcord.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={(theme) => ({
+                display: "flex",
+                alignItems: "center",
+                fill: theme.palette.text.secondary,
+                "& svg": {
+                  height: 20,
+                },
+              })}
+            />
+          </Stack>
         </Stack>
       </Dialog>
     </ConfigurationProvider>

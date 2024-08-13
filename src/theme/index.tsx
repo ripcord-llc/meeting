@@ -1,8 +1,9 @@
-import { ScopedCssBaseline, useMediaQuery } from "@mui/material";
-import {
-  createTheme,
-  ThemeProvider as MUIThemeProvider,
-} from "@mui/material/styles";
+import ScopedCssBaseline from "@mui/material/ScopedCssBaseline";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
+import createTheme from "@mui/material/styles/createTheme";
+import MUIThemeProvider from "@mui/material/styles/ThemeProvider";
+
 //
 import palette from "./palette";
 import typography from "./typography";

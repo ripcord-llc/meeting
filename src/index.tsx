@@ -1,3 +1,4 @@
+"use client";
 import "./index.css";
 import { createRoot, Root } from "react-dom/client";
 

@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers";
 import CloseIcon from "@mui/icons-material/Close";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import ConfigurationProvider from "./config";
 
@@ -42,6 +43,22 @@ function Field({
   );
 }
 
+function WidgetLoading() {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: 600,
+        maxHeight: "100%",
+      }}
+    >
+      <CircularProgress color="inherit" />
+    </Box>
+  );
+}
+
 export default function BookingWidget({ open, onClose }: BookingWidgetProps) {
   return (
     <ConfigurationProvider>
@@ -52,13 +69,14 @@ export default function BookingWidget({ open, onClose }: BookingWidgetProps) {
         maxWidth="md"
         disablePortal
       >
+        {/* <WidgetLoading /> */}
         <Stack divider={<Divider flexItem />}>
           <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
             px={4}
-            py={1}
+            py={2}
           >
             <Stack direction="row" gap={1} alignItems="center">
               <Avatar
@@ -116,12 +134,35 @@ export default function BookingWidget({ open, onClose }: BookingWidgetProps) {
                 Continue
               </Button>
             </Box>
-            <Box p={4} flex={1}>
-              <Typography variant="subtitle2" textAlign="center">
-                Select a Date
-              </Typography>
-              <DateCalendar disablePast disabled />
-            </Box>
+            <Stack
+              p={4}
+              flex={1}
+              justifyContent="center"
+              sx={{
+                position: "relative",
+              }}
+            >
+              <Box sx={{ opacity: 0.7 }}>
+                <Typography variant="subtitle2" textAlign="center">
+                  Select a Date
+                </Typography>
+                <DateCalendar disablePast disabled />
+              </Box>
+              <Box
+                sx={(theme) => ({
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  padding: 2,
+                  bgcolor: "common.white",
+                  borderRadius: 1,
+                  boxShadow: theme.shadows[4],
+                })}
+              >
+                Please fill out the form to book a meeting with Cheese Corp.
+              </Box>
+            </Stack>
           </Stack>
           <Stack
             direction="row"

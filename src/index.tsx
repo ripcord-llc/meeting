@@ -10,7 +10,15 @@ class Ripcord {
   private open: boolean = false;
   private destroyed: boolean = false;
 
-  constructor(private routingId: string, private productId?: string) {
+  private routingId: string;
+  private productId?: string;
+
+  constructor(params: { routingId: string; productId?: string }) {
+    const { routingId, productId } = params;
+
+    this.routingId = routingId;
+    this.productId = productId;
+
     const el = document.createElement("div");
     el.id = `ripcord-${routingId}`;
     document.body.appendChild(el);

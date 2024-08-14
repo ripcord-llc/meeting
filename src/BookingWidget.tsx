@@ -16,7 +16,11 @@ import { DateCalendar } from "@mui/x-date-pickers";
 
 import Dialog from "./components/dialog/Dialog";
 
+import ErrorScreen from "./components/ErrorScreen";
+import LoadingScreen from "./components/LoadingScreen";
+
 import ConfigurationProvider from "./config";
+import { usePublicRouting } from "./api/routing";
 
 export interface BookingWidgetProps {
   open: boolean;
@@ -40,73 +44,21 @@ function Field({
   );
 }
 
-function BookingWidget({ open, onClose }: BookingWidgetProps) {
-  const [loading, setLoading] = useState(true);
+function BookingWidget({ open, onClose, routingId }: BookingWidgetProps) {
+  const { data, isLoading, error } = usePublicRouting(routingId);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  });
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm">
-      <Stack
-        justifyContent="center"
-        alignItems="center"
-        gap={2}
-        p={4}
-        sx={{
-          height: 600,
-          maxHeight: "100%",
-        }}
-      >
-        <Box
-          sx={{
-            width: 112,
-            height: 112,
-            bgcolor: "error.main",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <ErrorIcon
-            sx={{
-              width: 72,
-              height: 72,
-              color: "common.white",
-            }}
-          />
-        </Box>
-        <Typography variant="h4">An error occured</Typography>
-        <Typography variant="body1" color="text.secondary" textAlign="center">
-          Something went wrong while loading. Please contact the administrator
-          for this page for help.
-        </Typography>
-      </Stack>
-    </Dialog>
-  );
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="sm">
-        <Box
-          sx={{
-            height: 600,
-            maxHeight: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <CircularProgress color="inherit" />
-        </Box>
+        <LoadingScreen />
+      </Dialog>
+    );
+  }
+
+  if (!data || error) {
+    return (
+      <Dialog open={open} onClose={onClose} maxWidth="sm">
+        <ErrorScreen />
       </Dialog>
     );
   }
@@ -120,13 +72,13 @@ function BookingWidget({ open, onClose }: BookingWidgetProps) {
         headerLeft: (
           <Stack direction="row" gap={1} alignItems="center">
             <Avatar
-              src="https://www.shutterstock.com/image-vector/vector-realistic-illustration-square-piece-260nw-121510897.jpg"
+              src={data.account?.avatar?.fileUrl}
               sx={{
                 width: 32,
                 height: 32,
               }}
             />
-            <Typography variant="subtitle2">Cheese Corp</Typography>
+            <Typography variant="subtitle2">{data.account.name}</Typography>
           </Stack>
         ),
       }}
@@ -139,7 +91,7 @@ function BookingWidget({ open, onClose }: BookingWidgetProps) {
           <Box p={4} flex={1}>
             <Typography variant="h5">Book a Meeting</Typography>
             <Typography variant="body1" color="text.secondary">
-              Schedule a demo with Cheese Corp now.
+              Schedule a demo with {data.account.name} now.
             </Typography>
             <Stack gap={2} mt={3}>
               <Field label="Email">

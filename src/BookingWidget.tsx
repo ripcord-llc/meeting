@@ -11,6 +11,7 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
+import ErrorIcon from "@mui/icons-material/Error";
 import { DateCalendar } from "@mui/x-date-pickers";
 
 import Dialog from "./components/dialog/Dialog";
@@ -51,6 +52,46 @@ function BookingWidget({ open, onClose }: BookingWidgetProps) {
       clearTimeout(timeout);
     };
   });
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm">
+      <Stack
+        justifyContent="center"
+        alignItems="center"
+        gap={2}
+        p={4}
+        sx={{
+          height: 600,
+          maxHeight: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            width: 112,
+            height: 112,
+            bgcolor: "error.main",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ErrorIcon
+            sx={{
+              width: 72,
+              height: 72,
+              color: "common.white",
+            }}
+          />
+        </Box>
+        <Typography variant="h4">An error occured</Typography>
+        <Typography variant="body1" color="text.secondary" textAlign="center">
+          Something went wrong while loading. Please contact the administrator
+          for this page for help.
+        </Typography>
+      </Stack>
+    </Dialog>
+  );
 
   if (loading) {
     return (

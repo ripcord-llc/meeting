@@ -28,9 +28,24 @@ const plugins = [
   }),
 ];
 
+const common = {
+  input: "src/index.tsx",
+  plugins,
+  onwarn: (warning, defaultHandler) => {
+    if (
+      warning.message.includes(
+        `Module level directives cause errors when bundled, "use client" in`
+      )
+    )
+      return;
+
+    defaultHandler(warning);
+  },
+};
+
 export default [
   {
-    input: "src/index.tsx",
+    ...common,
     output: [
       {
         file: pkj.browser,
@@ -38,9 +53,9 @@ export default [
         name: "ripcord",
       },
     ],
-    plugins,
   },
   {
+    ...common,
     external: [
       "react",
       "react-dom",
@@ -50,7 +65,6 @@ export default [
       "date-fns",
       "@mui/x-date-pickers",
     ],
-    input: "src/index.tsx",
     output: [
       {
         file: pkj.module,
@@ -61,6 +75,5 @@ export default [
         format: "cjs",
       },
     ],
-    plugins,
   },
 ];

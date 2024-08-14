@@ -1,5 +1,10 @@
+const BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : "https://api.ripcord.io";
+
 export async function fetcher<T>(key: string): Promise<T> {
-  const resp = await fetch(key, {
+  const resp = await fetch(BASE_URL + key, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

@@ -1,47 +1,21 @@
 "use client";
-import { useEffect, useState } from "react";
-import {
-  Box,
-  Fade,
-  Stack,
-  Button,
-  Avatar,
-  Divider,
-  TextField,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
-import ErrorIcon from "@mui/icons-material/Error";
-import { DateCalendar } from "@mui/x-date-pickers";
+import { Fade, Stack, Avatar, Typography } from "@mui/material";
 
 import Dialog from "./components/dialog/Dialog";
 
 import ErrorScreen from "./components/ErrorScreen";
 import LoadingScreen from "./components/LoadingScreen";
+import FormScreen from "./components/FormScreen";
+
+import { usePublicRouting } from "./api/routing";
 
 import ConfigurationProvider from "./config";
-import { usePublicRouting } from "./api/routing";
 
 export interface BookingWidgetProps {
   open: boolean;
   onClose: () => void;
   routingId: string;
   productId?: string;
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Stack gap={0.5}>
-      <Typography variant="subtitle2">{label}</Typography>
-      {children}
-    </Stack>
-  );
 }
 
 function BookingWidget({ open, onClose, routingId }: BookingWidgetProps) {
@@ -84,73 +58,7 @@ function BookingWidget({ open, onClose, routingId }: BookingWidgetProps) {
       }}
     >
       <Fade in appear timeout={750}>
-        <Stack
-          direction="row"
-          divider={<Divider flexItem orientation="vertical" />}
-        >
-          <Box p={4} flex={1}>
-            <Typography variant="h5">Book a Meeting</Typography>
-            <Typography variant="body1" color="text.secondary">
-              Schedule a demo with {data.account.name} now.
-            </Typography>
-            <Stack gap={2} mt={3}>
-              <Field label="Email">
-                <TextField fullWidth variant="outlined" />
-              </Field>
-              <Field label="Company Website">
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  InputProps={{
-                    startAdornment: "https://",
-                  }}
-                />
-              </Field>
-              <Field label="Full Name">
-                <TextField fullWidth variant="outlined" />
-              </Field>
-              <Field label="Cell Number">
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  helperText="For meeting reminders"
-                />
-              </Field>
-            </Stack>
-            <Button fullWidth variant="outlined" color="inherit" sx={{ mt: 3 }}>
-              Continue
-            </Button>
-          </Box>
-          <Stack
-            p={4}
-            flex={1}
-            justifyContent="center"
-            sx={{
-              position: "relative",
-            }}
-          >
-            <Box sx={{ opacity: 0.7 }}>
-              <Typography variant="subtitle2" textAlign="center">
-                Select a Date
-              </Typography>
-              <DateCalendar disablePast disabled />
-            </Box>
-            <Box
-              sx={(theme) => ({
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                padding: 2,
-                bgcolor: "common.white",
-                borderRadius: 1,
-                boxShadow: theme.shadows[4],
-              })}
-            >
-              Please fill out the form to book a meeting with Cheese Corp.
-            </Box>
-          </Stack>
-        </Stack>
+        <FormScreen routing={data} />
       </Fade>
     </Dialog>
   );

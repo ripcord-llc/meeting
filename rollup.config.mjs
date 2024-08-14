@@ -56,7 +56,6 @@ export default [
         name: "ripcord",
       },
     ],
-    compact: true,
   },
   {
     ...common,

@@ -4,7 +4,6 @@ import commonjs from "@rollup/plugin-commonjs";
 import { babel } from "@rollup/plugin-babel";
 import replace from "@rollup/plugin-replace";
 import postcss from "rollup-plugin-postcss";
-import sizes from "rollup-plugin-sizes";
 import filesize from "rollup-plugin-filesize";
 
 import pkj from "./package.json" assert { type: "json" };

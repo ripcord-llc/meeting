@@ -32,7 +32,7 @@ export default function Dialog({
           transition: (theme) =>
             theme.transitions.create("max-width", {
               easing: theme.transitions.easing.easeInOut,
-              duration: theme.transitions.duration.shorter,
+              duration: theme.transitions.duration.standard,
             }),
         },
       }}

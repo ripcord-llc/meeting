@@ -1,24 +1,21 @@
 "use client";
+import { useEffect, useState } from "react";
 import {
   Box,
-  Typography,
-  DialogTitle,
+  Fade,
   Stack,
   Button,
-  DialogActions,
   Avatar,
-  TextField,
   Divider,
-  IconButton,
-  BoxProps,
+  TextField,
+  Typography,
+  CircularProgress,
 } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers";
-import CircularProgress from "@mui/material/CircularProgress";
-
-import ConfigurationProvider from "./config";
 
 import Dialog from "./components/dialog/Dialog";
-import LoadingDialog from "./components/dialog/LoadingDialog";
+
+import ConfigurationProvider from "./config";
 
 export interface BookingWidgetProps {
   open: boolean;
@@ -42,44 +39,58 @@ function Field({
   );
 }
 
-function WidgetLoading() {
+function BookingWidget({ open, onClose }: BookingWidgetProps) {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  });
+
+  if (loading) {
+    return (
+      <Dialog open={open} onClose={onClose} maxWidth="sm">
+        <Box
+          sx={{
+            height: 600,
+            maxHeight: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <CircularProgress color="inherit" />
+        </Box>
+      </Dialog>
+    );
+  }
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: 600,
-        maxHeight: "100%",
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      slots={{
+        headerLeft: (
+          <Stack direction="row" gap={1} alignItems="center">
+            <Avatar
+              src="https://www.shutterstock.com/image-vector/vector-realistic-illustration-square-piece-260nw-121510897.jpg"
+              sx={{
+                width: 32,
+                height: 32,
+              }}
+            />
+            <Typography variant="subtitle2">Cheese Corp</Typography>
+          </Stack>
+        ),
       }}
     >
-      <CircularProgress color="inherit" />
-    </Box>
-  );
-}
-
-export default function BookingWidget({ open, onClose }: BookingWidgetProps) {
-  return (
-    <ConfigurationProvider>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        maxWidth="md"
-        slots={{
-          headerLeft: (
-            <Stack direction="row" gap={1} alignItems="center">
-              <Avatar
-                src="https://www.shutterstock.com/image-vector/vector-realistic-illustration-square-piece-260nw-121510897.jpg"
-                sx={{
-                  width: 32,
-                  height: 32,
-                }}
-              />
-              <Typography variant="subtitle2">Cheese Corp</Typography>
-            </Stack>
-          ),
-        }}
-      >
+      <Fade in appear timeout={750}>
         <Stack
           direction="row"
           divider={<Divider flexItem orientation="vertical" />}
@@ -147,8 +158,15 @@ export default function BookingWidget({ open, onClose }: BookingWidgetProps) {
             </Box>
           </Stack>
         </Stack>
-      </Dialog>
-      {/* <LoadingDialog open={open} onClose={onClose} /> */}
+      </Fade>
+    </Dialog>
+  );
+}
+
+export default function Main(props: BookingWidgetProps) {
+  return (
+    <ConfigurationProvider>
+      <BookingWidget {...props} />
     </ConfigurationProvider>
   );
 }

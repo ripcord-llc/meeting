@@ -4,15 +4,18 @@ import commonjs from "@rollup/plugin-commonjs";
 import { babel } from "@rollup/plugin-babel";
 import replace from "@rollup/plugin-replace";
 import postcss from "rollup-plugin-postcss";
+import sizes from "rollup-plugin-sizes";
+import filesize from "rollup-plugin-filesize";
 
 import pkj from "./package.json" assert { type: "json" };
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const plugins = [
   replace({
-    "process.env.NODE_ENV":
-      process.env.NODE_ENV === "production"
-        ? JSON.stringify("production")
-        : JSON.stringify("development"),
+    "process.env.NODE_ENV": isProduction
+      ? JSON.stringify("production")
+      : JSON.stringify("development"),
     preventAssignment: true,
   }),
   nodeResolve({ extensions: [".js", ".jsx", ".ts", ".tsx"] }),
@@ -26,6 +29,7 @@ const plugins = [
   postcss({
     plugins: [],
   }),
+  ...(isProduction ? [] : [filesize()]),
 ];
 
 const common = {
@@ -53,6 +57,7 @@ export default [
         name: "ripcord",
       },
     ],
+    compact: true,
   },
   {
     ...common,

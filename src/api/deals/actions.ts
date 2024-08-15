@@ -2,6 +2,10 @@
 import { useEffect, useState } from "react";
 import isURL from "validator/es/lib/isURL";
 import * as yup from "yup";
+import {
+  parsePhoneNumber,
+  isPossiblePhoneNumber,
+} from "react-phone-number-input";
 
 import useDebounced from "../../hooks/useDebounced";
 
@@ -21,11 +25,22 @@ export const NameSchema = yup
   .string()
   .max(191, "Must be shorter than ${max}")
   .required("Required");
-// export const PhoneNumberSchema = yup
-//   .string()
-//   .max(191, "Must be shorter than ${max}")
-//   .phone()
-//   .required("Required");
+export const PhoneNumberSchema = yup
+  .string()
+  .transform(
+    (value: string) => parsePhoneNumber(value, "US")?.format("E.164") || value
+  )
+  .test(
+    "phone-valid",
+    "${value} must be a valid phone number",
+    (value?: string) => {
+      if (!value) return true;
+
+      return isPossiblePhoneNumber(value, "US");
+    }
+  )
+  .max(191, "Must be shorter than ${max}")
+  .required("Required");
 export const URLSchema = yup
   .string()
   .required("Required")

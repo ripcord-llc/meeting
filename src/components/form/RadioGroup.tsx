@@ -13,7 +13,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 type Props = RadioGroupProps & {
   name: string;
   options: { label: string; value: any }[];
-  label: string;
+  label?: string;
   description?: string;
   spacing?: number;
   helperText?: React.ReactNode;
@@ -34,61 +34,45 @@ export default function RadioGroup({
   const labelledby = label ? `${name}-${label}` : "";
 
   return (
-    <Stack gap={1}>
-      <Box>
-        <Typography variant="subtitle2">{label}</Typography>
-        {description && <Typography variant="body2">{description}</Typography>}
-      </Box>
-      <Controller
-        name={name}
-        control={control}
-        render={({ field, fieldState: { error } }) => (
-          <FormControl component="fieldset">
-            {/* {label && (
-              <FormLabel
-                component="legend"
-                id={labelledby}
-                sx={{ typography: "body2" }}
-              >
-                {label}
-              </FormLabel>
-            )} */}
-
-            <MuiRadioGroup
-              {...field}
-              aria-labelledby={labelledby}
-              row={row}
-              {...other}
-            >
-              {options.map((option) => (
-                <FormControlLabel
-                  key={option.value}
-                  value={option.value}
-                  control={<Radio />}
-                  label={option.label}
-                  sx={{
+    <Controller
+      name={name}
+      control={control}
+      render={({ field, fieldState: { error } }) => (
+        <FormControl component="fieldset">
+          <MuiRadioGroup
+            {...field}
+            aria-labelledby={labelledby}
+            row={row}
+            {...other}
+          >
+            {options.map((option) => (
+              <FormControlLabel
+                key={option.value}
+                value={option.value}
+                control={<Radio />}
+                label={option.label}
+                sx={{
+                  "&:not(:last-of-type)": {
+                    mb: spacing || 0,
+                  },
+                  ...(row && {
+                    mr: 0,
                     "&:not(:last-of-type)": {
-                      mb: spacing || 0,
+                      mr: spacing || 2,
                     },
-                    ...(row && {
-                      mr: 0,
-                      "&:not(:last-of-type)": {
-                        mr: spacing || 2,
-                      },
-                    }),
-                  }}
-                />
-              ))}
-            </MuiRadioGroup>
+                  }),
+                }}
+              />
+            ))}
+          </MuiRadioGroup>
 
-            {(!!error || helperText) && (
-              <FormHelperText error={!!error} sx={{ mx: 0 }}>
-                {error ? error?.message : helperText}
-              </FormHelperText>
-            )}
-          </FormControl>
-        )}
-      />
-    </Stack>
+          {(!!error || helperText) && (
+            <FormHelperText error={!!error} sx={{ mx: 0 }}>
+              {error ? error?.message : helperText}
+            </FormHelperText>
+          )}
+        </FormControl>
+      )}
+    />
   );
 }

@@ -9,10 +9,8 @@ import styled from "@mui/material/styles/styled";
 import PoweredByRipcordIcon from "../icons/PoweredByRipcordIcon";
 
 const StyledContent = styled(Box)(({ theme }) => ({
-  maxHeight: "100%",
   display: "grid",
   gridTemplateRows: "48px 1fr 48px",
-  overflow: "hidden",
 
   "& > *:not(:last-child)": {
     borderBottom: `1px solid ${theme.palette.divider}`,
@@ -40,6 +38,7 @@ export default function Dialog({
       onClose={onClose}
       fullWidth
       disablePortal
+      scroll="body"
       sx={{
         "& .MuiDialog-paper": {
           transition: (theme) =>
@@ -62,7 +61,7 @@ export default function Dialog({
             <CloseIcon sx={{ width: 20, height: 20 }} />
           </IconButton>
         </Stack>
-        <Box overflow="hidden">{children}</Box>
+        <Box>{children}</Box>
         <Stack direction="row" alignItems="center" px={4}>
           {slots?.footerLeft}
           <PoweredByRipcordIcon

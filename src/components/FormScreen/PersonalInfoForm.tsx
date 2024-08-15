@@ -71,10 +71,23 @@ export default function PersonalInfoForm({
 
   const { watch, handleSubmit } = methods;
 
-  // const email = watch("email");
-  // const name = watch("name");
-  // const phone = watch("phone");
-  // const url = watch("url");
+  const email = watch("email");
+  const name = watch("name");
+  const phone = watch("phone");
+  const url = watch("url");
+
+  const emailAndUrlEnteredAndValid = useMemo(() => {
+    if (!email || !url) return false;
+
+    try {
+      EmailSchema.validateSync(email);
+      URLSchema.validateSync(url);
+
+      return true;
+    } catch {
+      return false;
+    }
+  }, [email, url]);
 
   return (
     <Box
@@ -105,33 +118,39 @@ export default function PersonalInfoForm({
                 }}
               />
             </FieldWrapper>
-            <FieldWrapper label="Full Name">
-              <TextField name="name" fullWidth variant="outlined" />
-            </FieldWrapper>
-            <FieldWrapper label="Cell Number">
-              <PhoneInput name="phone" fullWidth variant="outlined" />
-            </FieldWrapper>
-            {questions.map((q) => (
-              <FieldWrapper key={q.id} label={q.question}>
-                <RadioGroup
-                  name={`answers.${q.id}`}
-                  options={q.answers.map((a) => ({
-                    label: a.answer,
-                    value: a.id,
-                  }))}
-                />
-              </FieldWrapper>
-            ))}
+            {emailAndUrlEnteredAndValid && (
+              <>
+                <FieldWrapper label="Full Name">
+                  <TextField name="name" fullWidth variant="outlined" />
+                </FieldWrapper>
+                <FieldWrapper label="Cell Number">
+                  <PhoneInput name="phone" fullWidth variant="outlined" />
+                </FieldWrapper>
+                {questions.map((q) => (
+                  <FieldWrapper key={q.id} label={q.question}>
+                    <RadioGroup
+                      name={`answers.${q.id}`}
+                      options={q.answers.map((a) => ({
+                        label: a.answer,
+                        value: a.id,
+                      }))}
+                    />
+                  </FieldWrapper>
+                ))}
+              </>
+            )}
           </Stack>
-          <Button
-            type="submit"
-            fullWidth
-            variant="outlined"
-            color="inherit"
-            sx={{ mt: 3 }}
-          >
-            Continue
-          </Button>
+          {emailAndUrlEnteredAndValid && (
+            <Button
+              type="submit"
+              fullWidth
+              variant="outlined"
+              color="inherit"
+              sx={{ mt: 3 }}
+            >
+              Continue
+            </Button>
+          )}
         </form>
       </FormProvider>
     </Box>

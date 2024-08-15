@@ -13,6 +13,8 @@ import {
 import TextField from "../form/TextField";
 import RadioGroup from "../form/RadioGroup";
 
+import { PhoneInput } from "../form/phone-input";
+
 import { PublicRouting } from "../../api/routing/types";
 
 import FieldWrapper from "../form/FieldWrapper";
@@ -107,7 +109,7 @@ export default function PersonalInfoForm({
               <TextField name="name" fullWidth variant="outlined" />
             </FieldWrapper>
             <FieldWrapper label="Cell Number">
-              <TextField name="phone" fullWidth variant="outlined" />
+              <PhoneInput name="phone" fullWidth variant="outlined" />
             </FieldWrapper>
             {questions.map((q) => (
               <FieldWrapper key={q.id} label={q.question}>

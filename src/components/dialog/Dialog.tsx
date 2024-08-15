@@ -1,7 +1,11 @@
-import MuiDialog, { DialogProps } from "@mui/material/Dialog";
-import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
+import {
+  Dialog as MuiDialog,
+  DialogProps,
+  Box,
+  IconButton,
+  Stack,
+} from "@mui/material";
+
 import CloseIcon from "@mui/icons-material/Close";
 
 import styled from "@mui/material/styles/styled";

@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from "react";
 import { Box, Stack, Typography, Button, InputAdornment } from "@mui/material";
 import { useForm, FormProvider } from "react-hook-form";
 import * as yup from "yup";
@@ -12,13 +13,13 @@ import {
 
 import TextField from "../form/TextField";
 import RadioGroup from "../form/RadioGroup";
-
 import { PhoneInput } from "../form/phone-input";
 
 import { PublicRouting } from "../../api/routing/types";
 
+import { useInjectLead } from "../../api/deals/actions";
+
 import FieldWrapper from "../form/FieldWrapper";
-import { useMemo } from "react";
 
 interface FormValues {
   email: string;
@@ -33,7 +34,9 @@ export default function PersonalInfoForm({
 }: {
   routing: PublicRouting;
 }) {
-  const { account, questions } = routing;
+  const { uuid: routingId, account, questions } = routing;
+
+  const injectLead = useInjectLead();
 
   const schema = useMemo(
     () =>
@@ -75,6 +78,18 @@ export default function PersonalInfoForm({
   const name = watch("name");
   const phone = watch("phone");
   const url = watch("url");
+
+  useEffect(() => {
+    if (email) {
+      injectLead({
+        email,
+        name,
+        phone,
+        url,
+        routingId,
+      });
+    }
+  }, [routingId, email, name, phone, url]);
 
   const emailAndUrlEnteredAndValid = useMemo(() => {
     if (!email || !url) return false;

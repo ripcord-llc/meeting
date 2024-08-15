@@ -1,5 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
-import { useEffect, useState } from "react";
 import isURL from "validator/es/lib/isURL";
 import * as yup from "yup";
 import {
@@ -48,19 +46,19 @@ export const URLSchema = yup
   .max(2083, "Must be shorter than ${max}")
   .test("is-url", "Must be a valid URL", (value) => !!value && isURL(value)); // Using isURL from validator.js to match server-side validation
 
-async function validateAndConvertDataToInjectLeadBody(
-  email: string,
-  name: string,
-  phone: string,
-  url: string
-): Promise<Partial<InjectLeadBody>> {
+async function validateAndConvertDataToInjectLeadBody(body: {
+  email: string;
+  name: string;
+  phone: string;
+  url: string;
+}): Promise<Partial<InjectLeadBody>> {
   const keys = ["email", "name", "phone", "url"] as const;
 
   const result = await Promise.allSettled([
-    EmailSchema.validate(email),
-    NameSchema.validate(name),
-    // PhoneNumberSchema.validate(phone),
-    URLSchema.validate(url),
+    EmailSchema.validate(body.email),
+    NameSchema.validate(body.name),
+    PhoneNumberSchema.validate(body.phone),
+    URLSchema.validate(body.url),
   ]);
 
   const data = result.reduce((acc, curr, i) => {
@@ -74,41 +72,43 @@ async function validateAndConvertDataToInjectLeadBody(
 
 async function injectLead(
   body: InjectLeadBody & {
-    productId: string;
+    routingId: string;
+    productId?: string;
   }
-): Promise<any> {
-  const resp = await post<any>(PUBLIC_DEALS_ENDPOINTS.injectLead, body);
-
-  return resp.data;
+): Promise<void> {
+  await post<any>(PUBLIC_DEALS_ENDPOINTS.injectLead, body);
 }
 
-export function useInjectLead(
-  productId: string,
-  email: string,
-  name: string,
-  phone: string,
-  url: string,
-  active = true
-) {
+export function useInjectLead() {
   // Debounced functions use same logic as those using useEffectEvent. This means the object reference stays the same, even if dependencies change.
-  const handleSubmit = useDebounced(async () => {
-    const data = await validateAndConvertDataToInjectLeadBody(
-      email,
-      name,
-      phone,
-      url
-    );
+  return useDebounced(
+    async ({
+      routingId,
+      productId,
+      ...rest
+    }: {
+      routingId: string;
+      productId?: string;
+      email: string;
+      name: string;
+      phone: string;
+      url: string;
+    }) => {
+      const data = await validateAndConvertDataToInjectLeadBody(rest);
 
-    if (data.email) {
-      try {
-        await injectLead({ productId, email: data.email, ...data });
-      } catch (e) {
-        console.error(e);
+      if (data.email) {
+        try {
+          await injectLead({
+            routingId,
+            productId,
+            email: data.email,
+            ...data,
+          });
+        } catch (e) {
+          console.error(e);
+        }
       }
-    }
-  }, 2000);
-
-  useEffect(() => {
-    if (active) handleSubmit();
-  }, [email, name, phone, url, handleSubmit, active]);
+    },
+    2000
+  );
 }

@@ -13,49 +13,20 @@ import FieldWrapper from "../form/FieldWrapper";
 
 import { PublicRouting } from "../../api/routing/types";
 
+import PersonalInfoForm from "./PersonalInfoForm";
+
 const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting }>(
   ({ routing }, ref) => {
-    const { account } = routing;
-
     return (
-      <Stack
-        direction="row"
-        divider={<Divider flexItem orientation="vertical" />}
+      <Box
         ref={ref}
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
+        }}
       >
-        <Box p={4} flex={1}>
-          <Typography variant="h5">Book a Meeting</Typography>
-          <Typography variant="body1" color="text.secondary">
-            Schedule a demo with {account.name} now.
-          </Typography>
-          <Stack gap={2} mt={3}>
-            <FieldWrapper label="Email">
-              <TextField fullWidth variant="outlined" />
-            </FieldWrapper>
-            <FieldWrapper label="Company Website">
-              <TextField
-                fullWidth
-                variant="outlined"
-                InputProps={{
-                  startAdornment: "https://",
-                }}
-              />
-            </FieldWrapper>
-            <FieldWrapper label="Full Name">
-              <TextField fullWidth variant="outlined" />
-            </FieldWrapper>
-            <FieldWrapper label="Cell Number">
-              <TextField
-                fullWidth
-                variant="outlined"
-                helperText="For meeting reminders"
-              />
-            </FieldWrapper>
-          </Stack>
-          <Button fullWidth variant="outlined" color="inherit" sx={{ mt: 3 }}>
-            Continue
-          </Button>
-        </Box>
+        <PersonalInfoForm routing={routing} />
+        <Divider orientation="vertical" />
         <Stack
           p={4}
           flex={1}
@@ -85,7 +56,7 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting }>(
             Please fill out the form to book a meeting with Cheese Corp.
           </Box>
         </Stack>
-      </Stack>
+      </Box>
     );
   }
 );

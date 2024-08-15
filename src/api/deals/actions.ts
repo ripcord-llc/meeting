@@ -43,6 +43,7 @@ export const PhoneNumberSchema = yup
   .required("Required");
 export const URLSchema = yup
   .string()
+  .transform((value: string) => "https://" + value)
   .required("Required")
   .max(2083, "Must be shorter than ${max}")
   .test("is-url", "Must be a valid URL", (value) => !!value && isURL(value)); // Using isURL from validator.js to match server-side validation

@@ -1,16 +1,6 @@
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+export const CONFIG = {
+  CLIENT_URL: "http://localhost:8081", // Replace with env variable
+  API_URL: "http://localhost:3000",
+};
 
-import ThemeProvider from "../theme";
-
-export default function ConfigurationProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <ThemeProvider themeMode="light">{children}</ThemeProvider>
-    </LocalizationProvider>
-  );
-}
+export { default as ConfigurationProvider } from "./config-provider";

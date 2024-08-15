@@ -9,7 +9,7 @@ import FormScreen from "./components/FormScreen";
 
 import { usePublicRouting } from "./api/routing";
 
-import ConfigurationProvider from "./config";
+import { ConfigurationProvider } from "./config";
 
 export interface BookingWidgetProps {
   open: boolean;

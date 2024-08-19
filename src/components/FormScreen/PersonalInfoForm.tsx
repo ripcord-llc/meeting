@@ -1,25 +1,24 @@
-import { useEffect, useMemo } from "react";
-import { Box, Stack, Typography, Button, InputAdornment } from "@mui/material";
-import { useForm, FormProvider } from "react-hook-form";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { useEffect, useMemo } from 'react';
+import { Box, Stack, Typography, Button, InputAdornment } from '@mui/material';
+import { useForm, FormProvider } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 import {
   EmailSchema,
   NameSchema,
   PhoneNumberSchema,
   URLSchema,
-} from "../../api/deals/actions";
+  useInjectLead,
+} from '../../api/deals/actions';
 
-import TextField from "../form/TextField";
-import RadioGroup from "../form/RadioGroup";
-import { PhoneInput } from "../form/phone-input";
+import TextField from '../form/TextField';
+import RadioGroup from '../form/RadioGroup';
+import { PhoneInput } from '../form/phone-input';
 
-import { PublicRouting } from "../../api/routing/types";
+import { PublicRouting } from '../../api/routing/types';
 
-import { useInjectLead } from "../../api/deals/actions";
-
-import FieldWrapper from "../form/FieldWrapper";
+import FieldWrapper from '../form/FieldWrapper';
 
 interface FormValues {
   email: string;
@@ -29,14 +28,14 @@ interface FormValues {
   answers: Record<number, number>;
 }
 
-export default function PersonalInfoForm({
-  routing,
-}: {
-  routing: PublicRouting;
-}) {
+export default function PersonalInfoForm({ routing }: { routing: PublicRouting }) {
   const { uuid: routingId, account, questions } = routing;
 
   const injectLead = useInjectLead();
+
+  console.log(injectLead);
+
+  const { inject } = injectLead;
 
   const schema = useMemo(
     () =>
@@ -47,11 +46,14 @@ export default function PersonalInfoForm({
         url: URLSchema,
         ...(questions.length && {
           answers: yup.object().shape(
-            questions.reduce((acc, q) => {
-              acc[q.id] = yup.number().min(0, "Required").required("Required");
+            questions.reduce(
+              (acc, q) => {
+                acc[q.id] = yup.number().min(0, 'Required').required('Required');
 
-              return acc;
-            }, {} as Record<number, yup.AnySchema>)
+                return acc;
+              },
+              {} as Record<number, yup.AnySchema>
+            )
           ),
         }),
       }),
@@ -60,28 +62,31 @@ export default function PersonalInfoForm({
 
   const methods = useForm<FormValues>({
     defaultValues: {
-      email: "",
-      name: "",
-      phone: "",
-      url: "",
-      answers: questions.reduce((acc, q) => {
-        acc[q.id] = -1;
-        return acc;
-      }, {} as Record<number, number>),
+      email: '',
+      name: '',
+      phone: '',
+      url: '',
+      answers: questions.reduce(
+        (acc, q) => {
+          acc[q.id] = -1;
+          return acc;
+        },
+        {} as Record<number, number>
+      ),
     },
     resolver: yupResolver(schema) as any,
   });
 
   const { watch, handleSubmit } = methods;
 
-  const email = watch("email");
-  const name = watch("name");
-  const phone = watch("phone");
-  const url = watch("url");
+  const email = watch('email');
+  const name = watch('name');
+  const phone = watch('phone');
+  const url = watch('url');
 
   useEffect(() => {
     if (email) {
-      injectLead({
+      inject({
         email,
         name,
         phone,
@@ -89,7 +94,7 @@ export default function PersonalInfoForm({
         routingId,
       });
     }
-  }, [routingId, email, name, phone, url]);
+  }, [inject, routingId, email, name, phone, url]);
 
   const emailAndUrlEnteredAndValid = useMemo(() => {
     if (!email || !url) return false;
@@ -108,8 +113,8 @@ export default function PersonalInfoForm({
     <Box
       sx={{
         p: 4,
-        height: "100%",
-        overflow: "auto",
+        height: '100%',
+        overflow: 'auto',
       }}
     >
       <FormProvider {...methods}>
@@ -156,13 +161,7 @@ export default function PersonalInfoForm({
             )}
           </Stack>
           {emailAndUrlEnteredAndValid && (
-            <Button
-              type="submit"
-              fullWidth
-              variant="outlined"
-              color="inherit"
-              sx={{ mt: 3 }}
-            >
+            <Button type="submit" fullWidth variant="outlined" color="inherit" sx={{ mt: 3 }}>
               Continue
             </Button>
           )}
@@ -172,7 +171,7 @@ export default function PersonalInfoForm({
   );
 }
 
-function FormHeader({ account }: { account: PublicRouting["account"] }) {
+function FormHeader({ account }: { account: PublicRouting['account'] }) {
   return (
     <>
       <Typography variant="h5">Book a Meeting</Typography>

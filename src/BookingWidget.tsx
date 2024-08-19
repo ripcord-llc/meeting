@@ -1,15 +1,16 @@
-"use client";
-import { Fade, Stack, Avatar, Typography } from "@mui/material";
+'use client';
 
-import Dialog from "./components/dialog/Dialog";
+import { Fade, Stack, Avatar, Typography } from '@mui/material';
 
-import ErrorScreen from "./components/ErrorScreen";
-import LoadingScreen from "./components/LoadingScreen";
-import FormScreen from "./components/FormScreen";
+import Dialog from './components/dialog/Dialog';
 
-import { usePublicRouting } from "./api/routing";
+import ErrorScreen from './components/ErrorScreen';
+import LoadingScreen from './components/LoadingScreen';
+import FormScreen from './components/FormScreen';
 
-import { ConfigurationProvider } from "./config";
+import { usePublicRouting } from './api/routing';
+
+import { ConfigurationProvider } from './config';
 
 export interface BookingWidgetProps {
   open: boolean;

@@ -25,18 +25,11 @@ export const NameSchema = yup
   .required("Required");
 export const PhoneNumberSchema = yup
   .string()
-  .transform(
-    (value: string) => parsePhoneNumber(value, "US")?.format("E.164") || value
-  )
-  .test(
-    "phone-valid",
-    "${value} must be a valid phone number",
-    (value?: string) => {
-      if (!value) return true;
+  .test("phone-valid", "Must be a valid phone number", (value?: string) => {
+    if (!value) return true;
 
-      return isPossiblePhoneNumber(value, "US");
-    }
-  )
+    return isPossiblePhoneNumber(value);
+  })
   .max(191, "Must be shorter than ${max}")
   .required("Required");
 export const URLSchema = yup

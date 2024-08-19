@@ -1,5 +1,5 @@
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 import ThemeProvider from "../theme";
 
@@ -9,7 +9,7 @@ export default function ConfigurationProvider({
   children: React.ReactNode;
 }) {
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
       <ThemeProvider themeMode="light">{children}</ThemeProvider>
     </LocalizationProvider>
   );

@@ -117,34 +117,34 @@ export function useValidatedLeadInjectionValues(
 }
 
 export function useInjectLead(routingId: string, productId?: string) {
-  const [response, setResponse] = useState<LeadInjectionResponse | null>(null);
-  const [processing, setProcessing] = useState(false); // true when inject is called, false when inject is done
-  const [loading, setLoading] = useState(false); // true when inject is loading, false when inject is done
+  const [data, setData] = useState<LeadInjectionResponse | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false); // true when inject is called, false when inject is done
+  const [isLoading, setIsLoading] = useState(false); // true when inject is loading, false when inject is done
   const [error, setError] = useState<unknown>(null);
   // Debounced functions use same logic as those using useEffectEvent. This means the object reference stays the same, even if dependencies change.
   const handler = useDebounced(
-    async (data: { email?: string; name?: string; phone?: string; url?: string }) => {
-      if (data.email) {
+    async (params: { email?: string; name?: string; phone?: string; url?: string }) => {
+      if (params.email) {
         try {
-          setLoading(true);
+          setIsLoading(true);
 
           const resp = await injectLead({
             ...data,
-            email: data.email,
+            email: params.email,
             routingId,
             productId,
           });
 
-          setResponse(resp);
+          setData(resp);
         } catch (e) {
           setError(e);
           console.error(e);
         } finally {
-          setLoading(false);
+          setIsLoading(false);
         }
       }
 
-      setProcessing(false);
+      setIsProcessing(false);
     },
     2000,
     true
@@ -153,7 +153,7 @@ export function useInjectLead(routingId: string, productId?: string) {
   const inject = useCallback(
     async (params: { email?: string; name?: string; phone?: string; url?: string }) => {
       setError(null);
-      setProcessing(true);
+      setIsProcessing(true);
 
       try {
         await handler(params);
@@ -165,9 +165,9 @@ export function useInjectLead(routingId: string, productId?: string) {
   );
 
   return {
-    response,
-    processing,
-    loading,
+    data,
+    isProcessing,
+    isLoading,
     error,
     inject,
   };

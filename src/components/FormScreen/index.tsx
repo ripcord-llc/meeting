@@ -1,11 +1,18 @@
-import { useState, useEffect, useMemo, forwardRef, useCallback } from 'react';
-import { Stack, Box, Divider, Typography, Button, InputAdornment } from '@mui/material';
+import { useEffect, useMemo, forwardRef } from 'react';
+import {
+  Stack,
+  Box,
+  Divider,
+  Typography,
+  Button,
+  InputAdornment,
+  Collapse,
+  Fade,
+} from '@mui/material';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { useForm, FormProvider } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-
-import useDebounced from '../../hooks/useDebounced';
 
 import {
   EmailSchema,
@@ -38,7 +45,14 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
 
     const injectLead = useInjectLead(routingId, productId);
 
-    const { inject } = injectLead;
+    const { inject, data } = injectLead;
+
+    // If client has enrichment data, only show questions that are always visible
+    const visibleQuestions = useMemo(() => {
+      if (!data?.client?.hasEnrichmentData) return questions;
+
+      return questions.filter((q) => q.alwaysVisible);
+    }, [questions, data]);
 
     const schema = useMemo(
       () =>
@@ -47,9 +61,9 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
           name: NameSchema,
           phone: PhoneNumberSchema,
           url: URLSchema,
-          ...(questions.length && {
+          ...(visibleQuestions.length && {
             answers: yup.object().shape(
-              questions.reduce(
+              visibleQuestions.reduce(
                 (acc, q) => {
                   acc[q.id] = yup.number().min(0, 'Required').required('Required');
 
@@ -60,7 +74,7 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
             ),
           }),
         }),
-      [questions]
+      [visibleQuestions]
     );
 
     const methods = useForm<FormValues>({
@@ -90,7 +104,7 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
       if (validated.email) {
         inject({
           email: validated.email,
-          ...(validated.name && { name: validated.name }),
+          ...(validated.name && { name: validated.name }), // Strip null values
           ...(validated.phone && { phone: validated.phone }),
           ...(validated.url && { url: validated.url }),
         });
@@ -98,6 +112,12 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
     }, [inject, routingId, validated.email, validated.name, validated.phone, validated.url]);
 
     const emailAndUrlEnteredAndValid = validated.email && validated.url;
+
+    const questionsLoading = !!validated.phone && injectLead.isProcessing;
+    // Should only be visible if the phone number is valid, the injection has stopped processing, and the URL matches the client's URL
+    // The goal is to give the Enrichment API time to process the data before showing the questions
+    const questionsVisible =
+      !!validated.phone && !injectLead.isProcessing && validated.url === data?.client?.url;
 
     return (
       <Box
@@ -143,21 +163,34 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
                     <FieldWrapper label="Cell Number">
                       <PhoneInput name="phone" fullWidth variant="outlined" />
                     </FieldWrapper>
-                    {questions.map((q) => (
-                      <FieldWrapper key={q.id} label={q.question}>
-                        <RadioGroup
-                          name={`answers.${q.id}`}
-                          options={q.answers.map((a) => ({
-                            label: a.answer,
-                            value: a.id,
-                          }))}
-                        />
-                      </FieldWrapper>
-                    ))}
                   </>
                 )}
+                {questionsLoading && (
+                  <Fade in={questionsLoading} appear exit={false} timeout={750}>
+                    <Typography textAlign="center" variant="caption" color="text.secondary">
+                      Counting sheep...
+                    </Typography>
+                  </Fade>
+                )}
+                {questionsVisible && (
+                  <Collapse in appear exit={false} timeout={750}>
+                    <Box>
+                      {visibleQuestions.map((q) => (
+                        <FieldWrapper key={q.id} label={q.question}>
+                          <RadioGroup
+                            name={`answers.${q.id}`}
+                            options={q.answers.map((a) => ({
+                              label: a.answer,
+                              value: a.id,
+                            }))}
+                          />
+                        </FieldWrapper>
+                      ))}
+                    </Box>
+                  </Collapse>
+                )}
               </Stack>
-              {emailAndUrlEnteredAndValid && (
+              {questionsVisible && (
                 <Button type="submit" fullWidth variant="outlined" color="inherit" sx={{ mt: 3 }}>
                   Continue
                 </Button>

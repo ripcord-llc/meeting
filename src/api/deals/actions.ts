@@ -185,7 +185,7 @@ export function useInjectLead(routingId: string, productId?: string) {
           setIsLoading(true);
 
           const resp = await injectLead({
-            ...data,
+            ...params,
             email: params.email,
             routingId,
             productId,
@@ -202,8 +202,7 @@ export function useInjectLead(routingId: string, productId?: string) {
 
       setIsProcessing(false);
     },
-    2000,
-    true
+    2000
   );
 
   const inject = useCallback(

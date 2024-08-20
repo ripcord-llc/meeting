@@ -19,7 +19,7 @@ export interface BookingWidgetProps {
   productId?: string;
 }
 
-function BookingWidget({ open, onClose, routingId }: BookingWidgetProps) {
+function BookingWidget({ open, onClose, routingId, productId }: BookingWidgetProps) {
   const { data, isLoading, error } = usePublicRouting(routingId);
 
   if (isLoading) {
@@ -59,7 +59,7 @@ function BookingWidget({ open, onClose, routingId }: BookingWidgetProps) {
       }}
     >
       <Fade in appear timeout={750}>
-        <FormScreen routing={data} />
+        <FormScreen routing={data} productId={productId} />
       </Fade>
     </Dialog>
   );

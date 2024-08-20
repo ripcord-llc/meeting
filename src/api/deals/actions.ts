@@ -1,8 +1,8 @@
 /* eslint-disable no-template-curly-in-string */
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import isURL from 'validator/es/lib/isURL';
 import * as yup from 'yup';
-import { parsePhoneNumber, isPossiblePhoneNumber } from 'react-phone-number-input';
+import { isPossiblePhoneNumber } from 'react-phone-number-input';
 
 import useDebounced from '../../hooks/useDebounced';
 
@@ -37,7 +37,7 @@ export const URLSchema = yup
   .max(2083, 'Must be shorter than ${max}')
   .test('is-url', 'Must be a valid URL', (value) => !!value && isURL(value)); // Using isURL from validator.js to match server-side validation
 
-async function validateAndConvertDataToInjectLeadBody(body: {
+export async function validateAndConvertDataToInjectLeadBody(body: {
   email: string;
   name: string;
   phone: string;
@@ -61,7 +61,7 @@ async function validateAndConvertDataToInjectLeadBody(body: {
   return data;
 }
 
-async function injectLead(
+export async function injectLead(
   body: InjectLeadBody & {
     routingId: string;
     productId?: string;
@@ -70,36 +70,69 @@ async function injectLead(
   return post<LeadInjectionResponse>(PUBLIC_DEALS_ENDPOINTS.injectLead, body);
 }
 
-export function useInjectLead() {
+export function useValidatedLeadInjectionValues(
+  email: string,
+  name: string,
+  phone: string,
+  url: string
+): {
+  email: string | null;
+  name: string | null;
+  phone: string | null;
+  url: string | null;
+} {
+  const [validEmail, setValidEmail] = useState<string | null>(null);
+  const [validName, setValidName] = useState<string | null>(null);
+  const [validPhone, setValidPhone] = useState<string | null>(null);
+  const [validUrl, setValidUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const validated = await validateAndConvertDataToInjectLeadBody({
+        email,
+        name,
+        phone,
+        url,
+      });
+
+      if (cancelled) return;
+
+      setValidEmail(validated.email || null);
+      setValidName(validated.name || null);
+      setValidPhone(validated.phone || null);
+      setValidUrl(validated.url || null);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [email, name, phone, url]);
+
+  return useMemo(
+    () => ({ email: validEmail, name: validName, phone: validPhone, url: validUrl }),
+    [validEmail, validName, validPhone, validUrl]
+  );
+}
+
+export function useInjectLead(routingId: string, productId?: string) {
   const [response, setResponse] = useState<LeadInjectionResponse | null>(null);
-  const [processing, setProcessing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false); // true when inject is called, false when inject is done
+  const [loading, setLoading] = useState(false); // true when inject is loading, false when inject is done
   const [error, setError] = useState<unknown>(null);
   // Debounced functions use same logic as those using useEffectEvent. This means the object reference stays the same, even if dependencies change.
   const handler = useDebounced(
-    async ({
-      routingId,
-      productId,
-      ...rest
-    }: {
-      routingId: string;
-      productId?: string;
-      email: string;
-      name: string;
-      phone: string;
-      url: string;
-    }) => {
-      const data = await validateAndConvertDataToInjectLeadBody(rest);
-
+    async (data: { email?: string; name?: string; phone?: string; url?: string }) => {
       if (data.email) {
         try {
           setLoading(true);
 
           const resp = await injectLead({
+            ...data,
+            email: data.email,
             routingId,
             productId,
-            email: data.email,
-            ...data,
           });
 
           setResponse(resp);
@@ -110,19 +143,15 @@ export function useInjectLead() {
           setLoading(false);
         }
       }
+
+      setProcessing(false);
     },
-    2000
+    2000,
+    true
   );
 
   const inject = useCallback(
-    async (params: {
-      routingId: string;
-      productId?: string;
-      email: string;
-      name: string;
-      phone: string;
-      url: string;
-    }) => {
+    async (params: { email?: string; name?: string; phone?: string; url?: string }) => {
       setError(null);
       setProcessing(true);
 
@@ -130,8 +159,6 @@ export function useInjectLead() {
         await handler(params);
       } catch (e) {
         console.error(e);
-      } finally {
-        setProcessing(false);
       }
     },
     [handler]

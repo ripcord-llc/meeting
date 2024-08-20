@@ -90,25 +90,81 @@ export function useValidatedLeadInjectionValues(
     let cancelled = false;
 
     (async () => {
-      const validated = await validateAndConvertDataToInjectLeadBody({
-        email,
-        name,
-        phone,
-        url,
-      });
+      try {
+        const valiatedEmail = await EmailSchema.validate(email);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      setValidEmail(validated.email || null);
-      setValidName(validated.name || null);
-      setValidPhone(validated.phone || null);
-      setValidUrl(validated.url || null);
+        setValidEmail(valiatedEmail);
+      } catch (e) {
+        setValidEmail(null);
+      }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [email, name, phone, url]);
+  }, [email]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const validatedName = await NameSchema.validate(name);
+
+        if (cancelled) return;
+
+        setValidName(validatedName);
+      } catch (e) {
+        setValidName(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [name]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const validatedPhone = await PhoneNumberSchema.validate(phone);
+
+        if (cancelled) return;
+
+        setValidPhone(validatedPhone);
+      } catch (e) {
+        setValidPhone(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [phone]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const validatedUrl = await URLSchema.validate(url);
+
+        if (cancelled) return;
+
+        setValidUrl(validatedUrl);
+      } catch (e) {
+        setValidUrl(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
 
   return useMemo(
     () => ({ email: validEmail, name: validName, phone: validPhone, url: validUrl }),

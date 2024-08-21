@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { LoadingButton } from '@mui/lab';
 import { Stack, Box, Typography, Button, InputAdornment, Collapse, Fade } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import * as yup from 'yup';
@@ -21,7 +22,16 @@ import { PublicRouting } from '../../api/routing/types';
 
 import FieldWrapper from '../form/FieldWrapper';
 
-import { FormValues } from './types';
+import { FormValues, FormScreenStatus } from './types';
+
+interface Props {
+  routing: PublicRouting;
+  productId?: string;
+  status: FormScreenStatus;
+  onSubmit: (values: FormValues) => Promise<void>;
+  onGoBack: () => void;
+  formValues: FormValues | null;
+}
 
 // TODO: Make sure latest enrichment data is fetched (maybe polled) when the client changes the url
 
@@ -36,13 +46,24 @@ function FormHeader({ account }: { account: PublicRouting['account'] }) {
   );
 }
 
-export default function PersonalInfoForm({
-  routing,
-  productId,
-}: {
-  routing: PublicRouting;
-  productId?: string;
-}) {
+export default function PersonalInfoForm(props: Props) {
+  const { status } = props;
+
+  return (
+    <Box
+      sx={{
+        p: 4,
+        height: '100%',
+        overflow: 'auto',
+      }}
+    >
+      {status === 'personal-info' && <FormState {...props} />}
+      {status === 'calendar' && <StaticState {...props} />}
+    </Box>
+  );
+}
+
+function FormState({ routing, productId, onSubmit, formValues }: Props) {
   const { uuid: routingId, account, questions } = routing;
 
   const { inject, data, flush, isProcessing } = useInjectLead(routingId, productId);
@@ -82,22 +103,28 @@ export default function PersonalInfoForm({
 
   const methods = useForm<FormValues>({
     defaultValues: {
-      email: '',
-      name: '',
-      phone: '',
-      url: '',
-      answers: questions.reduce(
-        (acc, q) => {
-          acc[q.id] = -1;
-          return acc;
-        },
-        {} as Record<number, number>
-      ),
+      email: formValues?.email || '',
+      name: formValues?.name || '',
+      phone: formValues?.phone || '',
+      url: formValues?.url || '',
+      answers:
+        formValues?.answers ||
+        questions.reduce(
+          (acc, q) => {
+            acc[q.id] = -1;
+            return acc;
+          },
+          {} as Record<number, number>
+        ),
     },
     resolver: yupResolver(schema) as any,
   });
 
-  const { watch, handleSubmit } = methods;
+  const {
+    watch,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
 
   const onBlur = () => {
     flush(); // Run latest call to injectLead when input fields are blurred. This flushes the debounced function.
@@ -139,77 +166,80 @@ export default function PersonalInfoForm({
   }, [formFilledOnce, questionsVisible, questionsWereShown]);
 
   return (
-    <Box
-      sx={{
-        p: 4,
-        height: '100%',
-        overflow: 'auto',
-      }}
-    >
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(console.log)}>
-          <FormHeader account={account} />
-          <Stack gap={2} mt={3}>
-            <FieldWrapper label="Email">
-              <TextField name="email" fullWidth variant="outlined" onBlur={onBlur} />
-            </FieldWrapper>
-            <FieldWrapper label="Company Website">
-              <TextField
-                name="url"
-                fullWidth
-                variant="outlined"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ mr: 0 }}>
-                      https://
-                    </InputAdornment>
-                  ),
-                }}
-                onBlur={onBlur}
-              />
-            </FieldWrapper>
-            {emailAndUrlEnteredAndValid && (
-              <>
-                <FieldWrapper label="Full Name">
-                  <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
-                </FieldWrapper>
-                <FieldWrapper label="Cell Number">
-                  <PhoneInput name="phone" fullWidth variant="outlined" onBlur={onBlur} />
-                </FieldWrapper>
-              </>
-            )}
-            {!questionsWereShown && questionsLoading && (
-              <Fade in={questionsLoading} appear exit={false} timeout={750}>
-                <Typography textAlign="center" variant="caption" color="text.secondary">
-                  Counting sheep...
-                </Typography>
-              </Fade>
-            )}
-            {(questionsWereShown || questionsVisible) && (
-              <Collapse in appear exit={false} timeout={750}>
-                <Box>
-                  {visibleQuestions.map((q) => (
-                    <FieldWrapper key={q.id} label={q.question}>
-                      <RadioGroup
-                        name={`answers.${q.id}`}
-                        options={q.answers.map((a) => ({
-                          label: a.answer,
-                          value: a.id,
-                        }))}
-                      />
-                    </FieldWrapper>
-                  ))}
-                </Box>
-              </Collapse>
-            )}
-          </Stack>
-          {(questionsWereShown || questionsVisible) && (
-            <Button type="submit" fullWidth variant="outlined" color="inherit" sx={{ mt: 3 }}>
-              Continue
-            </Button>
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FormHeader account={account} />
+        <Stack gap={2} mt={3}>
+          <FieldWrapper label="Email">
+            <TextField name="email" fullWidth variant="outlined" onBlur={onBlur} />
+          </FieldWrapper>
+          <FieldWrapper label="Company Website">
+            <TextField
+              name="url"
+              fullWidth
+              variant="outlined"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ mr: 0 }}>
+                    https://
+                  </InputAdornment>
+                ),
+              }}
+              onBlur={onBlur}
+            />
+          </FieldWrapper>
+          {emailAndUrlEnteredAndValid && (
+            <>
+              <FieldWrapper label="Full Name">
+                <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
+              </FieldWrapper>
+              <FieldWrapper label="Cell Number">
+                <PhoneInput name="phone" fullWidth variant="outlined" onBlur={onBlur} />
+              </FieldWrapper>
+            </>
           )}
-        </form>
-      </FormProvider>
-    </Box>
+          {!questionsWereShown && questionsLoading && (
+            <Fade in={questionsLoading} appear exit={false} timeout={750}>
+              <Typography textAlign="center" variant="caption" color="text.secondary">
+                Counting sheep...
+              </Typography>
+            </Fade>
+          )}
+          {(questionsWereShown || questionsVisible) && (
+            <Collapse in appear exit={false} timeout={750}>
+              <Box>
+                {visibleQuestions.map((q) => (
+                  <FieldWrapper key={q.id} label={q.question}>
+                    <RadioGroup
+                      name={`answers.${q.id}`}
+                      options={q.answers.map((a) => ({
+                        label: a.answer,
+                        value: a.id,
+                      }))}
+                    />
+                  </FieldWrapper>
+                ))}
+              </Box>
+            </Collapse>
+          )}
+        </Stack>
+        {(questionsWereShown || questionsVisible) && (
+          <LoadingButton
+            loading={isSubmitting}
+            type="submit"
+            fullWidth
+            variant="outlined"
+            color="inherit"
+            sx={{ mt: 3 }}
+          >
+            Continue
+          </LoadingButton>
+        )}
+      </form>
+    </FormProvider>
   );
+}
+
+function StaticState(props: Props) {
+  return 'static';
 }

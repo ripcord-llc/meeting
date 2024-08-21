@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-prop-types */
 import { useState, useEffect, useMemo } from 'react';
 import { LoadingButton } from '@mui/lab';
 import { Stack, Box, Typography, Button, InputAdornment, Collapse, Fade } from '@mui/material';
@@ -22,12 +23,14 @@ import { PublicRouting } from '../../api/routing/types';
 
 import FieldWrapper from '../form/FieldWrapper';
 
-import { FormValues, FormScreenStatus } from './types';
+import { FormValues, PersonalInfoFormStatus } from './types';
 
 interface Props {
   routing: PublicRouting;
   productId?: string;
-  status: FormScreenStatus;
+  disabled: boolean;
+  status: PersonalInfoFormStatus[];
+  setStatus: React.Dispatch<React.SetStateAction<PersonalInfoFormStatus[]>>;
   onSubmit: (values: FormValues) => Promise<void>;
   onGoBack: () => void;
   formValues: FormValues | null;
@@ -47,7 +50,7 @@ function FormHeader({ account }: { account: PublicRouting['account'] }) {
 }
 
 export default function PersonalInfoForm(props: Props) {
-  const { status } = props;
+  const { disabled } = props;
 
   return (
     <Box
@@ -57,19 +60,18 @@ export default function PersonalInfoForm(props: Props) {
         overflow: 'auto',
       }}
     >
-      {status === 'personal-info' && <FormState {...props} />}
-      {status === 'calendar' && <StaticState {...props} />}
+      {disabled ? <StaticState {...props} /> : <FormState {...props} />}
     </Box>
   );
 }
 
-function FormState({ routing, productId, onSubmit, formValues }: Props) {
+function FormState({ routing, productId, onSubmit, formValues, status, setStatus }: Props) {
   const { uuid: routingId, account, questions } = routing;
 
   const { inject, data, flush, isProcessing } = useInjectLead(routingId, productId);
 
-  const [formFilledOnce, setFormFilledOnce] = useState(false);
-  const [questionsWereShown, setQuestionsWereShown] = useState(false);
+  const allFieldsVisibleOnce = status.includes('all-fields');
+  const questionsVisibleOnce = status.includes('questions');
 
   // If client has enrichment data, only show questions that are always visible
   const visibleQuestions = useMemo(() => {
@@ -106,7 +108,7 @@ function FormState({ routing, productId, onSubmit, formValues }: Props) {
       email: formValues?.email || '',
       name: formValues?.name || '',
       phone: formValues?.phone || '',
-      url: formValues?.url || '',
+      url: formValues?.url ? formValues.url.replace(/^https?:\/\//, '') : '',
       answers:
         formValues?.answers ||
         questions.reduce(
@@ -154,16 +156,16 @@ function FormState({ routing, productId, onSubmit, formValues }: Props) {
     !!validated.phone && !isProcessing && validated.url === data?.client?.url;
 
   useEffect(() => {
-    if (Object.values(validated).every(Boolean)) {
-      setFormFilledOnce(true);
+    if (emailAndUrlEnteredAndValid && !allFieldsVisibleOnce) {
+      setStatus((s) => [...s, 'all-fields']);
     }
-  }, [validated]);
+  }, [setStatus, allFieldsVisibleOnce, emailAndUrlEnteredAndValid]);
 
   useEffect(() => {
-    if (formFilledOnce && questionsVisible && !questionsWereShown) {
-      setQuestionsWereShown(true);
+    if (questionsVisible && !questionsVisibleOnce) {
+      setStatus((s) => [...s, 'questions']);
     }
-  }, [formFilledOnce, questionsVisible, questionsWereShown]);
+  }, [setStatus, questionsVisible, questionsVisibleOnce]);
 
   return (
     <FormProvider {...methods}>
@@ -188,24 +190,24 @@ function FormState({ routing, productId, onSubmit, formValues }: Props) {
               onBlur={onBlur}
             />
           </FieldWrapper>
-          {emailAndUrlEnteredAndValid && (
+          {(allFieldsVisibleOnce || emailAndUrlEnteredAndValid) && (
             <>
               <FieldWrapper label="Full Name">
                 <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
               </FieldWrapper>
               <FieldWrapper label="Cell Number">
-                <PhoneInput name="phone" fullWidth variant="outlined" onBlur={onBlur} />
+                <PhoneInput name="phone" fullWidth variant="outlined" />
               </FieldWrapper>
             </>
           )}
-          {!questionsWereShown && questionsLoading && (
+          {!questionsVisibleOnce && questionsLoading && (
             <Fade in={questionsLoading} appear exit={false} timeout={750}>
               <Typography textAlign="center" variant="caption" color="text.secondary">
                 Counting sheep...
               </Typography>
             </Fade>
           )}
-          {(questionsWereShown || questionsVisible) && (
+          {(questionsVisibleOnce || questionsVisible) && (
             <Collapse in appear exit={false} timeout={750}>
               <Box>
                 {visibleQuestions.map((q) => (
@@ -223,7 +225,7 @@ function FormState({ routing, productId, onSubmit, formValues }: Props) {
             </Collapse>
           )}
         </Stack>
-        {(questionsWereShown || questionsVisible) && (
+        {(questionsVisibleOnce || questionsVisible) && (
           <LoadingButton
             loading={isSubmitting}
             type="submit"
@@ -240,6 +242,10 @@ function FormState({ routing, productId, onSubmit, formValues }: Props) {
   );
 }
 
-function StaticState(props: Props) {
-  return 'static';
+function StaticState({ onGoBack }: Props) {
+  return (
+    <Button variant="outlined" onClick={onGoBack} fullWidth>
+      Edit
+    </Button>
+  );
 }

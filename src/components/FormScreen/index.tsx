@@ -6,11 +6,17 @@ import { PublicRouting } from '../../api/routing/types';
 
 import PersonalInfoForm from './PersonalInfoForm';
 
-import { FormValues, FormScreenStatus } from './types';
+import { FormValues, FormScreenStatus, PersonalInfoFormStatus } from './types';
 
 const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productId?: string }>(
   ({ routing, productId }, ref) => {
     const [status, setStatus] = useState<FormScreenStatus>('personal-info');
+    // This stores the furthest stage the user has reached in the personal info form. Once a stage is reached, the user can't go back to a previous stage.
+    // Basically, we don't want to hide the name, phone, or questions once they are visible.
+    const [personalInfoFormStatus, setPersonalInfoFormStatus] = useState<PersonalInfoFormStatus[]>([
+      'initial',
+    ]);
+
     const [formValues, setFormValues] = useState<FormValues | null>(null);
 
     const moveToCalendar = useCallback(async (values: FormValues) => {
@@ -20,7 +26,6 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
 
     const moveToPersonalInfo = useCallback(() => {
       setStatus('personal-info');
-      setFormValues(null);
     }, []);
 
     return (
@@ -34,7 +39,9 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
         <PersonalInfoForm
           routing={routing}
           productId={productId}
-          status={status}
+          disabled={status === 'calendar'}
+          status={personalInfoFormStatus}
+          setStatus={setPersonalInfoFormStatus}
           onSubmit={moveToCalendar}
           onGoBack={moveToPersonalInfo}
           formValues={formValues}

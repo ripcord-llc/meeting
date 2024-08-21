@@ -7,3 +7,4 @@ export interface FormValues {
 }
 
 export type FormScreenStatus = 'personal-info' | 'calendar';
+export type PersonalInfoFormStatus = 'initial' | 'all-fields' | 'questions';

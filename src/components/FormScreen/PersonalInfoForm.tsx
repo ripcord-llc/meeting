@@ -21,13 +21,7 @@ import { PublicRouting } from '../../api/routing/types';
 
 import FieldWrapper from '../form/FieldWrapper';
 
-interface FormValues {
-  email: string;
-  name: string;
-  phone: string;
-  url: string;
-  answers: Record<number, number>;
-}
+import { FormValues } from './types';
 
 // TODO: Make sure latest enrichment data is fetched (maybe polled) when the client changes the url
 

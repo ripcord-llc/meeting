@@ -1,5 +1,5 @@
 /* eslint-disable no-template-curly-in-string */
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
 import isURL from 'validator/es/lib/isURL';
 import * as yup from 'yup';
 import { isPossiblePhoneNumber } from 'react-phone-number-input';
@@ -237,3 +237,15 @@ export function useInjectLead(routingId: string, productId?: string) {
     cancel,
   };
 }
+
+export const InjectLeadContext = createContext<ReturnType<typeof useInjectLead> | null>(null);
+
+export const useInjectLeadContext = () => {
+  const context = useContext(InjectLeadContext);
+
+  if (!context) {
+    throw new Error('useInjectLeadContext must be used within a InjectLeadProvider');
+  }
+
+  return context;
+};

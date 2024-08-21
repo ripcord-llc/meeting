@@ -11,7 +11,7 @@ import {
   NameSchema,
   PhoneNumberSchema,
   URLSchema,
-  useInjectLead,
+  useInjectLeadContext,
   useValidatedLeadInjectionValues,
 } from '../../api/deals/actions';
 
@@ -68,7 +68,7 @@ export default function PersonalInfoForm(props: Props) {
 function FormState({ routing, productId, onSubmit, formValues, status, setStatus }: Props) {
   const { uuid: routingId, account, questions } = routing;
 
-  const { inject, data, flush, isProcessing } = useInjectLead(routingId, productId);
+  const { inject, data, flush, isProcessing } = useInjectLeadContext();
 
   const allFieldsVisibleOnce = status.includes('all-fields');
   const questionsVisibleOnce = status.includes('questions');

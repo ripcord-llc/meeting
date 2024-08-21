@@ -3,6 +3,7 @@ import { Stack, Box, Divider, Typography } from '@mui/material';
 import { DateCalendar } from '@mui/x-date-pickers';
 
 import { PublicRouting } from '../../api/routing/types';
+import { InjectLeadContext, useInjectLead } from '../../api/deals/actions';
 
 import PersonalInfoForm from './PersonalInfoForm';
 
@@ -10,6 +11,8 @@ import { FormValues, FormScreenStatus, PersonalInfoFormStatus } from './types';
 
 const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productId?: string }>(
   ({ routing, productId }, ref) => {
+    const injectLead = useInjectLead(routing.uuid, productId);
+
     const [status, setStatus] = useState<FormScreenStatus>('personal-info');
     // This stores the furthest stage the user has reached in the personal info form. Once a stage is reached, the user can't go back to a previous stage.
     // Basically, we don't want to hide the name, phone, or questions once they are visible.
@@ -36,16 +39,18 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
           gridTemplateColumns: '1fr auto 1fr',
         }}
       >
-        <PersonalInfoForm
-          routing={routing}
-          productId={productId}
-          disabled={status === 'calendar'}
-          status={personalInfoFormStatus}
-          setStatus={setPersonalInfoFormStatus}
-          onSubmit={moveToCalendar}
-          onGoBack={moveToPersonalInfo}
-          formValues={formValues}
-        />
+        <InjectLeadContext.Provider value={injectLead}>
+          <PersonalInfoForm
+            routing={routing}
+            productId={productId}
+            disabled={status === 'calendar'}
+            status={personalInfoFormStatus}
+            setStatus={setPersonalInfoFormStatus}
+            onSubmit={moveToCalendar}
+            onGoBack={moveToPersonalInfo}
+            formValues={formValues}
+          />
+        </InjectLeadContext.Provider>
         <Divider orientation="vertical" />
         <Stack
           p={4}

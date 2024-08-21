@@ -205,6 +205,14 @@ export function useInjectLead(routingId: string, productId?: string) {
     2000
   );
 
+  const flush = useCallback(() => {
+    handler.flush();
+  }, [handler]);
+
+  const cancel = useCallback(() => {
+    handler.cancel();
+  }, [handler]);
+
   const inject = useCallback(
     async (params: { email?: string; name?: string; phone?: string; url?: string }) => {
       setError(null);
@@ -225,5 +233,7 @@ export function useInjectLead(routingId: string, productId?: string) {
     isLoading,
     error,
     inject,
+    flush,
+    cancel,
   };
 }

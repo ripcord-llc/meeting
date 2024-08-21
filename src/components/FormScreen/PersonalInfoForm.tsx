@@ -132,9 +132,7 @@ function FormState({ routing, productId, onSubmit, formValues, status, setStatus
     flush(); // Run latest call to injectLead when input fields are blurred. This flushes the debounced function.
   };
 
-  const [email, name, phone, url] = watch(['email', 'name', 'phone', 'url']);
-
-  const validated = useValidatedLeadInjectionValues(email, name, phone, url);
+  const validated = useValidatedLeadInjectionValues(...watch(['email', 'name', 'phone', 'url']));
 
   useEffect(() => {
     if (validated.email) {
@@ -159,7 +157,7 @@ function FormState({ routing, productId, onSubmit, formValues, status, setStatus
   const questionsLoading = !!validated.phone && isProcessing;
   // Should only be visible if the phone number is valid, the injection has stopped processing, and the URL matches the client's URL
   // The goal is to give the Enrichment API time to process the data before showing the questions
-  const questionsVisible = calledWithAllData && !isProcessing;
+  const questionsVisible = calledWithAllData && !isProcessing; // !isProcessing is probably redundant
 
   useEffect(() => {
     if (questionsVisible && !questionsVisibleOnce) {

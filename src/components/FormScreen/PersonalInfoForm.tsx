@@ -29,6 +29,8 @@ interface FormValues {
   answers: Record<number, number>;
 }
 
+// TODO: Make sure latest enrichment data is fetched (maybe polled) when the client changes the url
+
 function FormHeader({ account }: { account: PublicRouting['account'] }) {
   return (
     <>

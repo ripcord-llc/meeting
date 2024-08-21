@@ -176,6 +176,7 @@ export function useInjectLead(routingId: string, productId?: string) {
   const [data, setData] = useState<LeadInjectionResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false); // true when inject is called, false when inject is done
   const [isLoading, setIsLoading] = useState(false); // true when inject is loading, false when inject is done
+  const [calledWithAllData, setCalledWithAllData] = useState(false);
   const [error, setError] = useState<unknown>(null);
   // Debounced functions use same logic as those using useEffectEvent. This means the object reference stays the same, even if dependencies change.
   const handler = useDebounced(
@@ -192,6 +193,10 @@ export function useInjectLead(routingId: string, productId?: string) {
           });
 
           setData(resp);
+
+          if (params.name && params.phone && params.url) {
+            setCalledWithAllData(true);
+          }
         } catch (e) {
           setError(e);
           console.error(e);
@@ -227,15 +232,10 @@ export function useInjectLead(routingId: string, productId?: string) {
     [handler]
   );
 
-  return {
-    data,
-    isProcessing,
-    isLoading,
-    error,
-    inject,
-    flush,
-    cancel,
-  };
+  return useMemo(
+    () => ({ data, isProcessing, isLoading, error, calledWithAllData, inject, flush, cancel }),
+    [data, isProcessing, isLoading, error, calledWithAllData, inject, flush, cancel]
+  );
 }
 
 export const InjectLeadContext = createContext<ReturnType<typeof useInjectLead> | null>(null);

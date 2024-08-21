@@ -68,7 +68,7 @@ export default function PersonalInfoForm(props: Props) {
 function FormState({ routing, productId, onSubmit, formValues, status, setStatus }: Props) {
   const { uuid: routingId, account, questions } = routing;
 
-  const { inject, data, flush, isProcessing } = useInjectLeadContext();
+  const { inject, data, flush, isProcessing, calledWithAllData } = useInjectLeadContext();
 
   const allFieldsVisibleOnce = status.includes('all-fields');
   const questionsVisibleOnce = status.includes('questions');
@@ -149,17 +149,16 @@ function FormState({ routing, productId, onSubmit, formValues, status, setStatus
 
   const emailAndUrlEnteredAndValid = validated.email && validated.url;
 
-  const questionsLoading = !!validated.phone && isProcessing;
-  // Should only be visible if the phone number is valid, the injection has stopped processing, and the URL matches the client's URL
-  // The goal is to give the Enrichment API time to process the data before showing the questions
-  const questionsVisible =
-    !!validated.phone && !isProcessing && validated.url === data?.client?.url;
-
   useEffect(() => {
     if (emailAndUrlEnteredAndValid && !allFieldsVisibleOnce) {
       setStatus((s) => [...s, 'all-fields']);
     }
   }, [setStatus, allFieldsVisibleOnce, emailAndUrlEnteredAndValid]);
+
+  const questionsLoading = !!validated.phone && isProcessing;
+  // Should only be visible if the phone number is valid, the injection has stopped processing, and the URL matches the client's URL
+  // The goal is to give the Enrichment API time to process the data before showing the questions
+  const questionsVisible = calledWithAllData && !isProcessing;
 
   useEffect(() => {
     if (questionsVisible && !questionsVisibleOnce) {
@@ -208,7 +207,7 @@ function FormState({ routing, productId, onSubmit, formValues, status, setStatus
             </Fade>
           )}
           {(questionsVisibleOnce || questionsVisible) && (
-            <Collapse in appear exit={false} timeout={750}>
+            <Collapse in appear={!formValues} exit={false} timeout={750}>
               <Box>
                 {visibleQuestions.map((q) => (
                   <FieldWrapper key={q.id} label={q.question}>

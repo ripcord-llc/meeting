@@ -11,6 +11,7 @@ import { FormValues, FormScreenStatus, PersonalInfoFormStatus } from './types';
 
 const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productId?: string }>(
   ({ routing, productId }, ref) => {
+    // This is called here so that the returned lead data isn't lost when the user moves to the calendar form.
     const injectLead = useInjectLead(routing.uuid, productId);
 
     const [status, setStatus] = useState<FormScreenStatus>('personal-info');

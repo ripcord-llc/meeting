@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Stack, Box, Typography, Button, InputAdornment, Collapse, Fade } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import * as yup from 'yup';
@@ -49,9 +49,10 @@ export default function PersonalInfoForm({
 }) {
   const { uuid: routingId, account, questions } = routing;
 
-  const injectLead = useInjectLead(routingId, productId);
+  const { inject, data, flush, isProcessing } = useInjectLead(routingId, productId);
 
-  const { inject, data } = injectLead;
+  const [formFilledOnce, setFormFilledOnce] = useState(false);
+  const [questionsWereShown, setQuestionsWereShown] = useState(false);
 
   // If client has enrichment data, only show questions that are always visible
   const visibleQuestions = useMemo(() => {
@@ -102,6 +103,10 @@ export default function PersonalInfoForm({
 
   const { watch, handleSubmit } = methods;
 
+  const onBlur = () => {
+    flush(); // Run latest call to injectLead when input fields are blurred. This flushes the debounced function.
+  };
+
   const [email, name, phone, url] = watch(['email', 'name', 'phone', 'url']);
 
   const validated = useValidatedLeadInjectionValues(email, name, phone, url);
@@ -119,11 +124,23 @@ export default function PersonalInfoForm({
 
   const emailAndUrlEnteredAndValid = validated.email && validated.url;
 
-  const questionsLoading = !!validated.phone && injectLead.isProcessing;
+  const questionsLoading = !!validated.phone && isProcessing;
   // Should only be visible if the phone number is valid, the injection has stopped processing, and the URL matches the client's URL
   // The goal is to give the Enrichment API time to process the data before showing the questions
   const questionsVisible =
-    !!validated.phone && !injectLead.isProcessing && validated.url === data?.client?.url;
+    !!validated.phone && !isProcessing && validated.url === data?.client?.url;
+
+  useEffect(() => {
+    if (Object.values(validated).every(Boolean)) {
+      setFormFilledOnce(true);
+    }
+  }, [validated]);
+
+  useEffect(() => {
+    if (formFilledOnce && questionsVisible && !questionsWereShown) {
+      setQuestionsWereShown(true);
+    }
+  }, [formFilledOnce, questionsVisible, questionsWereShown]);
 
   return (
     <Box
@@ -138,7 +155,7 @@ export default function PersonalInfoForm({
           <FormHeader account={account} />
           <Stack gap={2} mt={3}>
             <FieldWrapper label="Email">
-              <TextField name="email" fullWidth variant="outlined" />
+              <TextField name="email" fullWidth variant="outlined" onBlur={onBlur} />
             </FieldWrapper>
             <FieldWrapper label="Company Website">
               <TextField
@@ -152,26 +169,27 @@ export default function PersonalInfoForm({
                     </InputAdornment>
                   ),
                 }}
+                onBlur={onBlur}
               />
             </FieldWrapper>
             {emailAndUrlEnteredAndValid && (
               <>
                 <FieldWrapper label="Full Name">
-                  <TextField name="name" fullWidth variant="outlined" />
+                  <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
                 </FieldWrapper>
                 <FieldWrapper label="Cell Number">
-                  <PhoneInput name="phone" fullWidth variant="outlined" />
+                  <PhoneInput name="phone" fullWidth variant="outlined" onBlur={onBlur} />
                 </FieldWrapper>
               </>
             )}
-            {questionsLoading && (
+            {!questionsWereShown && questionsLoading && (
               <Fade in={questionsLoading} appear exit={false} timeout={750}>
                 <Typography textAlign="center" variant="caption" color="text.secondary">
                   Counting sheep...
                 </Typography>
               </Fade>
             )}
-            {questionsVisible && (
+            {(questionsWereShown || questionsVisible) && (
               <Collapse in appear exit={false} timeout={750}>
                 <Box>
                   {visibleQuestions.map((q) => (
@@ -189,7 +207,7 @@ export default function PersonalInfoForm({
               </Collapse>
             )}
           </Stack>
-          {questionsVisible && (
+          {(questionsWereShown || questionsVisible) && (
             <Button type="submit" fullWidth variant="outlined" color="inherit" sx={{ mt: 3 }}>
               Continue
             </Button>

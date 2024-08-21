@@ -1,3 +1,9 @@
+export enum RoutingOutcomeType {
+  RECORDING = 'RECR',
+  USER = 'USER',
+  TEAM = 'TEAM',
+}
+
 export interface PublicRouting {
   uuid: string;
   name: string;
@@ -19,3 +25,17 @@ export interface PublicRouting {
     }[];
   }[];
 }
+
+export type RouteResult = { productId: string } & (
+  | {
+      outcome: RoutingOutcomeType.RECORDING;
+    }
+  | {
+      outcome: RoutingOutcomeType.USER;
+      userId: string;
+    }
+  | {
+      outcome: RoutingOutcomeType.TEAM;
+      teamId: string;
+    }
+);

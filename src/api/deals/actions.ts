@@ -176,8 +176,12 @@ export function useInjectLead(routingId: string, productId?: string) {
   const [data, setData] = useState<LeadInjectionResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false); // true when inject is called, false when inject is done
   const [isLoading, setIsLoading] = useState(false); // true when inject is loading, false when inject is done
-  const [calledWithAllData, setCalledWithAllData] = useState(false);
   const [error, setError] = useState<unknown>(null);
+
+  // This is used to show the questions. We only want to show the questions once the user has entered their email, name, phone, and URL, and the round trip to the server is done.
+  // This is meant to give the Enrichment API time to run before showing the questions.
+  const [calledWithAllData, setCalledWithAllData] = useState(false);
+
   // Debounced functions use same logic as those using useEffectEvent. This means the object reference stays the same, even if dependencies change.
   const handler = useDebounced(
     async (params: { email?: string; name?: string; phone?: string; url?: string }) => {

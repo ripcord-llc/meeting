@@ -149,6 +149,7 @@ function FormState({ routing, productId, onSubmit, formValues, status, setStatus
 
   const emailAndUrlEnteredAndValid = validated.email && validated.url;
 
+  // Phone and name are only visible if the email and URL are valid
   useEffect(() => {
     if (emailAndUrlEnteredAndValid && !allFieldsVisibleOnce) {
       setStatus((s) => [...s, 'all-fields']);

@@ -5,10 +5,26 @@ import { createRoot, Root } from 'react-dom/client';
 
 import BookingWidget from './BookingWidget';
 
+function findEl(el: string | HTMLElement): HTMLElement {
+  if (typeof el === 'string') {
+    const found = document.querySelector(el);
+
+    if (!found) {
+      throw new Error(`Element with selector ${el} not found`);
+    }
+
+    return found as HTMLElement;
+  }
+
+  return el;
+}
+
 class Ripcord {
   private el: HTMLElement;
 
   private root: Root;
+
+  private rootEl: HTMLElement;
 
   private open: boolean = false;
 
@@ -18,22 +34,23 @@ class Ripcord {
 
   private productId?: string;
 
-  private key: string = '';
+  private key: string = String(Math.random());
 
-  constructor(params: { routingId: string; productId?: string }) {
-    const { routingId, productId } = params;
+  constructor(params: { el: string | HTMLElement; routingId: string; productId?: string }) {
+    const { el, routingId, productId } = params;
 
+    this.el = findEl(el);
     this.routingId = routingId;
     this.productId = productId;
+    this.rootEl = this.createRootEl();
+    this.root = createRoot(this.rootEl);
 
-    const el = document.createElement('div');
-    el.id = `ripcord-${routingId}`;
-    document.body.appendChild(el);
-
-    this.el = el;
-    this.root = createRoot(el);
-
+    this.openWidget = this.openWidget.bind(this);
     this.closeWidget = this.closeWidget.bind(this);
+
+    this.bindEvents();
+
+    this.render();
   }
 
   public openWidget() {
@@ -46,15 +63,7 @@ class Ripcord {
     this.open = true;
     this.key = String(Math.random());
 
-    this.root.render(
-      <BookingWidget
-        open={this.open}
-        onClose={this.closeWidget}
-        routingId={this.routingId}
-        productId={this.productId}
-        widgetKey={this.key}
-      />
-    );
+    this.render();
   }
 
   public closeWidget() {
@@ -66,6 +75,24 @@ class Ripcord {
 
     this.open = false;
 
+    this.render();
+  }
+
+  public destroy() {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.destroyed = true;
+
+    this.unbindEvents();
+
+    this.root.unmount();
+
+    document.body.removeChild(this.rootEl);
+  }
+
+  private render() {
     this.root.render(
       <BookingWidget
         open={this.open}
@@ -77,14 +104,22 @@ class Ripcord {
     );
   }
 
-  public destroy() {
-    if (this.destroyed) {
-      return;
-    }
+  private bindEvents() {
+    this.el.addEventListener('click', this.openWidget);
+  }
 
-    this.destroyed = true;
-    this.root.unmount();
-    this.el.remove();
+  private unbindEvents() {
+    this.el.removeEventListener('click', this.openWidget);
+  }
+
+  private createRootEl() {
+    const rootEl = document.createElement('div');
+
+    rootEl.id = `ripcord-root-${this.routingId}`;
+
+    document.body.appendChild(rootEl);
+
+    return rootEl;
   }
 
   private destoryCheck() {

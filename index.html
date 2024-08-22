@@ -13,12 +13,9 @@
   </div>
   <script src="/dist/index.umd.js"></script>
   <script>
-    const instance = new ripcord.Ripcord({ routingId: "C12QtlPp-f8Shx8iLqoMa" })
     const button = document.getElementById('open-modal')
 
-    window.addEventListener("load", () => { instance.openWidget() })
-
-    button.addEventListener('click', () => instance.openWidget())
+    const instance = new ripcord.Ripcord({ el: button, routingId: "C12QtlPp-f8Shx8iLqoMa" })
   </script>
 </body>
 

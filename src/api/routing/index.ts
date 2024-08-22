@@ -2,7 +2,7 @@ import useSWRImmutable from 'swr/immutable';
 
 import { PublicRouting, RouteResult } from './types';
 
-import { fetcher, post } from '../fetcher';
+import { fetcher, post, Exception } from '../fetcher';
 
 const PUBLIC_ROUTING_ENDPOINTS = {
   getRouting: (uuid: string) => `/public/routing/${uuid}`,
@@ -10,9 +10,13 @@ const PUBLIC_ROUTING_ENDPOINTS = {
 };
 
 export function usePublicRouting(uuid: string) {
-  return useSWRImmutable(PUBLIC_ROUTING_ENDPOINTS.getRouting(uuid), fetcher<PublicRouting>, {
-    revalidateOnMount: true,
-  });
+  return useSWRImmutable<PublicRouting, Exception>(
+    PUBLIC_ROUTING_ENDPOINTS.getRouting(uuid),
+    fetcher<PublicRouting>,
+    {
+      revalidateOnMount: true,
+    }
+  );
 }
 
 export async function handleRouting(body: {

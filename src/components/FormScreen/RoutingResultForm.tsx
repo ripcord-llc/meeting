@@ -1,5 +1,11 @@
-import { Stack, Box, Typography, Button } from '@mui/material';
-import { DateCalendar } from '@mui/x-date-pickers';
+import { useState } from 'react';
+import { Stack, Box, Typography, Button, Select, MenuItem } from '@mui/material';
+import {
+  DateCalendar,
+  PickerValidDate,
+  PickersCalendarHeader,
+  PickersCalendarHeaderProps,
+} from '@mui/x-date-pickers';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { CONFIG } from '../../config';
@@ -42,7 +48,71 @@ function DisabledState() {
 }
 
 function UserCalendarForm(props: { userId: string }) {
-  return 'user calendar form';
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Box p={4}>
+      <Typography variant="subtitle2" textAlign="center">
+        Select a Date
+      </Typography>
+      <DateCalendar
+        disablePast
+        sx={{
+          margin: 0,
+          width: 1,
+          height: 348,
+          maxHeight: 348,
+
+          '& .MuiDayCalendar-weekDayLabel': {
+            width: 48,
+          },
+
+          '& .MuiPickersDay-root': {
+            width: 48,
+            height: 48,
+          },
+
+          '& .MuiPickersSlideTransition-root': {
+            minHeight: 252,
+          },
+        }}
+      />
+      <Stack mt={3}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 1,
+
+            '& .MuiButton-root': {
+              '&:nth-child(1)': {
+                gridColumn: 'span 2',
+              },
+
+              '&:only-child': {
+                gridColumn: 'span 3',
+              },
+            },
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="inherit"
+            size="large"
+            fullWidth
+            onClick={() => setOpen((o) => !o)}
+          >
+            10:00AM
+          </Button>
+          {open && (
+            <Button variant="outlined" color="primary" size="large" fullWidth>
+              Confirm
+            </Button>
+          )}
+        </Box>
+      </Stack>
+    </Box>
+  );
 }
 
 function DealCalendarForm(props: { dealId: string }) {
@@ -85,7 +155,7 @@ export default function RoutingResultForm({
   routeResult: RouteResult | null;
   disabled: boolean;
 }) {
-  return <RecordedDemoLink productId="123" />;
+  return <UserCalendarForm userId="123" />;
 
   const { data } = useInjectLeadContext();
 

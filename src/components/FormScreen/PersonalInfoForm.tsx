@@ -1,5 +1,4 @@
-/* eslint-disable react/no-unused-prop-types */
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { LoadingButton } from '@mui/lab';
 import { Stack, Box, Typography, Button, InputAdornment, Collapse, Fade } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -26,17 +25,6 @@ import FieldWrapper from '../form/FieldWrapper';
 
 import { FormValues, PersonalInfoFormStatus } from './types';
 
-interface Props {
-  routing: PublicRouting;
-  productId?: string;
-  disabled: boolean;
-  status: PersonalInfoFormStatus[];
-  setStatus: React.Dispatch<React.SetStateAction<PersonalInfoFormStatus[]>>;
-  onSubmit: (values: FormValues) => Promise<void>;
-  onGoBack: () => void;
-  formValues: FormValues | null;
-}
-
 // TODO: Make sure latest enrichment data is fetched (maybe polled) when the client changes the url
 
 function FormHeader({ account }: { account: PublicRouting['account'] }) {
@@ -50,7 +38,16 @@ function FormHeader({ account }: { account: PublicRouting['account'] }) {
   );
 }
 
-export default function PersonalInfoForm(props: Props) {
+export default function PersonalInfoForm(props: {
+  routing: PublicRouting;
+  productId?: string;
+  disabled: boolean;
+  status: PersonalInfoFormStatus[];
+  setStatus: React.Dispatch<React.SetStateAction<PersonalInfoFormStatus[]>>;
+  onSubmit: (values: FormValues) => Promise<void>;
+  onGoBack: () => void;
+  formValues: FormValues | null;
+}) {
   const { disabled } = props;
 
   return (
@@ -66,7 +63,21 @@ export default function PersonalInfoForm(props: Props) {
   );
 }
 
-function FormState({ routing, productId, onSubmit, formValues, status, setStatus }: Props) {
+function FormState({
+  routing,
+  onSubmit,
+  formValues,
+  status,
+  setStatus,
+}: {
+  routing: PublicRouting;
+  disabled: boolean;
+  status: PersonalInfoFormStatus[];
+  setStatus: React.Dispatch<React.SetStateAction<PersonalInfoFormStatus[]>>;
+  onSubmit: (values: FormValues) => Promise<void>;
+  onGoBack: () => void;
+  formValues: FormValues | null;
+}) {
   const { uuid: routingId, account, questions } = routing;
 
   const { inject, data, flush, isProcessing, calledWithAllData } = useInjectLeadContext();
@@ -252,7 +263,15 @@ function StaticLine({ title, description }: { title: string; description: React.
   );
 }
 
-function StaticState({ onGoBack, formValues, routing }: Props) {
+function StaticState({
+  onGoBack,
+  formValues,
+  routing,
+}: {
+  routing: PublicRouting;
+  onGoBack: () => void;
+  formValues: FormValues | null;
+}) {
   const { questions } = routing;
 
   const listedAnswers = useMemo<{ question: string; answer: string }[]>(() => {

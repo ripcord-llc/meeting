@@ -61,7 +61,7 @@ export async function validateAndConvertDataToInjectLeadBody(body: {
   return data;
 }
 
-export async function injectLead(
+export function injectLead(
   body: InjectLeadBody & {
     routingId: string;
     productId?: string;
@@ -190,6 +190,7 @@ export function useInjectLead(
       if (e.response.statusCode < 500) return; // Suppress bad request errors. Only show server errors.
 
       onError?.(e);
+      return;
     }
 
     throw e;

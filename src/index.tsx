@@ -1,17 +1,24 @@
-"use client";
-import "./index.css";
-import { createRoot, Root } from "react-dom/client";
+'use client';
 
-import BookingWidget from "./BookingWidget";
+import './index.css';
+import { createRoot, Root } from 'react-dom/client';
+
+import BookingWidget from './BookingWidget';
 
 class Ripcord {
   private el: HTMLElement;
+
   private root: Root;
+
   private open: boolean = false;
+
   private destroyed: boolean = false;
 
   private routingId: string;
+
   private productId?: string;
+
+  private key: string = '';
 
   constructor(params: { routingId: string; productId?: string }) {
     const { routingId, productId } = params;
@@ -19,12 +26,14 @@ class Ripcord {
     this.routingId = routingId;
     this.productId = productId;
 
-    const el = document.createElement("div");
+    const el = document.createElement('div');
     el.id = `ripcord-${routingId}`;
     document.body.appendChild(el);
 
     this.el = el;
     this.root = createRoot(el);
+
+    this.closeWidget = this.closeWidget.bind(this);
   }
 
   public openWidget() {
@@ -35,12 +44,15 @@ class Ripcord {
     }
 
     this.open = true;
+    this.key = String(Math.random());
+
     this.root.render(
       <BookingWidget
         open={this.open}
-        onClose={this.closeWidget.bind(this)}
+        onClose={this.closeWidget}
         routingId={this.routingId}
         productId={this.productId}
+        widgetKey={this.key}
       />
     );
   }
@@ -53,12 +65,14 @@ class Ripcord {
     }
 
     this.open = false;
+
     this.root.render(
       <BookingWidget
         open={this.open}
-        onClose={this.closeWidget.bind(this)}
+        onClose={this.closeWidget}
         routingId={this.routingId}
         productId={this.productId}
+        widgetKey={this.key}
       />
     );
   }
@@ -75,11 +89,11 @@ class Ripcord {
 
   private destoryCheck() {
     if (this.destroyed) {
-      throw new Error("Ripcord instance has been destroyed");
+      throw new Error('Ripcord instance has been destroyed');
     }
   }
 }
 
-export { default as BookingWidget } from "./BookingWidget";
+export { default as BookingWidget } from './BookingWidget';
 
 export { Ripcord };

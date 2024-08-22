@@ -5,6 +5,7 @@ import { Stack, Box, Typography, Button, InputAdornment, Collapse, Fade } from '
 import { useForm, FormProvider } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { parsePhoneNumber } from 'react-phone-number-input';
 
 import {
   EmailSchema,
@@ -240,10 +241,61 @@ function FormState({ routing, productId, onSubmit, formValues, status, setStatus
   );
 }
 
-function StaticState({ onGoBack }: Props) {
+function StaticLine({ title, description }: { title: string; description: React.ReactNode }) {
   return (
-    <Button variant="outlined" onClick={onGoBack} fullWidth>
-      Edit
-    </Button>
+    <Stack>
+      <Typography variant="caption" color="text.secondary">
+        {title}
+      </Typography>
+      <Typography variant="subtitle1">{description}</Typography>
+    </Stack>
+  );
+}
+
+function StaticState({ onGoBack, formValues, routing }: Props) {
+  const { questions } = routing;
+
+  const listedAnswers = useMemo<{ question: string; answer: string }[]>(() => {
+    if (!formValues?.answers) return [];
+
+    const { answers } = formValues;
+
+    return questions
+      .map((q) => {
+        const answer = q.answers.find((a) => a.id === answers[q.id]);
+        return answer ? { question: q.question, answer: answer.answer } : null;
+      })
+      .filter((a) => a !== null) as { question: string; answer: string }[];
+  }, [questions, formValues]);
+
+  return (
+    <Stack gap={3} height={1} justifyContent="space-between">
+      <Typography variant="h5">Personal Info</Typography>
+      <Stack gap={2}>
+        <StaticLine title="Email" description={formValues?.email} />
+        <StaticLine title="Name" description={formValues?.name} />
+        <StaticLine
+          title="Phone"
+          description={
+            parsePhoneNumber(formValues?.phone || '')?.formatNational() || formValues?.phone
+          }
+        />
+        <StaticLine title="Company Website" description={formValues?.url} />
+        {listedAnswers.map((a) => (
+          <StaticLine key={a.question} title={a.question} description={a.answer} />
+        ))}
+      </Stack>
+      <Button
+        variant="outlined"
+        onClick={onGoBack}
+        fullWidth
+        color="inherit"
+        sx={{
+          mt: 'auto',
+        }}
+      >
+        Edit
+      </Button>
+    </Stack>
   );
 }

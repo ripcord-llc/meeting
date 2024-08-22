@@ -80,9 +80,7 @@ class Ripcord {
   }
 
   public destroy() {
-    if (this.destroyed) {
-      return;
-    }
+    this.destoryCheck();
 
     this.destroyed = true;
 

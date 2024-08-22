@@ -1,5 +1,8 @@
-import { Stack, Box, Typography } from '@mui/material';
+import { Stack, Box, Typography, Button } from '@mui/material';
 import { DateCalendar } from '@mui/x-date-pickers';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
+import { CONFIG } from '../../config';
 
 import { RouteResult, RoutingOutcomeType } from '../../api/routing/types';
 import { useInjectLead, useInjectLeadContext } from '../../api/deals/actions';
@@ -50,8 +53,29 @@ function TeamCalendarForm(props: { teamId: string }) {
   return 'team calendar form';
 }
 
-function RecordedDemoLink(props: { productId: string }) {
-  return 'recorded demo link';
+function RecordedDemoLink({ productId }: { productId: string }) {
+  return (
+    <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
+      <Box>
+        <Typography textAlign="center" variant="h5">
+          Recorded Demo
+        </Typography>
+        <Typography textAlign="center" variant="body1" color="text.secondary">
+          Watch a recorded demo of the product.
+        </Typography>
+      </Box>
+      <Button
+        href={`${CONFIG.CLIENT_URL}/d/${productId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="outlined"
+        color="inherit"
+        startIcon={<OpenInNewIcon />}
+      >
+        Watch Demo
+      </Button>
+    </Stack>
+  );
 }
 
 export default function RoutingResultForm({
@@ -61,6 +85,8 @@ export default function RoutingResultForm({
   routeResult: RouteResult | null;
   disabled: boolean;
 }) {
+  return <RecordedDemoLink productId="123" />;
+
   const { data } = useInjectLeadContext();
 
   if (disabled || !routeResult) {

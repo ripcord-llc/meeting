@@ -2,7 +2,9 @@ import { forwardRef, useState, useCallback } from 'react';
 import { Stack, Box, Divider, Typography } from '@mui/material';
 import { DateCalendar } from '@mui/x-date-pickers';
 
-import { PublicRouting } from '../../api/routing/types';
+import { PublicRouting, RouteResult } from '../../api/routing/types';
+import { handleRouting } from '../../api/routing';
+
 import { InjectLeadContext, useInjectLead } from '../../api/deals/actions';
 
 import { useErrorHandler } from '../ErrorBoundary';
@@ -11,26 +13,54 @@ import PersonalInfoForm from './PersonalInfoForm';
 
 import { FormValues, FormScreenStatus, PersonalInfoFormStatus } from './types';
 
+function convertFormAnswersToRoutingParams(
+  answers: Record<number, number>
+): { questionId: number; answerId: number }[] {
+  return Object.entries(answers)
+    .filter((entry) => entry[1] > 0) // Filter out answers that are not selected
+    .map(([questionId, answerId]) => ({
+      questionId: parseInt(questionId, 10),
+      answerId,
+    }));
+}
+
 const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productId?: string }>(
   ({ routing, productId }, ref) => {
     const errorHandler = useErrorHandler();
 
     const [status, setStatus] = useState<FormScreenStatus>('personal-info');
-
-    // This is called here so that the returned lead data isn't lost when the user moves to the calendar form.
-    const injectLead = useInjectLead(routing.uuid, productId, errorHandler);
     // This stores the furthest stage the user has reached in the personal info form. Once a stage is reached, the user can't go back to a previous stage.
     // Basically, we don't want to hide the name, phone, or questions once they are visible.
     const [personalInfoFormStatus, setPersonalInfoFormStatus] = useState<PersonalInfoFormStatus[]>([
       'initial',
     ]);
 
-    const [formValues, setFormValues] = useState<FormValues | null>(null);
+    // This is called here so that the returned lead data isn't lost when the user moves to the calendar form.
+    const injectLead = useInjectLead(routing.uuid, productId, errorHandler);
 
-    const moveToCalendar = useCallback(async (values: FormValues) => {
-      setFormValues(values);
-      setStatus('calendar');
-    }, []);
+    const [formValues, setFormValues] = useState<FormValues | null>(null);
+    const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
+
+    const moveToCalendar = useCallback(
+      async (values: FormValues) => {
+        setFormValues(values);
+
+        try {
+          const result = await handleRouting({
+            routingId: routing.uuid,
+            email: values.email,
+            answers: convertFormAnswersToRoutingParams(values.answers),
+          });
+          console.log(result);
+
+          setRouteResult(result);
+          setStatus('calendar');
+        } catch (e) {
+          errorHandler(e as Error);
+        }
+      },
+      [errorHandler, routing.uuid]
+    );
 
     const moveToPersonalInfo = useCallback(() => {
       setStatus('personal-info');

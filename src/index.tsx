@@ -20,7 +20,7 @@ function findEl(el: string | HTMLElement): HTMLElement {
 }
 
 class Ripcord {
-  private el: HTMLElement;
+  private el?: HTMLElement;
 
   private root: Root;
 
@@ -36,14 +36,15 @@ class Ripcord {
 
   private key: string = String(Math.random());
 
-  constructor(params: { el: string | HTMLElement; routingId: string; productId?: string }) {
+  constructor(params: { routingId: string; el?: string | HTMLElement; productId?: string }) {
     const { el, routingId, productId } = params;
 
-    this.el = findEl(el);
     this.routingId = routingId;
     this.productId = productId;
     this.rootEl = this.createRootEl();
     this.root = createRoot(this.rootEl);
+
+    this.el = typeof el !== 'undefined' ? findEl(el) : undefined;
 
     this.openWidget = this.openWidget.bind(this);
     this.closeWidget = this.closeWidget.bind(this);
@@ -105,11 +106,15 @@ class Ripcord {
   }
 
   private bindEvents() {
-    this.el.addEventListener('click', this.openWidget);
+    if (this.el) {
+      this.el.addEventListener('click', this.openWidget);
+    }
   }
 
   private unbindEvents() {
-    this.el.removeEventListener('click', this.openWidget);
+    if (this.el) {
+      this.el.removeEventListener('click', this.openWidget);
+    }
   }
 
   private createRootEl() {

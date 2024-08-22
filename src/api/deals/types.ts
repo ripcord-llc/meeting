@@ -6,6 +6,8 @@ export interface LeadInjectionResponse {
   };
   deal: {
     id: number;
+    uuid: string;
+    userId: number;
     started: boolean;
   };
 }

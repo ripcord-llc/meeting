@@ -10,6 +10,7 @@ import { InjectLeadContext, useInjectLead } from '../../api/deals/actions';
 import { useErrorHandler } from '../ErrorBoundary';
 
 import PersonalInfoForm from './PersonalInfoForm';
+import RoutingResultForm from './RoutingResultForm';
 
 import { FormValues, FormScreenStatus, PersonalInfoFormStatus } from './types';
 
@@ -85,37 +86,9 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
             onGoBack={moveToPersonalInfo}
             formValues={formValues}
           />
+          <Divider orientation="vertical" />
+          <RoutingResultForm routeResult={routeResult} disabled={status === 'personal-info'} />
         </InjectLeadContext.Provider>
-        <Divider orientation="vertical" />
-        <Stack
-          p={4}
-          flex={1}
-          justifyContent="center"
-          sx={{
-            position: 'relative',
-          }}
-        >
-          <Box sx={{ opacity: 0.7 }}>
-            <Typography variant="subtitle2" textAlign="center">
-              Select a Date
-            </Typography>
-            <DateCalendar disablePast disabled />
-          </Box>
-          <Box
-            sx={(theme) => ({
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              padding: 2,
-              bgcolor: 'common.white',
-              borderRadius: 1,
-              boxShadow: theme.shadows[4],
-            })}
-          >
-            Please fill out the form to book a meeting with Cheese Corp.
-          </Box>
-        </Stack>
       </Box>
     );
   }

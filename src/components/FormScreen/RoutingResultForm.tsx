@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Stack, Box, Typography, Button, Select, MenuItem } from '@mui/material';
+import { Stack, Box, Typography, Button, Select, MenuItem, styled } from '@mui/material';
 import {
   DateCalendar,
   PickerValidDate,
@@ -7,47 +7,81 @@ import {
   PickersCalendarHeaderProps,
 } from '@mui/x-date-pickers';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import dayjs from 'dayjs';
 
 import { CONFIG } from '../../config';
 
 import { RouteResult, RoutingOutcomeType } from '../../api/routing/types';
-import { useInjectLead, useInjectLeadContext } from '../../api/deals/actions';
+import { useInjectLeadContext } from '../../api/deals/actions';
 
-function DisabledState() {
+const StyledDateCalendar = styled(DateCalendar)(({ theme }) => ({
+  margin: 0,
+  width: '100%',
+  height: 348,
+  maxHeight: 348,
+
+  '& .MuiDayCalendar-weekDayLabel': {
+    width: 48,
+  },
+
+  '& .MuiPickersDay-root': {
+    width: 48,
+    height: 48,
+  },
+
+  '& .MuiPickersSlideTransition-root': {
+    minHeight: 252,
+  },
+}));
+
+function TimeList({ times }: { times: { startTime: string }[] }) {
+  const [selected, setSelected] = useState<{ startTime: string } | null>(null);
+
   return (
-    <Stack
-      p={4}
-      flex={1}
-      justifyContent="center"
-      sx={{
-        position: 'relative',
-      }}
-    >
-      <Box sx={{ opacity: 0.7 }}>
-        <Typography variant="subtitle2" textAlign="center">
-          Select a Date
-        </Typography>
-        <DateCalendar disablePast disabled />
-      </Box>
-      <Box
-        sx={(theme) => ({
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          padding: 2,
-          bgcolor: 'background.paper',
-          borderRadius: 1,
-          boxShadow: theme.shadows[4],
-        })}
-      >
-        Please fill out the form to book a meeting with Cheese Corp.
-      </Box>
+    <Stack mt={3} gap={1}>
+      {times.map((time) => {
+        const isSelected = time === selected;
+
+        return (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 1,
+
+              '& .MuiButton-root': {
+                '&:nth-child(1)': {
+                  gridColumn: 'span 2',
+                },
+
+                '&:only-child': {
+                  gridColumn: 'span 3',
+                },
+              },
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="large"
+              fullWidth
+              onClick={() => setSelected(isSelected ? null : time)}
+            >
+              {dayjs(time.startTime).format('h:mm A')}
+            </Button>
+            {isSelected && (
+              <Button variant="outlined" color="primary" size="large" fullWidth>
+                Confirm
+              </Button>
+            )}
+          </Box>
+        );
+      })}
     </Stack>
   );
 }
 
-function UserCalendarForm(props: { userId: string }) {
+function UserCalendarForm({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -55,62 +89,15 @@ function UserCalendarForm(props: { userId: string }) {
       <Typography variant="subtitle2" textAlign="center">
         Select a Date
       </Typography>
-      <DateCalendar
-        disablePast
-        sx={{
-          margin: 0,
-          width: 1,
-          height: 348,
-          maxHeight: 348,
-
-          '& .MuiDayCalendar-weekDayLabel': {
-            width: 48,
-          },
-
-          '& .MuiPickersDay-root': {
-            width: 48,
-            height: 48,
-          },
-
-          '& .MuiPickersSlideTransition-root': {
-            minHeight: 252,
-          },
-        }}
+      <StyledDateCalendar disablePast />
+      <TimeList
+        times={[...new Array(20).keys()].map((key) => ({
+          startTime: dayjs()
+            .startOf('hour')
+            .add(key * 30, 'minute')
+            .toJSON(),
+        }))}
       />
-      <Stack mt={3}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 1,
-
-            '& .MuiButton-root': {
-              '&:nth-child(1)': {
-                gridColumn: 'span 2',
-              },
-
-              '&:only-child': {
-                gridColumn: 'span 3',
-              },
-            },
-          }}
-        >
-          <Button
-            variant="outlined"
-            color="inherit"
-            size="large"
-            fullWidth
-            onClick={() => setOpen((o) => !o)}
-          >
-            10:00AM
-          </Button>
-          {open && (
-            <Button variant="outlined" color="primary" size="large" fullWidth>
-              Confirm
-            </Button>
-          )}
-        </Box>
-      </Stack>
     </Box>
   );
 }
@@ -148,6 +135,40 @@ function RecordedDemoLink({ productId }: { productId: string }) {
   );
 }
 
+function DisabledState() {
+  return (
+    <Stack
+      p={4}
+      flex={1}
+      justifyContent="center"
+      sx={{
+        position: 'relative',
+      }}
+    >
+      <Box sx={{ opacity: 0.7 }}>
+        <Typography variant="subtitle2" textAlign="center">
+          Select a Date
+        </Typography>
+        <StyledDateCalendar disablePast disabled />
+      </Box>
+      <Box
+        sx={(theme) => ({
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          padding: 2,
+          bgcolor: 'background.paper',
+          borderRadius: 1,
+          boxShadow: theme.shadows[4],
+        })}
+      >
+        Please fill out the form to book a meeting with Cheese Corp.
+      </Box>
+    </Stack>
+  );
+}
+
 export default function RoutingResultForm({
   routeResult,
   disabled,
@@ -155,8 +176,6 @@ export default function RoutingResultForm({
   routeResult: RouteResult | null;
   disabled: boolean;
 }) {
-  return <UserCalendarForm userId="123" />;
-
   const { data } = useInjectLeadContext();
 
   if (disabled || !routeResult) {

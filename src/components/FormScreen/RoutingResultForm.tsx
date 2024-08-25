@@ -102,12 +102,42 @@ function UserCalendarForm({ userId }: { userId: string }) {
   );
 }
 
-function DealCalendarForm(props: { dealId: string }) {
-  return 'deal calendar form';
+function DealCalendarForm({ dealId }: { dealId: string }) {
+  return (
+    <Box p={4}>
+      <Typography variant="subtitle2" textAlign="center">
+        Select a Date
+      </Typography>
+      <StyledDateCalendar disablePast />
+      <TimeList
+        times={[...new Array(20).keys()].map((key) => ({
+          startTime: dayjs()
+            .startOf('hour')
+            .add(key * 30, 'minute')
+            .toJSON(),
+        }))}
+      />
+    </Box>
+  );
 }
 
-function TeamCalendarForm(props: { teamId: string }) {
-  return 'team calendar form';
+function TeamCalendarForm({ teamId }: { teamId: string }) {
+  return (
+    <Box p={4}>
+      <Typography variant="subtitle2" textAlign="center">
+        Select a Date
+      </Typography>
+      <StyledDateCalendar disablePast />
+      <TimeList
+        times={[...new Array(20).keys()].map((key) => ({
+          startTime: dayjs()
+            .startOf('hour')
+            .add(key * 30, 'minute')
+            .toJSON(),
+        }))}
+      />
+    </Box>
+  );
 }
 
 function RecordedDemoLink({ productId }: { productId: string }) {
@@ -115,10 +145,11 @@ function RecordedDemoLink({ productId }: { productId: string }) {
     <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
       <Box>
         <Typography textAlign="center" variant="h5">
-          Recorded Demo
+          Watch our demo now!
         </Typography>
         <Typography textAlign="center" variant="body1" color="text.secondary">
-          Watch a recorded demo of the product.
+          You&apos;ve qualified to watch an immediate recorded demo of our product. If any questions
+          come up, our team will be there to answer.
         </Typography>
       </Box>
       <Button

@@ -52,7 +52,6 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
             email: values.email,
             answers: convertFormAnswersToRoutingParams(values.answers),
           });
-          console.log(result);
 
           setRouteResult(result);
           setStatus('calendar');

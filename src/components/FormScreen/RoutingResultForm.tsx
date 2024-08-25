@@ -1,18 +1,33 @@
 import { useState } from 'react';
-import { Stack, Box, Typography, Button, Select, MenuItem, styled } from '@mui/material';
 import {
-  DateCalendar,
-  PickerValidDate,
-  PickersCalendarHeader,
-  PickersCalendarHeaderProps,
-} from '@mui/x-date-pickers';
+  Stack,
+  Box,
+  Typography,
+  Button,
+  Select,
+  MenuItem,
+  styled,
+  Skeleton,
+  CircularProgress,
+  alpha,
+} from '@mui/material';
+import { DateCalendar, PickerValidDate } from '@mui/x-date-pickers';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 import { CONFIG } from '../../config';
 
+import { BookingSlotHookProps, useUserSlots, convertDayToUTCString } from '../../api/bookings';
+import { Slot } from '../../api/bookings/types';
+
 import { RouteResult, RoutingOutcomeType } from '../../api/routing/types';
 import { useInjectLeadContext } from '../../api/deals/actions';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const StyledDateCalendar = styled(DateCalendar)(({ theme }) => ({
   margin: 0,
@@ -34,13 +49,44 @@ const StyledDateCalendar = styled(DateCalendar)(({ theme }) => ({
   },
 }));
 
-function TimeList({ times }: { times: { startTime: string }[] }) {
-  const [selected, setSelected] = useState<{ startTime: string } | null>(null);
-
+function TimeSlotsSkeleton() {
   return (
     <Stack mt={3} gap={1}>
-      {times.map((time) => {
-        const isSelected = time === selected;
+      {[...new Array(3).keys()].map((_, index) => (
+        <Skeleton key={index} variant="rounded" height={48} />
+      ))}
+    </Stack>
+  );
+}
+
+function TimeSlots<T extends Slot>({ data, isLoading, error }: BookingSlotHookProps<T>) {
+  const [selected, setSelected] = useState<Slot | null>(null);
+
+  const slots = data || [];
+  const isLoadingFirst = !data && isLoading;
+  const isLoadingMore = data && isLoading;
+
+  if (isLoadingFirst) return <TimeSlotsSkeleton />;
+
+  if (error) {
+    return (
+      <Typography mt={3} variant="subtitle2" textAlign="center" color="error.main">
+        Error loading slots
+      </Typography>
+    );
+  }
+
+  if (!data?.length)
+    return (
+      <Typography mt={3} variant="subtitle2">
+        No slots available
+      </Typography>
+    );
+
+  return (
+    <Stack mt={3} gap={1} position="relative">
+      {slots.map((slot) => {
+        const isSelected = slot === selected;
 
         return (
           <Box
@@ -65,9 +111,10 @@ function TimeList({ times }: { times: { startTime: string }[] }) {
               color="inherit"
               size="large"
               fullWidth
-              onClick={() => setSelected(isSelected ? null : time)}
+              onClick={() => setSelected(isSelected ? null : slot)}
+              disabled={isLoading}
             >
-              {dayjs(time.startTime).format('h:mm A')}
+              {dayjs(slot.startTime).format('h:mm A')}
             </Button>
             {isSelected && (
               <Button variant="outlined" color="primary" size="large" fullWidth>
@@ -77,27 +124,45 @@ function TimeList({ times }: { times: { startTime: string }[] }) {
           </Box>
         );
       })}
+      {isLoadingMore && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bgcolor: (theme) => alpha(theme.palette.background.paper, 0.5),
+          }}
+        >
+          <CircularProgress color="inherit" />
+        </Box>
+      )}
     </Stack>
   );
 }
 
 function UserCalendarForm({ userId }: { userId: string }) {
-  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState<PickerValidDate | null>(null);
+
+  const resp = useUserSlots(userId, convertDayToUTCString(date), {
+    keepPreviousData: true,
+  });
+
+  const onConfirm = (slot: Slot) => {
+    console.log('Confirming slot', slot);
+  };
 
   return (
     <Box p={4}>
       <Typography variant="subtitle2" textAlign="center">
         Select a Date
       </Typography>
-      <StyledDateCalendar disablePast />
-      <TimeList
-        times={[...new Array(20).keys()].map((key) => ({
-          startTime: dayjs()
-            .startOf('hour')
-            .add(key * 30, 'minute')
-            .toJSON(),
-        }))}
-      />
+      <StyledDateCalendar disablePast value={date} onChange={setDate} />
+      {!!date && <TimeSlots {...resp} onConfirm={onConfirm} />}
     </Box>
   );
 }
@@ -109,14 +174,6 @@ function DealCalendarForm({ dealId }: { dealId: string }) {
         Select a Date
       </Typography>
       <StyledDateCalendar disablePast />
-      <TimeList
-        times={[...new Array(20).keys()].map((key) => ({
-          startTime: dayjs()
-            .startOf('hour')
-            .add(key * 30, 'minute')
-            .toJSON(),
-        }))}
-      />
     </Box>
   );
 }
@@ -128,14 +185,6 @@ function TeamCalendarForm({ teamId }: { teamId: string }) {
         Select a Date
       </Typography>
       <StyledDateCalendar disablePast />
-      <TimeList
-        times={[...new Array(20).keys()].map((key) => ({
-          startTime: dayjs()
-            .startOf('hour')
-            .add(key * 30, 'minute')
-            .toJSON(),
-        }))}
-      />
     </Box>
   );
 }

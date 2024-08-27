@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Stack,
   Box,
@@ -21,54 +21,103 @@ import timezone from 'dayjs/plugin/timezone';
 import { CONFIG } from '../../../config';
 
 import {
-  BookingSlotHookProps,
   useUserSlots,
   convertDayToUTCString,
   useDealSlots,
   useTeamSlots,
 } from '../../../api/bookings';
-import { Slot } from '../../../api/bookings/types';
+import { Slot, TeamSlot } from '../../../api/bookings/types';
+
+import {
+  bookMeetingIntoExistingDeal,
+  bookMeetingIntoLatestNonStartedDeal,
+  bookMeetingIntoProduct,
+} from '../../../api/deals/actions';
 
 import { PublicRouting, RouteResult, RoutingOutcomeType } from '../../../api/routing/types';
 import { useInjectLeadContext } from '../../../api/deals/hooks';
 
 import BaseCalendarForm, { StyledDateCalendar } from './CalendarForm';
+import { useWidgetStateContext } from '../../../state';
+
+import { FormValues } from '../types';
+import { BookingParams } from '../../../api/deals/types';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-function UserCalendarForm({ userId }: { userId: string }) {
+type CalendarFormProps = {
+  onSubmit: (booking: BookingParams) => Promise<void>;
+  loading: boolean;
+};
+
+function UserCalendarForm({ userId, onSubmit, loading }: { userId: string } & CalendarFormProps) {
   const [date, setDate] = useState<dayjs.Dayjs | null>(null);
 
   const resp = useUserSlots(userId, convertDayToUTCString(date), {
     keepPreviousData: true,
   });
 
-  const onConfirm = (slot: Slot) => {
-    console.log('Confirming slot', slot);
-  };
+  const onConfirm = useCallback(
+    async (slot: Slot) => {
+      await onSubmit({
+        type: 'user',
+        userId,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      });
+    },
+    [userId, onSubmit]
+  );
 
-  return <BaseCalendarForm date={date} setDate={setDate} onConfirm={onConfirm} {...resp} />;
+  return (
+    <BaseCalendarForm
+      date={date}
+      setDate={setDate}
+      onConfirm={onConfirm}
+      loading={loading}
+      {...resp}
+    />
+  );
 }
 
-function DealCalendarForm({ dealId }: { dealId: string }) {
+function DealCalendarForm({
+  dealId,
+  onSubmit,
+  loading,
+}: {
+  dealId: string;
+  loading: boolean;
+  onSubmit: (slot: { startTime: Date; endTime: Date }) => Promise<void>;
+}) {
   const [date, setDate] = useState<dayjs.Dayjs | null>(null);
 
   const resp = useDealSlots(dealId, convertDayToUTCString(date), {
     keepPreviousData: true,
   });
 
+  const onConfirm = useCallback(
+    async (slot: Slot) => {
+      await onSubmit({
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      });
+    },
+    [onSubmit]
+  );
+
   return (
     <BaseCalendarForm
       date={date}
       setDate={setDate}
-      onConfirm={(slot) => console.log('Confirming slot', slot)}
+      onConfirm={onConfirm}
+      loading={loading}
       {...resp}
     />
   );
 }
 
-function TeamCalendarForm({ teamId }: { teamId: string }) {
+function TeamCalendarForm({ teamId, onSubmit, loading }: { teamId: string } & CalendarFormProps) {
   const [date, setDate] = useState<dayjs.Dayjs | null>(null);
 
   const resp = useTeamSlots(teamId, convertDayToUTCString(date), {
@@ -80,6 +129,7 @@ function TeamCalendarForm({ teamId }: { teamId: string }) {
       date={date}
       setDate={setDate}
       onConfirm={(slot) => console.log('Confirming slot', slot)}
+      loading={loading}
       {...resp}
     />
   );
@@ -98,7 +148,33 @@ function RecordedDemoLink({ productId }: { productId: string }) {
         </Typography>
       </Box>
       <Button
-        href={`${CONFIG.CLIENT_URL}/d/${productId}`}
+        href={`${CONFIG.CLIENT_URL}/p/${productId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="outlined"
+        color="inherit"
+        startIcon={<OpenInNewIcon />}
+      >
+        Watch Demo
+      </Button>
+    </Stack>
+  );
+}
+
+function ExistingDealLink({ dealId }: { dealId: string }) {
+  return (
+    <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
+      <Box>
+        <Typography textAlign="center" variant="h5">
+          View your progress!
+        </Typography>
+        <Typography textAlign="center" variant="body1" color="text.secondary">
+          Looks like you&apos;re already working on a deal with us. Click below to view your
+          progress.
+        </Typography>
+      </Box>
+      <Button
+        href={`${CONFIG.CLIENT_URL}/d/${dealId}`}
         target="_blank"
         rel="noopener noreferrer"
         variant="outlined"
@@ -147,31 +223,111 @@ function DisabledState({ routing }: { routing: PublicRouting }) {
 
 export default function RoutingResultForm({
   routing,
+  productId,
   routeResult,
+  formValues,
   disabled,
 }: {
   routing: PublicRouting;
   routeResult: RouteResult | null;
+  formValues: FormValues | null;
   disabled: boolean;
+  productId?: string;
 }) {
+  const [, , setConfirm] = useWidgetStateContext();
+
   const { data } = useInjectLeadContext();
+
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = useCallback(
+    async (booking: BookingParams) => {
+      setLoading(true);
+
+      try {
+        if (!formValues || !routeResult) return;
+
+        const { email, name, phone, url } = formValues;
+
+        if (productId) {
+          const meeting = await bookMeetingIntoProduct({
+            email,
+            productId,
+            booking,
+            name,
+            phone,
+            url,
+          });
+
+          setConfirm(meeting);
+          return;
+        }
+
+        const { productId: routedProductId } = routeResult;
+
+        const meeting = await bookMeetingIntoLatestNonStartedDeal({
+          email,
+          productId: routedProductId,
+          booking,
+          name,
+          phone,
+          url,
+        });
+
+        setConfirm(meeting);
+      } catch (e) {
+        console.error('Error booking meeting', e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [formValues, routeResult, productId, setConfirm]
+  );
+
+  const onDealSubmit = useCallback(
+    async (slot: { startTime: Date; endTime: Date }) => {
+      if (!formValues || !data?.deal) return;
+
+      const { email, name, phone, url } = formValues;
+
+      setLoading(true);
+
+      try {
+        const meeting = await bookMeetingIntoExistingDeal({
+          dealId: data?.deal?.uuid,
+          event: slot,
+          email,
+          name,
+          phone,
+          url,
+        });
+
+        setConfirm(meeting);
+      } catch (e) {
+        console.error('Error booking meeting', e);
+      }
+    },
+    [formValues, data?.deal, setConfirm]
+  );
 
   if (disabled || !routeResult) {
     return <DisabledState routing={routing} />;
   }
 
-  if (data?.deal && data.deal.started && data.deal.userId) {
+  if (data?.deal && data.deal.started) {
+    if (!data.deal.userId) return <ExistingDealLink dealId={data.deal.uuid} />; // If deal is started but no user assigned, show link to deal;
+
     // Show calendar with slots for user of existing deal;
-    return <DealCalendarForm dealId={data.deal.uuid} />;
+    return <DealCalendarForm dealId={data.deal.uuid} onSubmit={onDealSubmit} loading={loading} />;
   }
 
   switch (routeResult.outcome) {
     case RoutingOutcomeType.RECORDING:
       return <RecordedDemoLink productId={routeResult.productId} />;
     case RoutingOutcomeType.TEAM:
-      return <TeamCalendarForm teamId={routeResult.teamId} />;
+      return <TeamCalendarForm teamId={routeResult.teamId} onSubmit={onSubmit} loading={loading} />;
     case RoutingOutcomeType.USER:
-      return <UserCalendarForm userId={routeResult.userId} />;
+      return <UserCalendarForm userId={routeResult.userId} onSubmit={onSubmit} loading={loading} />;
     default:
       return null;
   }

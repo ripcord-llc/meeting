@@ -52,7 +52,13 @@ function TimeSlotsSkeleton() {
   );
 }
 
-function TimeSlots<T extends Slot>({ data, isLoading, error }: BookingSlotHookProps<T>) {
+function TimeSlots<T extends Slot>({
+  data,
+  isLoading,
+  error,
+  loading,
+  onConfirm,
+}: BookingSlotHookProps<T>) {
   const [selected, setSelected] = useState<Slot | null>(null);
 
   const slots = data || [];
@@ -110,7 +116,14 @@ function TimeSlots<T extends Slot>({ data, isLoading, error }: BookingSlotHookPr
               {dayjs(slot.startTime).format('h:mm A')}
             </Button>
             {isSelected && (
-              <LoadingButton loading variant="outlined" color="primary" size="large" fullWidth>
+              <LoadingButton
+                loading={loading}
+                variant="outlined"
+                color="primary"
+                size="large"
+                fullWidth
+                onClick={() => onConfirm(slot)}
+              >
                 Confirm
               </LoadingButton>
             )}

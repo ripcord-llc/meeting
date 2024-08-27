@@ -87,7 +87,9 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
           <Divider orientation="vertical" />
           <RoutingResultForm
             routing={routing}
+            productId={productId}
             routeResult={routeResult}
+            formValues={formValues}
             disabled={status === 'personal-info'}
           />
         </InjectLeadContext.Provider>

@@ -52,4 +52,5 @@ export type BookingSlotHookProps<T extends Slot> = SWRResponse<
   SWRConfiguration<Slot[]>
 > & {
   onConfirm: (slot: T) => void;
+  loading: boolean;
 };

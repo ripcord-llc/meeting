@@ -1,22 +1,17 @@
-import {
-  Dialog as MuiDialog,
-  DialogProps,
-  Box,
-  IconButton,
-  Stack,
-} from "@mui/material";
+import { Dialog as MuiDialog, DialogProps, Box, IconButton, Stack } from '@mui/material';
 
-import CloseIcon from "@mui/icons-material/Close";
+import CloseIcon from '@mui/icons-material/Close';
 
-import styled from "@mui/material/styles/styled";
+import styled from '@mui/material/styles/styled';
 
-import PoweredByRipcordIcon from "../icons/PoweredByRipcordIcon";
+import PoweredByRipcordIcon from '../icons/PoweredByRipcordIcon';
 
 const StyledContent = styled(Box)(({ theme }) => ({
-  display: "grid",
-  gridTemplateRows: "48px 1fr 48px",
+  display: 'grid',
+  gridTemplateRows: '48px 1fr 48px',
+  overflow: 'hidden',
 
-  "& > *:not(:last-child)": {
+  '& > *:not(:last-child)': {
     borderBottom: `1px solid ${theme.palette.divider}`,
   },
 }));
@@ -42,11 +37,11 @@ export default function Dialog({
       onClose={onClose}
       fullWidth
       disablePortal
-      scroll="body"
       sx={{
-        "& .MuiDialog-paper": {
+        '& .MuiDialog-paper': {
+          overflow: 'hidden',
           transition: (theme) =>
-            theme.transitions.create("max-width", {
+            theme.transitions.create('max-width', {
               easing: theme.transitions.easing.easeInOut,
               duration: theme.transitions.duration.standard,
             }),
@@ -57,15 +52,17 @@ export default function Dialog({
       <StyledContent>
         <Stack direction="row" alignItems="center" px={4}>
           {slots?.headerLeft}
-          <IconButton
-            size="small"
-            onClick={onClose}
-            sx={{ marginLeft: "auto" }}
-          >
+          <IconButton size="small" onClick={onClose} sx={{ marginLeft: 'auto' }}>
             <CloseIcon sx={{ width: 20, height: 20 }} />
           </IconButton>
         </Stack>
-        <Box>{children}</Box>
+        <Box
+          sx={{
+            overflow: 'hidden',
+          }}
+        >
+          {children}
+        </Box>
         <Stack direction="row" alignItems="center" px={4}>
           {slots?.footerLeft}
           <PoweredByRipcordIcon
@@ -74,11 +71,11 @@ export default function Dialog({
             target="_blank"
             rel="noopener noreferrer"
             sx={(theme) => ({
-              ml: "auto",
-              display: "flex",
-              alignItems: "center",
+              ml: 'auto',
+              display: 'flex',
+              alignItems: 'center',
               fill: theme.palette.text.secondary,
-              "& svg": {
+              '& svg': {
                 height: 20,
               },
             })}

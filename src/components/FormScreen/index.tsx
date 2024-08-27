@@ -71,6 +71,11 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
         sx={{
           display: 'grid',
           gridTemplateColumns: '1fr auto 1fr',
+          height: 1,
+          overflow: 'hidden',
+          '& > .MuiBox-root': {
+            overflow: 'auto',
+          },
         }}
       >
         <InjectLeadContext.Provider value={injectLead}>

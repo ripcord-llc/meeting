@@ -7,7 +7,7 @@ export interface LeadInjectionResponse {
   deal: {
     id: number;
     uuid: string;
-    userId: number;
+    primaryUserId: number;
     started: boolean;
   };
 }

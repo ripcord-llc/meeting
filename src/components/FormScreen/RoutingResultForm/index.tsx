@@ -315,7 +315,7 @@ export default function RoutingResultForm({
   }
 
   if (data?.deal && data.deal.started) {
-    if (!data.deal.userId) return <ExistingDealLink dealId={data.deal.uuid} />; // If deal is started but no user assigned, show link to deal;
+    if (!data.deal.primaryUserId) return <ExistingDealLink dealId={data.deal.uuid} />; // If deal is started but no user assigned, show link to deal;
 
     // Show calendar with slots for user of existing deal;
     return <DealCalendarForm dealId={data.deal.uuid} onSubmit={onDealSubmit} loading={loading} />;

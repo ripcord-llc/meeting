@@ -124,11 +124,22 @@ function TeamCalendarForm({ teamId, onSubmit, loading }: { teamId: string } & Ca
     keepPreviousData: true,
   });
 
+  const onConfirm = useCallback(
+    async (slot: TeamSlot) => {
+      await onSubmit({
+        type: 'team',
+        teamId,
+        ...slot,
+      });
+    },
+    [teamId, onSubmit]
+  );
+
   return (
     <BaseCalendarForm
       date={date}
       setDate={setDate}
-      onConfirm={(slot) => console.log('Confirming slot', slot)}
+      onConfirm={onConfirm}
       loading={loading}
       {...resp}
     />

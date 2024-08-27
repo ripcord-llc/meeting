@@ -73,7 +73,7 @@ export default function PersonalInfoForm(props: {
 
 function FormState({
   routing,
-  onSubmit,
+  onSubmit: _onSubmit,
   formValues,
   status,
   setStatus,
@@ -89,6 +89,8 @@ function FormState({
   const { uuid: routingId, account, questions } = routing;
 
   const { inject, data, flush, isProcessing, calledWithAllData } = useInjectLeadContext();
+
+  const hasNoQuestions = questions.length === 0;
 
   const allFieldsVisibleOnce = status.includes('all-fields');
   const questionsVisibleOnce = status.includes('questions');
@@ -152,6 +154,12 @@ function FormState({
     flush(); // Run latest call to injectLead when input fields are blurred. This flushes the debounced function.
   };
 
+  const onSubmit = async (_data: FormValues) => {
+    // Flush any requests to injectLead that are debounced before submitting the form
+    flush();
+    await _onSubmit(_data);
+  };
+
   const validated = useValidatedLeadInjectionValues(...watch(['email', 'name', 'phone', 'url']));
 
   useEffect(() => {
@@ -174,16 +182,17 @@ function FormState({
     }
   }, [setStatus, allFieldsVisibleOnce, emailAndUrlEnteredAndValid]);
 
-  const questionsLoading = !!validated.phone && isProcessing;
-  // Should only be visible if the phone number is valid, the injection has stopped processing, and the URL matches the client's URL
-  // The goal is to give the Enrichment API time to process the data before showing the questions
-  const questionsVisible = calledWithAllData && !isProcessing; // !isProcessing is probably redundant
-
   useEffect(() => {
-    if (questionsVisible && !questionsVisibleOnce) {
+    if (calledWithAllData && !questionsVisibleOnce) {
       setStatus((s) => [...s, 'questions']);
     }
-  }, [setStatus, questionsVisible, questionsVisibleOnce]);
+  }, [setStatus, calledWithAllData, questionsVisibleOnce]);
+
+  const showFullNameAndPhone = emailAndUrlEnteredAndValid || allFieldsVisibleOnce;
+  const showQuestions = calledWithAllData || questionsVisibleOnce;
+  const showQuestionsLoading =
+    !questionsVisibleOnce && !hasNoQuestions && !!validated.phone && isProcessing;
+  const showContinueButton = hasNoQuestions ? showFullNameAndPhone : showQuestions;
 
   return (
     <FormProvider {...methods}>
@@ -208,7 +217,7 @@ function FormState({
               onBlur={onBlur}
             />
           </FieldWrapper>
-          {(allFieldsVisibleOnce || emailAndUrlEnteredAndValid) && (
+          {showFullNameAndPhone && (
             <>
               <FieldWrapper label="Full Name">
                 <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
@@ -218,14 +227,14 @@ function FormState({
               </FieldWrapper>
             </>
           )}
-          {!questionsVisibleOnce && questionsLoading && (
-            <Fade in={questionsLoading} appear exit={false} timeout={750}>
+          {showQuestionsLoading && (
+            <Fade in appear exit={false} timeout={750}>
               <Typography textAlign="center" variant="caption" color="text.secondary">
                 Counting sheep...
               </Typography>
             </Fade>
           )}
-          {(questionsVisibleOnce || questionsVisible) && (
+          {showQuestions && (
             <Collapse in appear={!formValues} exit={false} timeout={750}>
               <Box>
                 {visibleQuestions.map((q) => (
@@ -243,7 +252,7 @@ function FormState({
             </Collapse>
           )}
         </Stack>
-        {(questionsVisibleOnce || questionsVisible) && (
+        {showContinueButton && (
           <LoadingButton
             loading={isSubmitting}
             type="submit"

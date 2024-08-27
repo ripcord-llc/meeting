@@ -45,7 +45,6 @@ export interface CreateMeetingParams {
   name?: string;
   phone?: string;
   url?: string;
-  utm?: UTMParams;
 }
 
 export interface CreateExistingDealMeetingParams {
@@ -56,7 +55,6 @@ export interface CreateExistingDealMeetingParams {
   name?: string;
   phone?: string;
   url?: string;
-  utm?: UTMParams;
 }
 
 export interface CreateMeetingResponse {

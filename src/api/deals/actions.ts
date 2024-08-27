@@ -3,6 +3,8 @@ import isURL from 'validator/es/lib/isURL';
 import * as yup from 'yup';
 import { isPossiblePhoneNumber } from 'react-phone-number-input';
 
+import { getUTMParams } from '../../utm';
+
 import { post } from '../fetcher';
 
 import {
@@ -69,26 +71,35 @@ export function injectLead(
     productId?: string;
   }
 ): Promise<LeadInjectionResponse> {
-  return post<LeadInjectionResponse>(PUBLIC_DEALS_ENDPOINTS.injectLead, body);
+  return post<LeadInjectionResponse>(PUBLIC_DEALS_ENDPOINTS.injectLead, {
+    ...body,
+    utm: getUTMParams(),
+  });
 }
 
 export async function bookMeetingIntoLatestNonStartedDeal(
   body: CreateMeetingParams
 ): Promise<CreateMeetingResponse> {
-  return post<CreateMeetingResponse>(
-    PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal,
-    body
-  );
+  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal, {
+    ...body,
+    utm: getUTMParams(),
+  });
 }
 
 export async function bookMeetingIntoProduct(
   body: CreateMeetingParams
 ): Promise<CreateMeetingResponse> {
-  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct, body);
+  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct, {
+    ...body,
+    utm: getUTMParams(),
+  });
 }
 
 export async function bookMeetingIntoExistingDeal(
   body: CreateExistingDealMeetingParams
 ): Promise<CreateMeetingResponse> {
-  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal, body);
+  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal, {
+    ...body,
+    utm: getUTMParams(),
+  });
 }

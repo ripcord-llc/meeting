@@ -1,6 +1,16 @@
 import { useEffect, useMemo } from 'react';
 import { LoadingButton } from '@mui/lab';
-import { Stack, Box, Typography, Button, InputAdornment, Collapse, Fade } from '@mui/material';
+import {
+  Stack,
+  Box,
+  Typography,
+  Button,
+  InputAdornment,
+  Collapse,
+  Fade,
+  useMediaQuery,
+  Theme,
+} from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -45,10 +55,13 @@ export default function PersonalInfoForm(props: {
 }) {
   const { disabled } = props;
 
+  const isMobile = useMediaQuery<Theme>((theme) => theme.breakpoints.down('md'));
+
+  if (disabled && isMobile) return null;
+
   return (
     <Box
       sx={{
-        p: 4,
         height: '100%',
         overflow: 'auto',
       }}

@@ -1,4 +1,12 @@
-import { Dialog as MuiDialog, DialogProps, Box, IconButton, Stack } from '@mui/material';
+import {
+  Dialog as MuiDialog,
+  DialogProps,
+  Box,
+  IconButton,
+  Stack,
+  useMediaQuery,
+  Theme,
+} from '@mui/material';
 
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -10,6 +18,7 @@ const StyledContent = styled(Box)(({ theme }) => ({
   display: 'grid',
   gridTemplateRows: '48px 1fr 48px',
   overflow: 'hidden',
+  height: '100%',
 
   '& > *:not(:last-child)': {
     borderBottom: `1px solid ${theme.palette.divider}`,
@@ -31,15 +40,19 @@ export default function Dialog({
   };
   children?: React.ReactNode;
 } & DialogProps) {
+  const isMobile = useMediaQuery<Theme>((theme) => theme.breakpoints.down('md'));
+
   return (
     <MuiDialog
       open={open}
       onClose={onClose}
       fullWidth
+      fullScreen={isMobile}
       disablePortal
       sx={{
         '& .MuiDialog-paper': {
           overflow: 'hidden',
+          m: 0,
           transition: (theme) =>
             theme.transitions.create('max-width', {
               easing: theme.transitions.easing.easeInOut,
@@ -50,7 +63,14 @@ export default function Dialog({
       {...rest}
     >
       <StyledContent>
-        <Stack direction="row" alignItems="center" px={4}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          px={{
+            xs: 3,
+            md: 4,
+          }}
+        >
           {slots?.headerLeft}
           <IconButton size="small" onClick={onClose} sx={{ marginLeft: 'auto' }}>
             <CloseIcon sx={{ width: 20, height: 20 }} />
@@ -63,7 +83,14 @@ export default function Dialog({
         >
           {children}
         </Box>
-        <Stack direction="row" alignItems="center" px={4}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          px={{
+            xs: 3,
+            md: 4,
+          }}
+        >
           {slots?.footerLeft}
           <PoweredByRipcordIcon
             component="a"

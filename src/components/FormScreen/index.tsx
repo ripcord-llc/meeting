@@ -1,5 +1,5 @@
 import { forwardRef, useState, useCallback } from 'react';
-import { Box, Divider } from '@mui/material';
+import { Box, Divider, Theme, useMediaQuery } from '@mui/material';
 
 import { PublicRouting, RouteResult, RoutingOutcomeType } from '../../api/routing/types';
 import { handleRouting } from '../../api/routing';
@@ -26,6 +26,8 @@ function convertFormAnswersToRoutingParams(
 
 const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productId?: string }>(
   ({ routing, productId }, ref) => {
+    const isMobile = useMediaQuery<Theme>((theme) => theme.breakpoints.down('md'));
+
     const [, onError] = useWidgetStateContext();
 
     const [status, setStatus] = useState<FormScreenStatus>('personal-info');
@@ -68,15 +70,23 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
     return (
       <Box
         ref={ref}
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
+        sx={(theme) => ({
           height: 1,
           overflow: 'hidden',
           '& > .MuiBox-root': {
+            height: 1,
             overflow: 'auto',
+            p: 3,
           },
-        }}
+          [theme.breakpoints.up('md')]: {
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+
+            '& > .MuiBox-root': {
+              p: 4,
+            },
+          },
+        })}
       >
         <InjectLeadContext.Provider value={injectLead}>
           <PersonalInfoForm
@@ -89,12 +99,13 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
             onGoBack={moveToPersonalInfo}
             formValues={formValues}
           />
-          <Divider orientation="vertical" />
+          {!isMobile && <Divider orientation="vertical" />}
           <RoutingResultForm
             routing={routing}
             productId={productId}
             routeResult={routeResult}
             formValues={formValues}
+            onGoBack={moveToPersonalInfo}
             disabled={status === 'personal-info'}
           />
         </InjectLeadContext.Provider>

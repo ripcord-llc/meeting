@@ -160,12 +160,12 @@ export default function BaseCalendarForm<T extends Slot>({
   setDate: (date: PickerValidDate) => void;
 }) {
   return (
-    <Box p={4}>
+    <>
       <Typography variant="subtitle2" textAlign="center">
         Select a Date
       </Typography>
       <StyledDateCalendar disablePast value={date} onChange={setDate} />
       {!!date && <TimeSlots {...rest} />}
-    </Box>
+    </>
   );
 }

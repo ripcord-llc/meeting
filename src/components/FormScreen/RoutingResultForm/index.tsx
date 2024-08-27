@@ -1,18 +1,7 @@
 import { useCallback, useState } from 'react';
-import {
-  Stack,
-  Box,
-  Typography,
-  Button,
-  Select,
-  MenuItem,
-  styled,
-  Skeleton,
-  CircularProgress,
-  alpha,
-} from '@mui/material';
-import { DateCalendar, PickerValidDate } from '@mui/x-date-pickers';
+import { Stack, Box, Typography, Button, useMediaQuery, Theme } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -201,7 +190,6 @@ function ExistingDealLink({ dealId }: { dealId: string }) {
 function DisabledState({ routing }: { routing: PublicRouting }) {
   return (
     <Stack
-      p={4}
       flex={1}
       justifyContent="center"
       sx={{
@@ -232,19 +220,17 @@ function DisabledState({ routing }: { routing: PublicRouting }) {
   );
 }
 
-export default function RoutingResultForm({
-  routing,
-  productId,
-  routeResult,
-  formValues,
-  disabled,
-}: {
+interface Props {
   routing: PublicRouting;
   routeResult: RouteResult | null;
   formValues: FormValues | null;
   disabled: boolean;
   productId?: string;
-}) {
+}
+
+function RoutingResultFormInner({ routing, productId, routeResult, formValues, disabled }: Props) {
+  const isMobile = useMediaQuery<Theme>((theme) => theme.breakpoints.down('md'));
+
   const [, , setConfirm] = useWidgetStateContext();
 
   const { data } = useInjectLeadContext();
@@ -321,7 +307,9 @@ export default function RoutingResultForm({
     [formValues, data?.deal, setConfirm]
   );
 
-  if (disabled || !routeResult) {
+  if (disabled) {
+    if (isMobile) return null;
+
     return <DisabledState routing={routing} />;
   }
 
@@ -332,7 +320,10 @@ export default function RoutingResultForm({
     return <DealCalendarForm dealId={data.deal.uuid} onSubmit={onDealSubmit} loading={loading} />;
   }
 
-  switch (routeResult.outcome) {
+  switch (routeResult?.outcome) {
+    case undefined:
+    case null:
+      return <DisabledState routing={routing} />;
     case RoutingOutcomeType.RECORDING:
       return <RecordedDemoLink productId={routeResult.productId} />;
     case RoutingOutcomeType.TEAM:
@@ -342,4 +333,24 @@ export default function RoutingResultForm({
     default:
       return null;
   }
+}
+
+export default function RoutingResultForm({
+  onGoBack,
+  ...rest
+}: Props & {
+  onGoBack: () => void;
+}) {
+  const isMobile = useMediaQuery<Theme>((theme) => theme.breakpoints.down('md'));
+
+  return (
+    <Box position="relative">
+      {isMobile && (
+        <Button onClick={onGoBack} color="inherit" startIcon={<ChevronLeftIcon />}>
+          Go Back
+        </Button>
+      )}
+      <RoutingResultFormInner {...rest} />
+    </Box>
+  );
 }

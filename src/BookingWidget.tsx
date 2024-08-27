@@ -64,31 +64,31 @@ function BookingWidget({
   }
 
   return (
-    <WidgetStateContext.Provider value={widgetState}>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        maxWidth="md"
-        slots={{
-          headerLeft: (
-            <Stack direction="row" gap={1} alignItems="center">
-              <Avatar
-                src={data.account?.avatar?.fileUrl}
-                sx={{
-                  width: 32,
-                  height: 32,
-                }}
-              />
-              <Typography variant="subtitle2">{data.account.name}</Typography>
-            </Stack>
-          ),
-        }}
-      >
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      slots={{
+        headerLeft: (
+          <Stack direction="row" gap={1} alignItems="center">
+            <Avatar
+              src={data.account?.avatar?.fileUrl}
+              sx={{
+                width: 32,
+                height: 32,
+              }}
+            />
+            <Typography variant="subtitle2">{data.account.name}</Typography>
+          </Stack>
+        ),
+      }}
+    >
+      <WidgetStateContext.Provider value={widgetState}>
         <Fade in appear timeout={750}>
           <FormScreen routing={data} productId={productId} />
         </Fade>
-      </Dialog>
-    </WidgetStateContext.Provider>
+      </WidgetStateContext.Provider>
+    </Dialog>
   );
 }
 

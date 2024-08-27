@@ -77,7 +77,7 @@ function TimeSlots<T extends Slot>({
 
   if (!data?.length)
     return (
-      <Typography mt={3} variant="subtitle2">
+      <Typography mt={3} variant="subtitle2" textAlign="center">
         No slots available
       </Typography>
     );

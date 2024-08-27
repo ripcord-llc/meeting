@@ -25,7 +25,9 @@ export function useWidgetState() {
     if (typeof error === 'string') {
       message = error;
     } else if (error instanceof Exception) {
-      message = error.response?.message || error.message;
+      message = error.response
+        ? `${error.response.error}: ${error.response.message}`
+        : error.message;
     } else if (error instanceof Error) {
       message = error.message;
     } else {

@@ -1,14 +1,16 @@
 /* eslint-disable no-template-curly-in-string */
-import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
 import isURL from 'validator/es/lib/isURL';
 import * as yup from 'yup';
 import { isPossiblePhoneNumber } from 'react-phone-number-input';
 
-import useDebounced from '../../hooks/useDebounced';
+import { post } from '../fetcher';
 
-import { post, Exception } from '../fetcher';
-
-import { LeadInjectionResponse } from './types';
+import {
+  LeadInjectionResponse,
+  CreateMeetingParams,
+  CreateExistingDealMeetingParams,
+  CreateMeetingResponse,
+} from './types';
 
 import { PUBLIC_DEALS_ENDPOINTS } from '.';
 
@@ -68,4 +70,25 @@ export function injectLead(
   }
 ): Promise<LeadInjectionResponse> {
   return post<LeadInjectionResponse>(PUBLIC_DEALS_ENDPOINTS.injectLead, body);
+}
+
+export async function bookMeetingIntoLatestNonStartedDeal(
+  body: CreateMeetingParams
+): Promise<CreateMeetingResponse> {
+  return post<CreateMeetingResponse>(
+    PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal,
+    body
+  );
+}
+
+export async function bookMeetingIntoProduct(
+  body: CreateMeetingParams
+): Promise<CreateMeetingResponse> {
+  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct, body);
+}
+
+export async function bookMeetingIntoExistingDeal(
+  body: CreateExistingDealMeetingParams
+): Promise<CreateMeetingResponse> {
+  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal, body);
 }

@@ -8,6 +8,9 @@ import { LeadInjectionResponse } from './types';
 export const PUBLIC_DEALS_ENDPOINTS = {
   findLead: '/public/deals/find-lead',
   injectLead: '/public/deals/inject-lead',
+  bookMeetingIntoLatestNonStartedDeal: '/public/deals/routing-meeting',
+  bookMeetingIntoProduct: '/public/deals/product-meeting',
+  bookMeetingIntoExistingDeal: '/public/deals/existing-deal-meeting',
 };
 
 export function useFindLead(

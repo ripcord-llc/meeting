@@ -5,6 +5,8 @@ import { createRoot, Root } from 'react-dom/client';
 
 import { initUTMCapture } from './utm';
 
+import { setConfig } from './config';
+
 import BookingWidget from './BookingWidget';
 
 function findEl(el: string | HTMLElement): HTMLElement {
@@ -22,6 +24,8 @@ function findEl(el: string | HTMLElement): HTMLElement {
 }
 
 class Ripcord {
+  static instances: Ripcord[] = [];
+
   private el?: HTMLElement;
 
   private root: Root;
@@ -54,6 +58,20 @@ class Ripcord {
     this.bindEvents();
 
     this.render();
+
+    Ripcord.instances.push(this);
+  }
+
+  static INTERNAL_USE_ONLY_setConfig(config: { clientUrl: string; apiUrl: string }) {
+    setConfig(config);
+
+    Ripcord.instances.forEach((instance) => {
+      if (instance && !instance.destroyed) {
+        instance.key = String(Math.random());
+
+        instance.render();
+      }
+    });
   }
 
   public openWidget() {

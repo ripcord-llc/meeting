@@ -1,30 +1,38 @@
 'use client';
 
-import { useState } from 'react';
 import { Fade, Stack, Avatar, Typography } from '@mui/material';
 
 import Dialog from './components/dialog/Dialog';
 
-import ErrorScreen from './components/ErrorScreen';
-import LoadingScreen from './components/LoadingScreen';
 import FormScreen from './components/FormScreen';
+import ErrorScreen from './components/ErrorScreen';
+import ErrorBoundary from './components/ErrorBoundary';
+import LoadingScreen from './components/LoadingScreen';
+import ConfirmationScreen from './components/ConfirmationScreen';
 
 import { usePublicRouting } from './api/routing';
 
 import { ConfigurationProvider } from './config';
 
-import ErrorBoundary, { ErrorHandlerContext } from './components/ErrorBoundary';
+import { useWidgetState, WidgetStateContext } from './state';
 
 export interface BookingWidgetProps {
   open: boolean;
   onClose: () => void;
   routingId: string;
   productId?: string;
-  widgetKey: string; // This is used to force a re-render of the widget when the key changes
+  widgetKey: string;
 }
 
-function BookingWidget({ open, onClose, routingId, productId, widgetKey }: BookingWidgetProps) {
-  const [globalError, setGlobalError] = useState<Error | null>(null);
+function BookingWidget({
+  open,
+  onClose,
+  routingId,
+  productId,
+}: Omit<BookingWidgetProps, 'widgetKey'>) {
+  const widgetState = useWidgetState();
+
+  const [state] = widgetState;
 
   const { data, isLoading, error } = usePublicRouting(routingId);
 
@@ -36,16 +44,27 @@ function BookingWidget({ open, onClose, routingId, productId, widgetKey }: Booki
     );
   }
 
-  if (!data || error || globalError) {
+  if (!data || error || state.state === 'error') {
+    const message =
+      state.state === 'error' ? state.error : error?.response?.message || error?.message;
+
     return (
       <Dialog open={open} onClose={onClose} maxWidth="sm">
-        <ErrorScreen error={error?.response?.message || error?.message} />
+        <ErrorScreen error={message} />
+      </Dialog>
+    );
+  }
+
+  if (state.state === 'confirm') {
+    return (
+      <Dialog open={open} onClose={onClose} maxWidth="sm">
+        <ConfirmationScreen meeting={state.meeting} />
       </Dialog>
     );
   }
 
   return (
-    <ErrorHandlerContext.Provider value={setGlobalError}>
+    <WidgetStateContext.Provider value={widgetState}>
       <Dialog
         open={open}
         onClose={onClose}
@@ -69,7 +88,7 @@ function BookingWidget({ open, onClose, routingId, productId, widgetKey }: Booki
           <FormScreen routing={data} productId={productId} />
         </Fade>
       </Dialog>
-    </ErrorHandlerContext.Provider>
+    </WidgetStateContext.Provider>
   );
 }
 

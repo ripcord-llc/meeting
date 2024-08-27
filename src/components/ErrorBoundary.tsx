@@ -1,19 +1,7 @@
-import { Component, ErrorInfo, createContext, useContext } from 'react';
+import { Component, ErrorInfo } from 'react';
 
 import Dialog from './dialog/Dialog';
 import ErrorScreen from './ErrorScreen';
-
-export const ErrorHandlerContext = createContext<((error: Error) => void) | null>(null);
-
-export const useErrorHandler = () => {
-  const context = useContext(ErrorHandlerContext);
-
-  if (!context) {
-    throw new Error('useErrorHandler must be used within an ErrorHandlerProvider');
-  }
-
-  return context;
-};
 
 export default class ErrorBoundary extends Component<
   {

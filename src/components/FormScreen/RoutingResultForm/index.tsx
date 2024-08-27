@@ -29,7 +29,7 @@ import {
 } from '../../../api/bookings';
 import { Slot } from '../../../api/bookings/types';
 
-import { RouteResult, RoutingOutcomeType } from '../../../api/routing/types';
+import { PublicRouting, RouteResult, RoutingOutcomeType } from '../../../api/routing/types';
 import { useInjectLeadContext } from '../../../api/deals/hooks';
 
 import BaseCalendarForm, { StyledDateCalendar } from './CalendarForm';
@@ -111,7 +111,7 @@ function RecordedDemoLink({ productId }: { productId: string }) {
   );
 }
 
-function DisabledState() {
+function DisabledState({ routing }: { routing: PublicRouting }) {
   return (
     <Stack
       p={4}
@@ -139,23 +139,25 @@ function DisabledState() {
           boxShadow: theme.shadows[4],
         })}
       >
-        Please fill out the form to book a meeting with Cheese Corp.
+        Please fill out the form to book a meeting with {routing.account.name}
       </Box>
     </Stack>
   );
 }
 
 export default function RoutingResultForm({
+  routing,
   routeResult,
   disabled,
 }: {
+  routing: PublicRouting;
   routeResult: RouteResult | null;
   disabled: boolean;
 }) {
   const { data } = useInjectLeadContext();
 
   if (disabled || !routeResult) {
-    return <DisabledState />;
+    return <DisabledState routing={routing} />;
   }
 
   if (data?.deal && data.deal.started && data.deal.userId) {

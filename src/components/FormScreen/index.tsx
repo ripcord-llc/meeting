@@ -6,7 +6,7 @@ import { handleRouting } from '../../api/routing';
 
 import { InjectLeadContext, useInjectLead } from '../../api/deals/hooks';
 
-import { useErrorHandler } from '../ErrorBoundary';
+import { useWidgetStateContext } from '../../state';
 
 import PersonalInfoForm from './PersonalInfoForm';
 import RoutingResultForm from './RoutingResultForm';
@@ -26,7 +26,7 @@ function convertFormAnswersToRoutingParams(
 
 const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productId?: string }>(
   ({ routing, productId }, ref) => {
-    const errorHandler = useErrorHandler();
+    const [, onError] = useWidgetStateContext();
 
     const [status, setStatus] = useState<FormScreenStatus>('personal-info');
     // This stores the furthest stage the user has reached in the personal info form. Once a stage is reached, the user can't go back to a previous stage.
@@ -36,7 +36,7 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
     ]);
 
     // This is called here so that the returned lead data isn't lost when the user moves to the calendar form.
-    const injectLead = useInjectLead(routing.uuid, productId, errorHandler);
+    const injectLead = useInjectLead(routing.uuid, productId, onError);
 
     const [formValues, setFormValues] = useState<FormValues | null>(null);
     const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
@@ -55,10 +55,10 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
           setRouteResult(result);
           setStatus('calendar');
         } catch (e) {
-          errorHandler(e as Error);
+          onError(e as Error);
         }
       },
-      [errorHandler, routing.uuid]
+      [onError, routing.uuid]
     );
 
     const moveToPersonalInfo = useCallback(() => {
@@ -85,7 +85,11 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
             formValues={formValues}
           />
           <Divider orientation="vertical" />
-          <RoutingResultForm routeResult={routeResult} disabled={status === 'personal-info'} />
+          <RoutingResultForm
+            routing={routing}
+            routeResult={routeResult}
+            disabled={status === 'personal-info'}
+          />
         </InjectLeadContext.Provider>
       </Box>
     );

@@ -52,7 +52,7 @@ export default [
       {
         file: pkj.browser,
         format: 'iife',
-        name: 'ripcord',
+        name: 'Ripcord',
       },
     ],
   },

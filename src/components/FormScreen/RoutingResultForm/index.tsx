@@ -30,7 +30,7 @@ import {
 import { Slot } from '../../../api/bookings/types';
 
 import { RouteResult, RoutingOutcomeType } from '../../../api/routing/types';
-import { useInjectLeadContext } from '../../../api/deals/actions';
+import { useInjectLeadContext } from '../../../api/deals/hooks';
 
 import BaseCalendarForm, { StyledDateCalendar } from './CalendarForm';
 

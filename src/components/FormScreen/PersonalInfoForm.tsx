@@ -6,14 +6,9 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { parsePhoneNumber } from 'react-phone-number-input';
 
-import {
-  EmailSchema,
-  NameSchema,
-  PhoneNumberSchema,
-  URLSchema,
-  useInjectLeadContext,
-  useValidatedLeadInjectionValues,
-} from '../../api/deals/actions';
+import { EmailSchema, NameSchema, PhoneNumberSchema, URLSchema } from '../../api/deals/actions';
+
+import { useValidatedLeadInjectionValues, useInjectLeadContext } from '../../api/deals/hooks';
 
 import TextField from '../form/TextField';
 import RadioGroup from '../form/RadioGroup';

@@ -118,7 +118,7 @@ class Ripcord {
         onClose={this.closeWidget}
         routingId={this.routingId}
         productId={this.productId}
-        widgetKey={this.key}
+        key={this.key}
       />
     );
   }

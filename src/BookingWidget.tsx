@@ -21,15 +21,9 @@ export interface BookingWidgetProps {
   onClose: () => void;
   routingId: string;
   productId?: string;
-  widgetKey: string;
 }
 
-function BookingWidget({
-  open,
-  onClose,
-  routingId,
-  productId,
-}: Omit<BookingWidgetProps, 'widgetKey'>) {
+function BookingWidget({ open, onClose, routingId, productId }: BookingWidgetProps) {
   const widgetState = useWidgetState();
 
   const [state] = widgetState;
@@ -93,12 +87,10 @@ function BookingWidget({
 }
 
 export default function Main(props: BookingWidgetProps) {
-  const { widgetKey } = props;
-
   return (
     <ConfigurationProvider>
       <ErrorBoundary {...props}>
-        <BookingWidget key={widgetKey} {...props} />
+        <BookingWidget {...props} />
       </ErrorBoundary>
     </ConfigurationProvider>
   );

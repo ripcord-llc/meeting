@@ -15,7 +15,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import { countries } from "./utils";
+import { countries , getCountry, applyFilter } from "./utils";
 
 import { usePopover } from "../../../hooks/usePopover";
 
@@ -24,7 +24,6 @@ import { SearchNotFound } from "../../common/search-not-found";
 // import { Iconify, FlagIcon } from "src/components/iconify";
 import { FlagIcon } from "./flag-icon";
 
-import { getCountry, applyFilter } from "./utils";
 
 import type { CountryListProps } from "./types";
 

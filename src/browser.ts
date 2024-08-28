@@ -1,4 +1,4 @@
-import { BookingWidget, Ripcord, initUTMCapture } from '.';
+import { Ripcord, initUTMCapture } from '.';
 
 initUTMCapture();
 

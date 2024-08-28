@@ -1,7 +1,7 @@
 import { forwardRef, useState, useCallback } from 'react';
 import { Box, Divider, Theme, useMediaQuery } from '@mui/material';
 
-import { PublicRouting, RouteResult, RoutingOutcomeType } from '../../api/routing/types';
+import { PublicRouting, RouteResult } from '../../api/routing/types';
 import { handleRouting } from '../../api/routing';
 
 import { InjectLeadContext, useInjectLead } from '../../api/deals/hooks';

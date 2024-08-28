@@ -1,14 +1,10 @@
-import { useFormContext, Controller } from "react-hook-form";
+import { useFormContext, Controller } from 'react-hook-form';
 
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Radio from "@mui/material/Radio";
-import FormLabel from "@mui/material/FormLabel";
-import MuiRadioGroup, { RadioGroupProps } from "@mui/material/RadioGroup";
-import FormControl from "@mui/material/FormControl";
-import FormHelperText from "@mui/material/FormHelperText";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from '@mui/material/Radio';
+import MuiRadioGroup, { RadioGroupProps } from '@mui/material/RadioGroup';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 type Props = RadioGroupProps & {
   name: string;
@@ -31,7 +27,7 @@ export default function RadioGroup({
 }: Props) {
   const { control } = useFormContext();
 
-  const labelledby = label ? `${name}-${label}` : "";
+  const labelledby = label ? `${name}-${label}` : '';
 
   return (
     <Controller
@@ -39,12 +35,7 @@ export default function RadioGroup({
       control={control}
       render={({ field, fieldState: { error } }) => (
         <FormControl component="fieldset">
-          <MuiRadioGroup
-            {...field}
-            aria-labelledby={labelledby}
-            row={row}
-            {...other}
-          >
+          <MuiRadioGroup {...field} aria-labelledby={labelledby} row={row} {...other}>
             {options.map((option) => (
               <FormControlLabel
                 key={option.value}
@@ -52,12 +43,12 @@ export default function RadioGroup({
                 control={<Radio />}
                 label={option.label}
                 sx={{
-                  "&:not(:last-of-type)": {
+                  '&:not(:last-of-type)': {
                     mb: spacing || 0,
                   },
                   ...(row && {
                     mr: 0,
-                    "&:not(:last-of-type)": {
+                    '&:not(:last-of-type)': {
                       mr: spacing || 2,
                     },
                   }),

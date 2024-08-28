@@ -20,21 +20,21 @@ export function useWidgetState() {
   const [state, setState] = useState<WidgetState>({ state: 'form' });
 
   const setError = useCallback((error: Error | string) => {
-    let message = '';
+    let errorMessage = '';
 
     if (typeof error === 'string') {
-      message = error;
+      errorMessage = error;
     } else if (error instanceof Exception) {
-      message = error.response
+      errorMessage = error.response
         ? `${error.response.error}: ${error.response.message}`
         : error.message;
     } else if (error instanceof Error) {
-      message = error.message;
+      errorMessage = error.message;
     } else {
-      message = 'An unknown error occurred';
+      errorMessage = 'An unknown error occurred';
     }
 
-    setState({ state: 'error', error: message });
+    setState({ state: 'error', error: errorMessage });
   }, []);
 
   const setConfirm = useCallback(

@@ -6,6 +6,8 @@ import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import filesize from 'rollup-plugin-filesize';
 import terser from '@rollup/plugin-terser';
+import dts from 'rollup-plugin-dts';
+import del from 'rollup-plugin-delete';
 
 import pkj from './package.json' assert { type: 'json' };
 
@@ -25,15 +27,14 @@ const plugins = [
     exclude: 'node_modules/**',
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
   }), // Transpiles JSX and TS
-  // typescript({ noForceEmit: true }), // Only for type checking and declaration file generation
   postcss({
     plugins: [],
   }),
-  ...(isProduction ? [] : [filesize()]),
 ];
 
+const devPlugins = [...(isProduction ? [] : [filesize()])];
+
 const common = {
-  plugins,
   onwarn: (warning, defaultHandler) => {
     if (
       warning.message.includes(`Module level directives cause errors when bundled, "use client" in`)
@@ -47,6 +48,7 @@ const common = {
 export default [
   {
     ...common,
+    plugins: [...plugins, ...devPlugins],
     input: 'src/browser.ts',
     output: [
       {
@@ -65,6 +67,11 @@ export default [
   {
     ...common,
     input: 'src/index.tsx',
+    plugins: [
+      ...plugins,
+      typescript({ noForceEmit: true }), // Only for type checking and declaration file generation
+      ...devPlugins,
+    ],
     external: [
       '@emotion/react',
       '@emotion/styled',
@@ -92,6 +99,20 @@ export default [
         file: pkj.main,
         format: 'cjs',
       },
+    ],
+  },
+  // For types. Merges d.ts files into a single file.
+  {
+    input: './dist/types/index.d.ts',
+    output: [{ file: 'dist/index.d.ts', format: 'es' }],
+    plugins: [
+      replace({
+        "import './index.css';": '',
+        preventAssignment: false,
+        delimiters: ['', ''],
+      }), // For some reason, the css imports are included in the d.ts files. This removes them.
+      dts(),
+      del({ targets: 'dist/types', hook: 'buildEnd' }), // Deletes the types folder after the build
     ],
   },
 ];

@@ -10,12 +10,22 @@
 <body style="height: 100%">
   <div>
     <button id="open-modal">Open Modal</button>
+    <button id="destroy">Destroy</button>
   </div>
   <script src="/dist/index.umd.js"></script>
   <script>
     const button = document.getElementById('open-modal')
+    const destroyButton = document.getElementById('destroy')
 
-    const instance = new ripcord.Ripcord({ el: button, routingId: "C12QtlPp-f8Shx8iLqoMa" })
+    const instance = new Ripcord({ el: button, routingId: "9984ztPs7oThNVupQU9dU" })
+
+    window.addEventListener("load", () => {
+      instance.openWidget()
+    })
+
+    destroyButton.addEventListener('click', () => {
+      instance.destroy()
+    })
   </script>
 </body>
 

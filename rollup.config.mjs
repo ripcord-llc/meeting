@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import nodeResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
@@ -18,6 +20,8 @@ const plugins = [
     'process.env.NODE_ENV': isProduction
       ? JSON.stringify('production')
       : JSON.stringify('development'),
+    'process.env.CLIENT_URL': JSON.stringify(process.env.CLIENT_URL),
+    'process.env.API_URL': JSON.stringify(process.env.API_URL),
     preventAssignment: true,
   }),
   nodeResolve({ extensions: ['.js', '.jsx', '.ts', '.tsx'] }),

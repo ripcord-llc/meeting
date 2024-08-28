@@ -1,8 +1,8 @@
 import { mutate } from 'swr';
 
 export const CONFIG = {
-  CLIENT_URL: 'http://localhost:8081', // Replace with env variable
-  API_URL: 'http://localhost:3000',
+  CLIENT_URL: process.env.CLIENT_URL, // Replace with env variable
+  API_URL: process.env.API_URL, // Replace with env variable
 };
 
 export function setConfig({ clientUrl, apiUrl }: { clientUrl: string; apiUrl: string }) {

@@ -62296,9 +62296,9 @@ Please use another name.` );
   }
 
   const CONFIG = {
-    CLIENT_URL: 'http://localhost:8081',
+    CLIENT_URL: "https://dash.ripcord.io/",
     // Replace with env variable
-    API_URL: 'http://localhost:3000'
+    API_URL: "https://api.ripcord.io/" // Replace with env variable
   };
   function setConfig(_ref) {
     let {

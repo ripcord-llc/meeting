@@ -1,5 +1,6 @@
 'use client';
 
+import { StrictMode } from 'react';
 import { Fade, Stack, Avatar, Typography } from '@mui/material';
 
 import Dialog from './components/dialog/Dialog';
@@ -88,10 +89,12 @@ function BookingWidget({ open, onClose, routingId, productId }: BookingWidgetPro
 
 export default function Main(props: BookingWidgetProps) {
   return (
-    <ConfigurationProvider>
-      <ErrorBoundary {...props}>
-        <BookingWidget {...props} />
-      </ErrorBoundary>
-    </ConfigurationProvider>
+    <StrictMode>
+      <ConfigurationProvider>
+        <ErrorBoundary {...props}>
+          <BookingWidget {...props} />
+        </ErrorBoundary>
+      </ConfigurationProvider>
+    </StrictMode>
   );
 }

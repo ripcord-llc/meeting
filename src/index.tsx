@@ -32,7 +32,7 @@ class Ripcord {
 
   private rootEl: HTMLElement;
 
-  private open: boolean = false;
+  private isOpen: boolean = false;
 
   private destroyed: boolean = false;
 
@@ -52,8 +52,8 @@ class Ripcord {
 
     this.el = typeof el !== 'undefined' ? findEl(el) : undefined;
 
-    this.openWidget = this.openWidget.bind(this);
-    this.closeWidget = this.closeWidget.bind(this);
+    this.open = this.open.bind(this);
+    this.close = this.close.bind(this);
 
     this.bindEvents();
 
@@ -74,27 +74,27 @@ class Ripcord {
     });
   }
 
-  public openWidget() {
+  public open() {
     this.destoryCheck();
 
-    if (this.open) {
+    if (this.isOpen) {
       return;
     }
 
-    this.open = true;
+    this.isOpen = true;
     this.key = String(Math.random());
 
     this.render();
   }
 
-  public closeWidget() {
+  public close() {
     this.destoryCheck();
 
     if (!this.open) {
       return;
     }
 
-    this.open = false;
+    this.isOpen = false;
 
     this.render();
   }
@@ -114,8 +114,8 @@ class Ripcord {
   private render() {
     this.root.render(
       <BookingWidget
-        open={this.open}
-        onClose={this.closeWidget}
+        open={this.isOpen}
+        onClose={this.close}
         routingId={this.routingId}
         productId={this.productId}
         key={this.key}
@@ -125,13 +125,13 @@ class Ripcord {
 
   private bindEvents() {
     if (this.el) {
-      this.el.addEventListener('click', this.openWidget);
+      this.el.addEventListener('click', this.open);
     }
   }
 
   private unbindEvents() {
     if (this.el) {
-      this.el.removeEventListener('click', this.openWidget);
+      this.el.removeEventListener('click', this.open);
     }
   }
 

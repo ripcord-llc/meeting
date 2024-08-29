@@ -13,6 +13,12 @@ export type WidgetState =
     }
   | {
       state: 'confirm';
+      formValues: {
+        email: string;
+        name: string;
+        phone: string;
+        url: string;
+      };
       meeting: BookMeetingResponse;
     };
 
@@ -40,7 +46,18 @@ export function useWidgetState() {
   }, []);
 
   const setConfirm = useCallback(
-    (meeting: BookMeetingResponse) => setState({ state: 'confirm', meeting }),
+    ({
+      meeting,
+      formValues,
+    }: {
+      meeting: BookMeetingResponse;
+      formValues: {
+        email: string;
+        name: string;
+        phone: string;
+        url: string;
+      };
+    }) => setState({ state: 'confirm', meeting, formValues }),
     []
   );
 

@@ -260,7 +260,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
             url,
           });
 
-          setConfirm(meeting);
+          setConfirm({ meeting, formValues: { email, name, phone, url } });
           return;
         }
 
@@ -275,7 +275,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           url,
         });
 
-        setConfirm(meeting);
+        setConfirm({ meeting, formValues: { email, name, phone, url } });
       } catch (e) {
         console.error('Error booking meeting', e);
       } finally {
@@ -303,7 +303,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           url,
         });
 
-        setConfirm(meeting);
+        setConfirm({ meeting, formValues: { email, name, phone, url } });
       } catch (e) {
         console.error('Error booking meeting', e);
       }

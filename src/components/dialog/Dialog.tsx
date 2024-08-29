@@ -72,6 +72,7 @@ export default function Dialog({
         sx={{
           ...(enableConfirmedDesign && {
             height: 'auto',
+            minHeight: '100%',
             overflow: 'unset',
           }),
         }}
@@ -95,9 +96,13 @@ export default function Dialog({
           </IconButton>
         </Stack>
         <Box
-          sx={{
-            overflow: 'hidden',
-          }}
+          sx={
+            !enableConfirmedDesign
+              ? {
+                  overflow: 'hidden',
+                }
+              : {}
+          }
         >
           {children}
         </Box>

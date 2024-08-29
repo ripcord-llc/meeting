@@ -230,7 +230,19 @@ export default function ConfirmationScreen({
   const { event, user } = meeting;
 
   return (
-    <Stack spacing={4} pt={2} px={4} pb={4}>
+    <Stack
+      spacing={4}
+      justifyContent="center"
+      sx={(theme) => ({
+        height: 1,
+        py: 4,
+        px: 6,
+        [theme.breakpoints.down('md')]: {
+          py: 2,
+          px: 3,
+        },
+      })}
+    >
       <Typography variant="h6" textAlign="center">
         🎉 Thank you! Your meeting has been scheduled 🎉
       </Typography>

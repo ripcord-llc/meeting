@@ -97,7 +97,9 @@ export default function Dialog({
               xs: 3,
               md: 4,
             },
-            borderTop: `1px solid ${theme.palette.divider}`,
+            ...(!enableConfirmedDesign && {
+              borderTop: `1px solid ${theme.palette.divider}`,
+            }),
             bgcolor:
               theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
           })}

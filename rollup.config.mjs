@@ -103,6 +103,7 @@ export default [
       {
         file: pkj.main,
         format: 'cjs',
+        interop: 'auto',
       },
     ],
   },

@@ -1,20 +1,37 @@
-import { Avatar, Box, Button, Divider, Paper, Stack, Typography, Link } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+  Link,
+  ButtonBase,
+} from '@mui/material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
 
+import dayjs from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+
 import { BookMeetingResponse } from '../api/deals/types';
+
+import useCopyToClipboard from '../hooks/useCopyToClipboard';
+
+import { CONFIG } from '../config';
+
+dayjs.extend(advancedFormat);
 
 function DetailsRow({
   icon,
   label,
   text,
-  href,
 }: {
   icon: React.ReactNode;
   label: string;
-  text?: string;
-  href?: string;
+  text: React.ReactNode;
 }) {
   return (
     <Box
@@ -59,15 +76,12 @@ function DetailsRow({
         </Box>
         <Typography variant="subtitle1">{label}</Typography>
       </Stack>
-      {!!text && !href && (
+      {typeof text === 'string' ? (
         <Typography variant="body1" color="text.secondary">
           {text}
         </Typography>
-      )}
-      {!!href && (
-        <Link variant="body1" color="text.secondary" href={href}>
-          {text || href}
-        </Link>
+      ) : (
+        text
       )}
     </Box>
   );
@@ -86,6 +100,58 @@ function UserDetailsRow({ user }: { user: BookMeetingResponse['user'] }) {
       </Box>
       <Avatar variant="rounded" sx={{ width: 48, height: 48 }} src={avatar?.fileUrl} />
     </Stack>
+  );
+}
+
+function TimeRow({ startTime, endTime }: { startTime: string; endTime: string }) {
+  const formattedStartTime = dayjs(startTime).format('dddd, MMM D, h:mma');
+  const formattedEndTime = dayjs(endTime).format('h:mma z');
+
+  return (
+    <DetailsRow
+      icon={<ScheduleIcon />}
+      label="Time"
+      text={`${formattedStartTime}-${formattedEndTime}`}
+    />
+  );
+}
+
+function LinkRow({ uuid }: { uuid: string }) {
+  const { copied, copyToClipboard } = useCopyToClipboard();
+
+  const link = `${CONFIG.CLIENT_URL}/m/${uuid}`;
+
+  const onClick = () => {
+    copyToClipboard(link);
+  };
+
+  return (
+    <DetailsRow
+      icon={<LinkIcon />}
+      label="Link"
+      text={
+        <Box>
+          <ButtonBase
+            sx={(theme) => ({
+              ...theme.typography.body1,
+              display: 'block',
+              color: theme.palette.text.secondary,
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            })}
+            onClick={onClick}
+          >
+            {link}
+          </ButtonBase>
+          {copied && (
+            <Typography variant="caption" color="text.secondary" textAlign="center">
+              Copied!
+            </Typography>
+          )}
+        </Box>
+      }
+    />
   );
 }
 
@@ -146,12 +212,8 @@ export default function ConfirmationScreen({
       <Paper variant="outlined" sx={{ p: 2, alignSelf: 'stretch' }}>
         <Stack gap={2} divider={<Divider flexItem />}>
           <UserDetailsRow user={user} />
-          <DetailsRow
-            icon={<ScheduleIcon />}
-            label="Time"
-            text="Thursday, Sep 14th, 11:00AM-11:30AM EST"
-          />
-          <DetailsRow icon={<LinkIcon />} label="Link" href="https://ripcord.io/m/123345" />
+          <TimeRow startTime={event.startTime} endTime={event.endTime} />
+          <LinkRow uuid={event.uuid} />
           <DetailsRow
             icon={<NotesIcon />}
             label="Details"

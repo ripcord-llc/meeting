@@ -73,18 +73,20 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
         sx={(theme) => ({
           height: 1,
           overflow: 'hidden',
-          '& > .MuiBox-root': {
-            height: 1,
-            overflow: 'auto',
-            p: 3,
-          },
+
           [theme.breakpoints.up('md')]: {
             display: 'grid',
             gridTemplateColumns: '1fr auto 1fr',
 
             '& > .MuiBox-root': {
-              p: 4,
+              p: `${theme.spacing(4)} !important`,
             },
+          },
+
+          '& > .MuiBox-root': {
+            height: 1,
+            overflow: 'auto',
+            p: 3,
           },
         })}
       >

@@ -9,6 +9,8 @@ import timezone from 'dayjs/plugin/timezone';
 
 import { CONFIG } from '../../../config';
 
+import RecordedDemoIllustration from '../../illustrations/RecordedDemoIllustration';
+
 import {
   useUserSlots,
   convertDayToUTCString,
@@ -138,6 +140,7 @@ function TeamCalendarForm({ teamId, onSubmit, loading }: { teamId: string } & Ca
 function RecordedDemoLink({ productId }: { productId: string }) {
   return (
     <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
+      <RecordedDemoIllustration sx={{ width: 200 }} />
       <Box>
         <Typography textAlign="center" variant="h5">
           Watch our demo now!
@@ -164,6 +167,7 @@ function RecordedDemoLink({ productId }: { productId: string }) {
 function ExistingDealLink({ dealId }: { dealId: string }) {
   return (
     <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
+      <RecordedDemoIllustration sx={{ width: 200 }} />
       <Box>
         <Typography textAlign="center" variant="h5">
           View your progress!
@@ -256,7 +260,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
             url,
           });
 
-          setConfirm(meeting);
+          setConfirm({ meeting, formValues: { email, name, phone, url } });
           return;
         }
 
@@ -271,7 +275,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           url,
         });
 
-        setConfirm(meeting);
+        setConfirm({ meeting, formValues: { email, name, phone, url } });
       } catch (e) {
         console.error('Error booking meeting', e);
       } finally {
@@ -299,7 +303,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           url,
         });
 
-        setConfirm(meeting);
+        setConfirm({ meeting, formValues: { email, name, phone, url } });
       } catch (e) {
         console.error('Error booking meeting', e);
       }

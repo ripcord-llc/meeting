@@ -19,10 +19,6 @@ const StyledContent = styled(Box)(({ theme }) => ({
   gridTemplateRows: '48px 1fr 48px',
   overflow: 'hidden',
   height: '100%',
-
-  '& > *:not(:last-child)': {
-    borderBottom: `1px solid ${theme.palette.divider}`,
-  },
 }));
 
 export default function Dialog({
@@ -30,6 +26,7 @@ export default function Dialog({
   onClose,
   children,
   slots,
+  enableConfirmedDesign = false,
   ...rest
 }: {
   open: boolean;
@@ -39,6 +36,7 @@ export default function Dialog({
     footerLeft?: React.ReactNode;
   };
   children?: React.ReactNode;
+  enableConfirmedDesign?: boolean;
 } & DialogProps) {
   const isMobile = useMediaQuery<Theme>((theme) => theme.breakpoints.down('md'));
 
@@ -49,27 +47,48 @@ export default function Dialog({
       fullWidth
       fullScreen={isMobile}
       disablePortal
-      sx={{
+      sx={(theme) => ({
         '& .MuiDialog-paper': {
-          overflow: 'hidden',
           m: 0,
-          transition: (theme) =>
-            theme.transitions.create('max-width', {
-              easing: theme.transitions.easing.easeInOut,
-              duration: theme.transitions.duration.standard,
-            }),
+          transition: theme.transitions.create(['max-width', 'background-color'], {
+            easing: theme.transitions.easing.easeInOut,
+            duration: theme.transitions.duration.standard,
+          }),
+          ...(enableConfirmedDesign
+            ? {
+                bgcolor:
+                  theme.palette.mode === 'light'
+                    ? theme.palette.grey[200]
+                    : theme.palette.grey[800],
+              }
+            : {
+                overflow: 'hidden',
+              }),
         },
-      }}
+      })}
       {...rest}
     >
-      <StyledContent>
+      <StyledContent
+        sx={{
+          ...(enableConfirmedDesign && {
+            height: 'auto',
+            minHeight: '100%',
+            overflow: 'unset',
+          }),
+        }}
+      >
         <Stack
           direction="row"
           alignItems="center"
-          px={{
-            xs: 3,
-            md: 4,
-          }}
+          sx={(theme) => ({
+            px: {
+              xs: 3,
+              md: 4,
+            },
+            ...(!enableConfirmedDesign && {
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            }),
+          })}
         >
           {slots?.headerLeft}
           <IconButton size="small" onClick={onClose} sx={{ marginLeft: 'auto' }}>
@@ -77,19 +96,30 @@ export default function Dialog({
           </IconButton>
         </Stack>
         <Box
-          sx={{
-            overflow: 'hidden',
-          }}
+          sx={
+            !enableConfirmedDesign
+              ? {
+                  overflow: 'hidden',
+                }
+              : {}
+          }
         >
           {children}
         </Box>
         <Stack
           direction="row"
           alignItems="center"
-          px={{
-            xs: 3,
-            md: 4,
-          }}
+          sx={(theme) => ({
+            px: {
+              xs: 3,
+              md: 4,
+            },
+            ...(!enableConfirmedDesign && {
+              borderTop: `1px solid ${theme.palette.divider}`,
+            }),
+            bgcolor:
+              theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
+          })}
         >
           {slots?.footerLeft}
           <PoweredByRipcordIcon

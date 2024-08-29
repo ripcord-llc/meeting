@@ -1,6 +1,6 @@
 import { useState, useContext, createContext, useCallback, useMemo } from 'react';
 
-import { CreateMeetingResponse } from './api/deals/types';
+import { BookMeetingResponse } from './api/deals/types';
 import { Exception } from './api/fetcher';
 
 export type WidgetState =
@@ -13,11 +13,19 @@ export type WidgetState =
     }
   | {
       state: 'confirm';
-      meeting: CreateMeetingResponse;
+      formValues: {
+        email: string;
+        name: string;
+        phone: string;
+        url: string;
+      };
+      meeting: BookMeetingResponse;
     };
 
 export function useWidgetState() {
-  const [state, setState] = useState<WidgetState>({ state: 'form' });
+  const [state, setState] = useState<WidgetState>({
+    state: 'form',
+  });
 
   const setError = useCallback((error: Error | string) => {
     let errorMessage = '';
@@ -38,7 +46,18 @@ export function useWidgetState() {
   }, []);
 
   const setConfirm = useCallback(
-    (meeting: CreateMeetingResponse) => setState({ state: 'confirm', meeting }),
+    ({
+      meeting,
+      formValues,
+    }: {
+      meeting: BookMeetingResponse;
+      formValues: {
+        email: string;
+        name: string;
+        phone: string;
+        url: string;
+      };
+    }) => setState({ state: 'confirm', meeting, formValues }),
     []
   );
 

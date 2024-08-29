@@ -196,9 +196,8 @@ function AddToCalendarAlert({
       })}
     >
       <Typography variant="body2" color="text.primary">
-        You will soon receive a confirmation email at {email}. Please view this email and add this
-        event to your calendar. If that doesn&apos;t work, you can use the button below to manually
-        add it.
+        A confirmation email is on its way to {email}. Please open it and add the event to your
+        calendar. If that doesn&apos;t work, feel free to use the button below to add it manually.
       </Typography>
       <Button
         variant="contained"
@@ -207,6 +206,7 @@ function AddToCalendarAlert({
         sx={{
           bgcolor: 'background.paper',
           color: 'text.primary',
+          textTransform: 'none',
         }}
         startIcon={<OpenInNewIcon />}
         href={url}
@@ -232,7 +232,7 @@ export default function ConfirmationScreen({
   return (
     <Stack spacing={4} pt={2} px={4} pb={4}>
       <Typography variant="h6" textAlign="center">
-        🎉 Thank you! You meeting has been scheduled 🎉
+        🎉 Thank you! Your meeting has been scheduled 🎉
       </Typography>
       <AddToCalendarAlert email={formValues.email} event={event} />
       <Paper variant="outlined" sx={{ p: 2, alignSelf: 'stretch' }}>
@@ -243,7 +243,7 @@ export default function ConfirmationScreen({
           <DetailsRow
             icon={<NotesIcon />}
             label="Details"
-            text="We sent you an email with your meeting details"
+            text="We sent you an email with your meeting details."
           />
         </Stack>
       </Paper>

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   Avatar,
   Box,
@@ -8,10 +9,12 @@ import {
   Typography,
   Link,
   ButtonBase,
+  alpha,
 } from '@mui/material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import LinkIcon from '@mui/icons-material/Link';
 import NotesIcon from '@mui/icons-material/Notes';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -20,9 +23,15 @@ import { BookMeetingResponse } from '../api/deals/types';
 
 import useCopyToClipboard from '../hooks/useCopyToClipboard';
 
+import { parseEmailIntoEvent } from '../utils';
+
 import { CONFIG } from '../config';
 
 dayjs.extend(advancedFormat);
+
+function makeEventLink(uuid: string): string {
+  return `${CONFIG.CLIENT_URL}/m/${uuid}`;
+}
 
 function DetailsRow({
   icon,
@@ -119,7 +128,7 @@ function TimeRow({ startTime, endTime }: { startTime: string; endTime: string })
 function LinkRow({ uuid }: { uuid: string }) {
   const { copied, copyToClipboard } = useCopyToClipboard();
 
-  const link = `${CONFIG.CLIENT_URL}/m/${uuid}`;
+  const link = makeEventLink(uuid);
 
   const onClick = () => {
     copyToClipboard(link);
@@ -155,6 +164,62 @@ function LinkRow({ uuid }: { uuid: string }) {
   );
 }
 
+function AddToCalendarAlert({
+  email,
+  event,
+}: {
+  email: string;
+  event: BookMeetingResponse['event'];
+}) {
+  const { url, isICS } = useMemo(
+    () =>
+      parseEmailIntoEvent(email, {
+        title: event.title,
+        start: dayjs(event.startTime).toDate(),
+        end: dayjs(event.endTime).toDate(),
+        url: makeEventLink(event.uuid),
+      }),
+    [email, event]
+  );
+
+  return (
+    <Stack
+      sx={(theme) => ({
+        gap: 2,
+        p: 2,
+        borderRadius: 1,
+        alignSelf: 'stretch',
+        bgcolor:
+          theme.palette.mode === 'light'
+            ? alpha(theme.palette.success.lighter, 0.7)
+            : theme.palette.success.darker,
+      })}
+    >
+      <Typography variant="body2" color="text.primary">
+        You will soon receive a confirmation email at {email}. Please view this email and add this
+        event to your calendar. If that doesn&apos;t work, you can use the button below to manually
+        add it.
+      </Typography>
+      <Button
+        variant="contained"
+        color="inherit"
+        fullWidth
+        sx={{
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+        }}
+        startIcon={<OpenInNewIcon />}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        download={isICS ? 'event.ics' : undefined}
+      >
+        Add to Calendar
+      </Button>
+    </Stack>
+  );
+}
+
 export default function ConfirmationScreen({
   meeting,
   formValues,
@@ -169,46 +234,7 @@ export default function ConfirmationScreen({
       <Typography variant="h6" textAlign="center">
         🎉 Thank you! You meeting has been scheduled 🎉
       </Typography>
-      <Stack
-        sx={(theme) => ({
-          gap: 2,
-          p: 2,
-          borderRadius: 1,
-          alignSelf: 'stretch',
-          bgcolor:
-            theme.palette.mode === 'light'
-              ? theme.palette.success.lighter
-              : theme.palette.success.darker,
-        })}
-      >
-        <Box>
-          <Typography
-            variant="subtitle2"
-            color={(theme) =>
-              theme.palette.mode === 'light'
-                ? theme.palette.success.darker
-                : theme.palette.success.lighter
-            }
-            textAlign="center"
-          >
-            An email has been sent with the booking details!
-          </Typography>
-          <Typography variant="body2" color="text.primary" textAlign="center">
-            Did you see the email?
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          color="inherit"
-          fullWidth
-          sx={{
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-          }}
-        >
-          Add to Calendar
-        </Button>
-      </Stack>
+      <AddToCalendarAlert email={formValues.email} event={event} />
       <Paper variant="outlined" sx={{ p: 2, alignSelf: 'stretch' }}>
         <Stack gap={2} divider={<Divider flexItem />}>
           <UserDetailsRow user={user} />

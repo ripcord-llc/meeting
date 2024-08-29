@@ -93,6 +93,7 @@ export default [
       'swr',
       'validator',
       'yup',
+      'calendar-link',
     ],
     output: [
       {

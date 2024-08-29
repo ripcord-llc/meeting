@@ -7,7 +7,6 @@ import {
   Paper,
   Stack,
   Typography,
-  Link,
   ButtonBase,
   alpha,
 } from '@mui/material';

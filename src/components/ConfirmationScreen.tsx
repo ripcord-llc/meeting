@@ -73,6 +73,22 @@ function DetailsRow({
   );
 }
 
+function UserDetailsRow({ user }: { user: BookMeetingResponse['user'] }) {
+  const { name, avatar } = user;
+
+  return (
+    <Stack direction="row" justifyContent="space-between" alignItems="center">
+      <Box>
+        <Typography variant="body2" color="text.secondary">
+          You are meeting with
+        </Typography>
+        <Typography variant="h6">{name}</Typography>
+      </Box>
+      <Avatar variant="rounded" sx={{ width: 48, height: 48 }} src={avatar?.fileUrl} />
+    </Stack>
+  );
+}
+
 export default function ConfirmationScreen({
   meeting,
   formValues,
@@ -129,15 +145,7 @@ export default function ConfirmationScreen({
       </Stack>
       <Paper variant="outlined" sx={{ p: 2, alignSelf: 'stretch' }}>
         <Stack gap={2} divider={<Divider flexItem />}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                You are meeting with
-              </Typography>
-              <Typography variant="h6">James Smith</Typography>
-            </Box>
-            <Avatar variant="rounded" sx={{ width: 48, height: 48 }} />
-          </Stack>
+          <UserDetailsRow user={user} />
           <DetailsRow
             icon={<ScheduleIcon />}
             label="Time"

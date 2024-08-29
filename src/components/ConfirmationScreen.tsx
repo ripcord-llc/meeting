@@ -86,7 +86,12 @@ function DetailsRow({
         <Typography variant="subtitle1">{label}</Typography>
       </Stack>
       {typeof text === 'string' ? (
-        <Typography variant="body1" color="text.secondary">
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
           {text}
         </Typography>
       ) : (
@@ -139,12 +144,19 @@ function LinkRow({ uuid }: { uuid: string }) {
       icon={<LinkIcon />}
       label="Link"
       text={
-        <Box>
+        <Box
+          sx={{
+            overflow: 'hidden',
+          }}
+        >
           <ButtonBase
             sx={(theme) => ({
               ...theme.typography.body1,
+              width: 1,
               display: 'block',
               color: theme.palette.text.secondary,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               '&:hover': {
                 textDecoration: 'underline',
               },

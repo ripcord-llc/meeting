@@ -11,7 +11,7 @@ import {
   LeadInjectionResponse,
   CreateMeetingParams,
   CreateExistingDealMeetingParams,
-  CreateMeetingResponse,
+  BookMeetingResponse,
 } from './types';
 
 import { PUBLIC_DEALS_ENDPOINTS } from '.';
@@ -79,8 +79,8 @@ export function injectLead(
 
 export async function bookMeetingIntoLatestNonStartedDeal(
   body: CreateMeetingParams
-): Promise<CreateMeetingResponse> {
-  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal, {
+): Promise<BookMeetingResponse> {
+  return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal, {
     ...body,
     utm: getUTMParams(),
   });
@@ -88,8 +88,8 @@ export async function bookMeetingIntoLatestNonStartedDeal(
 
 export async function bookMeetingIntoProduct(
   body: CreateMeetingParams
-): Promise<CreateMeetingResponse> {
-  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct, {
+): Promise<BookMeetingResponse> {
+  return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct, {
     ...body,
     utm: getUTMParams(),
   });
@@ -97,8 +97,8 @@ export async function bookMeetingIntoProduct(
 
 export async function bookMeetingIntoExistingDeal(
   body: CreateExistingDealMeetingParams
-): Promise<CreateMeetingResponse> {
-  return post<CreateMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal, {
+): Promise<BookMeetingResponse> {
+  return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal, {
     ...body,
     utm: getUTMParams(),
   });

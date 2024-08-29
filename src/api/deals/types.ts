@@ -57,7 +57,19 @@ export interface CreateExistingDealMeetingParams {
   url?: string;
 }
 
-export interface CreateMeetingResponse {
-  id: number;
-  userId: number;
+export interface BookMeetingResponse {
+  event: {
+    uuid: string;
+    startTime: string;
+    endTime: string;
+    title: string;
+    description: string | null;
+  };
+  user: {
+    uuid: string;
+    name: string;
+    avatar: {
+      fileUrl: string;
+    } | null;
+  };
 }

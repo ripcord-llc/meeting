@@ -1,8 +1,8 @@
 import { Avatar, Box, Button, Divider, Paper, Stack, Typography, Link } from '@mui/material';
 
-import { CreateMeetingResponse } from '../api/deals/types';
+import { BookMeetingResponse } from '../api/deals/types';
 
-export default function ConfirmationScreen({ meeting }: { meeting: CreateMeetingResponse }) {
+export default function ConfirmationScreen({ meeting }: { meeting: BookMeetingResponse }) {
   return (
     <Stack spacing={4} pt={2} px={4} pb={4}>
       <Typography variant="h6" textAlign="center">

@@ -49,21 +49,33 @@ export default function Dialog({
       disablePortal
       sx={(theme) => ({
         '& .MuiDialog-paper': {
-          overflow: 'hidden',
           m: 0,
           transition: theme.transitions.create(['max-width', 'background-color'], {
             easing: theme.transitions.easing.easeInOut,
             duration: theme.transitions.duration.standard,
           }),
-          ...(enableConfirmedDesign && {
-            bgcolor:
-              theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
-          }),
+          ...(enableConfirmedDesign
+            ? {
+                bgcolor:
+                  theme.palette.mode === 'light'
+                    ? theme.palette.grey[200]
+                    : theme.palette.grey[800],
+              }
+            : {
+                overflow: 'hidden',
+              }),
         },
       })}
       {...rest}
     >
-      <StyledContent>
+      <StyledContent
+        sx={{
+          ...(enableConfirmedDesign && {
+            height: 'auto',
+            overflow: 'unset',
+          }),
+        }}
+      >
         <Stack
           direction="row"
           alignItems="center"

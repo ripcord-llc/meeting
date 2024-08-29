@@ -1,8 +1,87 @@
 import { Avatar, Box, Button, Divider, Paper, Stack, Typography, Link } from '@mui/material';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import LinkIcon from '@mui/icons-material/Link';
+import NotesIcon from '@mui/icons-material/Notes';
 
 import { BookMeetingResponse } from '../api/deals/types';
 
-export default function ConfirmationScreen({ meeting }: { meeting: BookMeetingResponse }) {
+function DetailsRow({
+  icon,
+  label,
+  text,
+  href,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  text?: string;
+  href?: string;
+}) {
+  return (
+    <Box
+      sx={(theme) => ({
+        [theme.breakpoints.up('md')]: {
+          display: 'grid',
+          gridTemplateColumns: '150px 1fr',
+          alignItems: 'center',
+        },
+      })}
+    >
+      <Stack
+        direction="row"
+        gap={1.5}
+        alignItems="center"
+        sx={(theme) => ({
+          [theme.breakpoints.down('md')]: {
+            marginBottom: theme.spacing(1),
+          },
+        })}
+      >
+        <Box
+          sx={(theme) => ({
+            width: 32,
+            height: 32,
+            borderRadius: 1,
+            bgcolor: 'background.paper',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: theme.shadows[2],
+
+            '& svg': {
+              width: 16,
+              height: 16,
+              display: 'block',
+            },
+          })}
+        >
+          {icon}
+        </Box>
+        <Typography variant="subtitle1">{label}</Typography>
+      </Stack>
+      {!!text && !href && (
+        <Typography variant="body1" color="text.secondary">
+          {text}
+        </Typography>
+      )}
+      {!!href && (
+        <Link variant="body1" color="text.secondary" href={href}>
+          {text || href}
+        </Link>
+      )}
+    </Box>
+  );
+}
+
+export default function ConfirmationScreen({
+  meeting,
+  formValues,
+}: {
+  meeting: BookMeetingResponse;
+  formValues: { email: string; name: string; phone: string; url: string };
+}) {
+  const { event, user } = meeting;
+
   return (
     <Stack spacing={4} pt={2} px={4} pb={4}>
       <Typography variant="h6" textAlign="center">
@@ -36,34 +115,17 @@ export default function ConfirmationScreen({ meeting }: { meeting: BookMeetingRe
             Did you see the email?
           </Typography>
         </Box>
-        <Box
+        <Button
+          variant="contained"
+          color="inherit"
+          fullWidth
           sx={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 2,
+            bgcolor: 'background.paper',
+            color: 'text.primary',
           }}
         >
-          <Button
-            variant="contained"
-            color="inherit"
-            sx={{
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-            }}
-          >
-            Thanks, I see it
-          </Button>
-          <Button
-            variant="contained"
-            color="inherit"
-            sx={{
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-            }}
-          >
-            Add to Calendar
-          </Button>
-        </Box>
+          Add to Calendar
+        </Button>
       </Stack>
       <Paper variant="outlined" sx={{ p: 2, alignSelf: 'stretch' }}>
         <Stack gap={2} divider={<Divider flexItem />}>
@@ -76,24 +138,17 @@ export default function ConfirmationScreen({ meeting }: { meeting: BookMeetingRe
             </Box>
             <Avatar variant="rounded" sx={{ width: 48, height: 48 }} />
           </Stack>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="subtitle1">Time</Typography>
-            <Typography variant="body1" color="text.secondary">
-              Thursday, Sep 14th, 11:00AM-11:30AM EST
-            </Typography>
-          </Stack>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="subtitle1">Link</Typography>
-            <Link variant="body1" color="text.secondary">
-              https://ripcord.io/m/123345
-            </Link>
-          </Stack>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="subtitle1">Details</Typography>
-            <Typography variant="body1" color="text.secondary">
-              We sent you an email with your meeting details
-            </Typography>
-          </Stack>
+          <DetailsRow
+            icon={<ScheduleIcon />}
+            label="Time"
+            text="Thursday, Sep 14th, 11:00AM-11:30AM EST"
+          />
+          <DetailsRow icon={<LinkIcon />} label="Link" href="https://ripcord.io/m/123345" />
+          <DetailsRow
+            icon={<NotesIcon />}
+            label="Details"
+            text="We sent you an email with your meeting details"
+          />
         </Stack>
       </Paper>
     </Stack>

@@ -24,7 +24,7 @@ const plugins = [
     'process.env.API_URL': JSON.stringify(process.env.API_URL),
     preventAssignment: true,
   }),
-  nodeResolve({ extensions: ['.js', '.jsx', '.ts', '.tsx'] }),
+  nodeResolve({ extensions: ['.js', '.mjs', '.json', '.node', '.jsx', '.ts', '.tsx'] }),
   commonjs(),
   babel({
     babelHelpers: 'bundled',

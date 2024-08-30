@@ -10,9 +10,9 @@ import {
   alpha,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { DateCalendar, PickerValidDate } from '@mui/x-date-pickers';
+import { CalendarPicker } from '@mui/x-date-pickers';
 
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
@@ -22,7 +22,7 @@ import { Slot } from '../../../api/bookings/types';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export const StyledDateCalendar = styled(DateCalendar)(({ theme }) => ({
+export const StyledDateCalendar = styled(CalendarPicker<Dayjs>)(({ theme }) => ({
   margin: 0,
   width: '100%',
   height: 348,
@@ -37,7 +37,7 @@ export const StyledDateCalendar = styled(DateCalendar)(({ theme }) => ({
     height: 48,
   },
 
-  '& .MuiPickersSlideTransition-root': {
+  '& .MuiDayPicker-slideTransition': {
     minHeight: 252,
   },
 }));
@@ -156,15 +156,15 @@ export default function BaseCalendarForm<T extends Slot>({
   setDate,
   ...rest
 }: BookingSlotHookProps<T> & {
-  date: PickerValidDate | null;
-  setDate: (date: PickerValidDate) => void;
+  date: Dayjs | null;
+  setDate: (date: Dayjs | null) => void;
 }) {
   return (
     <>
       <Typography variant="subtitle2" textAlign="center">
         Select a Date
       </Typography>
-      <StyledDateCalendar disablePast value={date} onChange={setDate} />
+      <StyledDateCalendar disablePast date={date} onChange={setDate} />
       {!!date && <TimeSlots {...rest} />}
     </>
   );

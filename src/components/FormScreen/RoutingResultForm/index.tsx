@@ -204,7 +204,7 @@ function DisabledState({ routing }: { routing: PublicRouting }) {
         <Typography variant="subtitle2" textAlign="center">
           Select a Date
         </Typography>
-        <StyledDateCalendar disablePast disabled />
+        <StyledDateCalendar date={dayjs()} onChange={() => {}} disablePast disabled />
       </Box>
       <Box
         sx={(theme) => ({

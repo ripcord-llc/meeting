@@ -5,6 +5,8 @@ import { isPossiblePhoneNumber } from 'react-phone-number-input';
 
 import { getUTMParams } from '../../utm';
 
+import { CONFIG } from '../../config';
+
 import { post } from '../fetcher';
 
 import {
@@ -65,6 +67,16 @@ export async function validateAndConvertDataToInjectLeadBody(body: {
   return data;
 }
 
+function getSourceParams(): { type: 'LAN' | 'WID'; landingPageId?: number; url?: string } {
+  if (CONFIG.SOURCE_TYPE === 'landingPage') {
+    return { type: 'LAN', landingPageId: CONFIG.landingPageId };
+  }
+
+  const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+
+  return { type: 'WID', url };
+}
+
 export function injectLead(
   body: InjectLeadBody & {
     routingId: string;
@@ -74,6 +86,7 @@ export function injectLead(
   return post<LeadInjectionResponse>(PUBLIC_DEALS_ENDPOINTS.injectLead, {
     ...body,
     utm: getUTMParams(),
+    source: getSourceParams(),
   });
 }
 
@@ -83,6 +96,7 @@ export async function bookMeetingIntoLatestNonStartedDeal(
   return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal, {
     ...body,
     utm: getUTMParams(),
+    source: getSourceParams(),
   });
 }
 
@@ -92,6 +106,7 @@ export async function bookMeetingIntoProduct(
   return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct, {
     ...body,
     utm: getUTMParams(),
+    source: getSourceParams(),
   });
 }
 
@@ -101,5 +116,6 @@ export async function bookMeetingIntoExistingDeal(
   return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal, {
     ...body,
     utm: getUTMParams(),
+    source: getSourceParams(),
   });
 }

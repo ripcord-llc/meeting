@@ -1,4 +1,6 @@
-import { Ripcord, initUTMCapture } from '.';
+import { initUTMCapture } from './utm';
+
+import Ripcord from './Ripcord';
 
 initUTMCapture();
 

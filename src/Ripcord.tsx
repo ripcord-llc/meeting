@@ -3,13 +3,9 @@
 import './index.css';
 import { createRoot, Root } from 'react-dom/client';
 
-import { initUTMCapture } from './utm';
-
 import { setConfig } from './config';
 
 import BookingWidget from './BookingWidget';
-
-import type { BookingWidgetProps } from './BookingWidget';
 
 function findEl(el: string | HTMLElement): HTMLElement {
   if (typeof el === 'string') {
@@ -154,8 +150,4 @@ class Ripcord {
   }
 }
 
-export { default as BookingWidget } from './BookingWidget';
-
-export type { BookingWidgetProps };
-
-export { Ripcord, initUTMCapture };
+export default Ripcord;

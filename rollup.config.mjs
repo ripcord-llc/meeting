@@ -70,7 +70,7 @@ export default [
   },
   {
     ...common,
-    input: 'src/index.tsx',
+    input: 'src/index.ts',
     plugins: [
       ...plugins,
       typescript({ noForceEmit: true }), // Only for type checking and declaration file generation

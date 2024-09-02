@@ -87,7 +87,7 @@ function BookingWidget({ open, onClose, routingId, productId }: BookingWidgetPro
   );
 }
 
-export default function Main(props: BookingWidgetProps) {
+function Main(props: BookingWidgetProps) {
   return (
     <StrictMode>
       <ConfigurationProvider>
@@ -98,3 +98,5 @@ export default function Main(props: BookingWidgetProps) {
     </StrictMode>
   );
 }
+
+export default Main;

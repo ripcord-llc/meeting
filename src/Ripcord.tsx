@@ -3,7 +3,7 @@
 import './index.css';
 import { createRoot, Root } from 'react-dom/client';
 
-import { setConfig } from './config';
+import { Config, setConfig } from './config';
 
 import BookingWidget from './BookingWidget';
 
@@ -60,7 +60,7 @@ class Ripcord {
     Ripcord.instances.push(this);
   }
 
-  static INTERNAL_USE_ONLY_setConfig(config: { clientUrl: string; apiUrl: string }) {
+  static INTERNAL_USE_ONLY_setConfig(config: Config) {
     setConfig(config);
 
     Ripcord.instances.forEach((instance) => {

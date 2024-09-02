@@ -1,13 +1,18 @@
 import { mutate } from 'swr';
 
-export const CONFIG = {
-  CLIENT_URL: process.env.CLIENT_URL, // Replace with env variable
-  API_URL: process.env.API_URL, // Replace with env variable
+export type Config = {
+  CLIENT_URL: string;
+  API_URL: string;
+} & ({ SOURCE_TYPE: 'widget' } | { SOURCE_TYPE: 'landingPage'; landingPageId: number });
+
+export const CONFIG: Config = {
+  CLIENT_URL: process.env.CLIENT_URL || '',
+  API_URL: process.env.API_URL || '',
+  SOURCE_TYPE: 'widget',
 };
 
-export function setConfig({ clientUrl, apiUrl }: { clientUrl: string; apiUrl: string }) {
-  CONFIG.CLIENT_URL = clientUrl;
-  CONFIG.API_URL = apiUrl;
+export function setConfig(newConfig: Config) {
+  Object.assign(CONFIG, newConfig);
 
   mutate(() => true, undefined, { revalidate: false }); // Revalidate all SWR hooks if config changes
 }

@@ -72,4 +72,7 @@ export interface BookMeetingResponse {
       fileUrl: string;
     } | null;
   };
+  meeting: {
+    uuid: string;
+  };
 }

@@ -175,22 +175,18 @@ function LinkRow({ uuid }: { uuid: string }) {
   );
 }
 
-function AddToCalendarAlert({
-  email,
-  event,
-}: {
-  email: string;
-  event: BookMeetingResponse['event'];
-}) {
+function AddToCalendarAlert({ email, response }: { email: string; response: BookMeetingResponse }) {
+  const { event, meeting } = response;
+
   const { url, isICS } = useMemo(
     () =>
       parseEmailIntoEvent(email, {
         title: event.title,
         start: dayjs(event.startTime).toDate(),
         end: dayjs(event.endTime).toDate(),
-        url: makeEventLink(event.uuid),
+        url: makeEventLink(meeting.uuid),
       }),
-    [email, event]
+    [email, event, meeting]
   );
 
   return (
@@ -233,10 +229,12 @@ function AddToCalendarAlert({
 
 export default function ConfirmationScreen({
   meeting,
-  formValues,
+  contactEmail,
+  confirmationMessage = 'Thank you! Your meeting has been scheduled',
 }: {
   meeting: BookMeetingResponse;
-  formValues: { email: string; name: string; phone: string; url: string };
+  contactEmail: string;
+  confirmationMessage?: string;
 }) {
   const { event, user } = meeting;
 
@@ -255,14 +253,14 @@ export default function ConfirmationScreen({
       })}
     >
       <Typography variant="h6" textAlign="center">
-        🎉 Thank you! Your meeting has been scheduled 🎉
+        🎉 {confirmationMessage} 🎉
       </Typography>
-      <AddToCalendarAlert email={formValues.email} event={event} />
+      <AddToCalendarAlert email={contactEmail} response={meeting} />
       <Paper variant="outlined" sx={{ p: 2, alignSelf: 'stretch' }}>
         <Stack gap={2} divider={<Divider flexItem />}>
           <UserDetailsRow user={user} />
           <TimeRow startTime={event.startTime} endTime={event.endTime} />
-          <LinkRow uuid={event.uuid} />
+          <LinkRow uuid={meeting.meeting.uuid} />
           <DetailsRow
             icon={<NotesIcon />}
             label="Details"

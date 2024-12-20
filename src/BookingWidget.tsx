@@ -53,7 +53,7 @@ function BookingWidget({ open, onClose, routingId, productId }: BookingWidgetPro
   if (state.state === 'confirm') {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="sm" enableConfirmedDesign>
-        <ConfirmationScreen {...state} />
+        <ConfirmationScreen {...state} contactEmail={state.formValues.email} />
       </Dialog>
     );
   }

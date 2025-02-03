@@ -14,7 +14,7 @@ Embeddable widget and React component for scheduling meetings with Ripcord.io.
 ### Via CDN:
 
 ```html
-<script src="https://cdn.ripcord.io/booking-widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ripcord.io/meeting"></script>
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ To get started, instantiate the `Ripcord` class, passing in the ID of the Routin
 #### Import via CDN
 
 ```html
-<script src="https://cdn.ripcord.io/booking-widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ripcord.io/meeting"></script>
 <script>
   const button = document.getElementById('open-widget');
 
@@ -43,7 +43,7 @@ To get started, instantiate the `Ripcord` class, passing in the ID of the Routin
 You also have the option to pass in an element, either as an `HTMLElement` or a query selector string, to open the widget when clicked. This will automatically add a click event listener to the element.
 
 ```html
-<script src="https://cdn.ripcord.io/booking-widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ripcord.io/meeting"></script>
 <script>
   const instance = new Ripcord({
     routingId: '<your_routing_id>',

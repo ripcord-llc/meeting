@@ -5,8 +5,6 @@ import { isPossiblePhoneNumber } from 'react-phone-number-input';
 
 import { getUTMParams } from '../../utm';
 
-import { CONFIG } from '../../config';
-
 import { post } from '../fetcher';
 
 import {
@@ -67,11 +65,7 @@ export async function validateAndConvertDataToInjectLeadBody(body: {
   return data;
 }
 
-function getSourceParams(): { type: 'LAN' | 'WID'; landingPageId?: number; url?: string } {
-  if (CONFIG.SOURCE_TYPE === 'landingPage') {
-    return { type: 'LAN', landingPageId: CONFIG.landingPageId };
-  }
-
+function getSourceParams(): { type: 'LAN' | 'WID'; url?: string } {
   const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
 
   return { type: 'WID', url };

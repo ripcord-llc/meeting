@@ -16,4 +16,10 @@ export function setConfig(newConfig: Config) {
   mutate(() => true, undefined, { revalidate: false }); // Revalidate all SWR hooks if config changes
 }
 
+export const CLIENT_PATHS = {
+  product: (id: string) => `${CONFIG.CLIENT_URL}/p/${id}`,
+  salesroom: (id: string) => `${CONFIG.CLIENT_URL}/d/${id}`,
+  meeting: (id: string) => `${CONFIG.CLIENT_URL}/m/${id}`,
+};
+
 export { default as ConfigurationProvider } from './config-provider';

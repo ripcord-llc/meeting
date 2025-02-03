@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
-import { CONFIG } from '../../../config';
+import { CLIENT_PATHS } from '../../../config';
 
 import RecordedDemoIllustration from '../../illustrations/RecordedDemoIllustration';
 
@@ -151,7 +151,7 @@ function RecordedDemoLink({ productId }: { productId: string }) {
         </Typography>
       </Box>
       <Button
-        href={`${CONFIG.CLIENT_URL}/p/${productId}`}
+        href={CLIENT_PATHS.product(productId)}
         target="_blank"
         rel="noopener noreferrer"
         variant="outlined"
@@ -164,28 +164,37 @@ function RecordedDemoLink({ productId }: { productId: string }) {
   );
 }
 
-function ExistingDealLink({ dealId }: { dealId: string }) {
+function ExistingDealLink({
+  dealId,
+  title,
+  description,
+  buttonText,
+}: {
+  dealId: string;
+  title: string;
+  description: string;
+  buttonText: string;
+}) {
   return (
     <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
       <RecordedDemoIllustration sx={{ width: 200 }} />
       <Box>
         <Typography textAlign="center" variant="h5">
-          View your progress!
+          {title}
         </Typography>
         <Typography textAlign="center" variant="body1" color="text.secondary">
-          Looks like you&apos;re already working on a deal with us. Click below to view your
-          progress.
+          {description}
         </Typography>
       </Box>
       <Button
-        href={`${CONFIG.CLIENT_URL}/d/${dealId}`}
+        href={CLIENT_PATHS.salesroom(dealId)}
         target="_blank"
         rel="noopener noreferrer"
         variant="outlined"
         color="inherit"
         startIcon={<OpenInNewIcon />}
       >
-        Watch Demo
+        {buttonText}
       </Button>
     </Stack>
   );
@@ -318,11 +327,30 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
   }
 
   if (data?.deal && data.deal.started) {
-    if (!data.deal.primaryUserId) return <ExistingDealLink dealId={data.deal.uuid} />; // If deal is started but no user assigned, show link to deal;
+    if (!data.deal.primaryUserId)
+      return (
+        <ExistingDealLink
+          dealId={data.deal.uuid}
+          title="View your progress!"
+          description="Looks like you're already working on a deal with us. Click below to view your progress."
+          buttonText="Watch Demo"
+        />
+      ); // If deal is started but no user assigned, show link to deal;
 
     // Show calendar with slots for user of existing deal;
     return <DealCalendarForm dealId={data.deal.uuid} onSubmit={onDealSubmit} loading={loading} />;
   }
+
+  // If user is routed to a recorded demo and deal was created through real-time injection, send them to the salesroom for the deal created
+  if (routeResult?.outcome === RoutingOutcomeType.RECORDING && data?.deal)
+    return (
+      <ExistingDealLink
+        dealId={data.deal.uuid}
+        title="Watch our demo now!"
+        description="You've qualified to watch an immediate recorded demo of our product. If any questions come up, our team will be there to answer."
+        buttonText="Watch Demo"
+      />
+    );
 
   switch (routeResult?.outcome) {
     case undefined:

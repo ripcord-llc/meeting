@@ -17,7 +17,12 @@
     const button = document.getElementById('open-modal')
     const destroyButton = document.getElementById('destroy')
 
-    const instance = new Ripcord({ el: button, routingId: "9984ztPs7oThNVupQU9dU" })
+    Ripcord.INTERNAL_USE_ONLY_setConfig({
+      CLIENT_URL: "http://localhost:8081",
+      API_URL: "http://localhost:3000"
+    })
+
+    const instance = new Ripcord({ el: button, routingId: "wvsxXrmRks-_ezdau7qn3" })
 
     window.addEventListener("load", () => {
       instance.open()

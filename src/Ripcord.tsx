@@ -7,6 +7,25 @@ import { Config, setConfig } from './config';
 
 import BookingWidget from './BookingWidget';
 
+function assertConstructorParams(params: { routingId: string; el?: string | HTMLElement }) {
+  if (!params)
+    throw new Error(
+      'Invalid constructor for Ripcord instance. Must provide an object with a routingId'
+    );
+
+  if (!params.routingId) {
+    throw new Error('routingId is required');
+  }
+
+  if (params.el) {
+    if (typeof params.el !== 'string' && !(params.el instanceof Element)) {
+      throw new Error(
+        `'el' must be a string or an HTMLElement. Got ${Array.isArray(params.el) ? 'Array' : params.el} instead`
+      );
+    }
+  }
+}
+
 function findElements(el: string | Element): Element[] {
   if (typeof el === 'string') {
     const found = document.querySelectorAll(el);
@@ -43,7 +62,7 @@ class Ripcord {
   private key: string = String(Math.random());
 
   constructor(params: { routingId: string; el?: string | HTMLElement; productId?: string }) {
-    if (!params.routingId) throw new Error('routingId is required');
+    assertConstructorParams(params);
 
     const { el, routingId, productId } = params;
 

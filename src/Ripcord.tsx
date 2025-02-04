@@ -7,28 +7,30 @@ import { Config, setConfig } from './config';
 
 import BookingWidget from './BookingWidget';
 
-function findEl(el: string | HTMLElement): HTMLElement {
+function findElements(el: string | Element): Element[] {
   if (typeof el === 'string') {
-    const found = document.querySelector(el);
+    const found = document.querySelectorAll(el);
 
     if (!found) {
       throw new Error(`Element with selector ${el} not found`);
     }
 
-    return found as HTMLElement;
+    return Array.from(found);
   }
 
-  return el;
+  return [el];
 }
 
 class Ripcord {
   static instances: Ripcord[] = [];
 
-  private el?: HTMLElement;
+  private selector?: string | Element;
 
-  private root: Root;
+  private elements?: Element[];
 
-  private rootEl: HTMLElement;
+  private root?: Root;
+
+  private rootEl?: HTMLElement;
 
   private isOpen: boolean = false;
 
@@ -41,23 +43,20 @@ class Ripcord {
   private key: string = String(Math.random());
 
   constructor(params: { routingId: string; el?: string | HTMLElement; productId?: string }) {
+    if (!params.routingId) throw new Error('routingId is required');
+
     const { el, routingId, productId } = params;
 
+    this.selector = el;
     this.routingId = routingId;
     this.productId = productId;
-    this.rootEl = this.createRootEl();
-    this.root = createRoot(this.rootEl);
-
-    this.el = typeof el !== 'undefined' ? findEl(el) : undefined;
 
     this.open = this.open.bind(this);
     this.close = this.close.bind(this);
 
-    this.bindEvents();
-
-    this.render();
-
     Ripcord.instances.push(this);
+
+    this.initialize();
   }
 
   static INTERNAL_USE_ONLY_setConfig(config: Config) {
@@ -104,12 +103,40 @@ class Ripcord {
 
     this.unbindEvents();
 
-    this.root.unmount();
+    this.root?.unmount();
 
-    document.body.removeChild(this.rootEl);
+    if (this.rootEl) {
+      document.body.removeChild(this.rootEl);
+    }
+  }
+
+  private initialize() {
+    const handle = () => {
+      this.initReact();
+
+      this.bindEvents();
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', handle);
+    } else {
+      handle();
+    }
+  }
+
+  private initReact() {
+    this.rootEl = this.createRootEl();
+
+    this.root = createRoot(this.rootEl);
+
+    this.render();
   }
 
   private render() {
+    if (!this.root) {
+      throw new Error("Trying to render without initializing the root. Call 'initialize' first");
+    }
+
     this.root.render(
       <BookingWidget
         open={this.isOpen}
@@ -122,14 +149,22 @@ class Ripcord {
   }
 
   private bindEvents() {
-    if (this.el) {
-      this.el.addEventListener('click', this.open);
-    }
+    if (!this.selector) return;
+
+    const { selector } = this;
+
+    this.elements = findElements(selector);
+
+    this.elements.forEach((el) => {
+      el.addEventListener('click', this.open);
+    });
   }
 
   private unbindEvents() {
-    if (this.el) {
-      this.el.removeEventListener('click', this.open);
+    if (this.elements) {
+      this.elements.forEach((el) => {
+        el.removeEventListener('click', this.open);
+      });
     }
   }
 

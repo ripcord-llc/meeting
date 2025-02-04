@@ -257,8 +257,8 @@ function FormState({
             loading={isSubmitting}
             type="submit"
             fullWidth
-            variant="outlined"
-            color="inherit"
+            variant="contained"
+            color="purple"
             sx={{ mt: 3 }}
           >
             Continue

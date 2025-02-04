@@ -137,48 +137,21 @@ function TeamCalendarForm({ teamId, onSubmit, loading }: { teamId: string } & Ca
   );
 }
 
-function RecordedDemoLink({ productId }: { productId: string }) {
-  return (
-    <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
-      <RecordedDemoIllustration sx={{ width: 200 }} />
-      <Box>
-        <Typography textAlign="center" variant="h5">
-          Watch our demo now!
-        </Typography>
-        <Typography textAlign="center" variant="body1" color="text.secondary">
-          You&apos;ve qualified to watch an immediate recorded demo of our product. If any questions
-          come up, our team will be there to answer.
-        </Typography>
-      </Box>
-      <Button
-        href={CLIENT_PATHS.product(productId)}
-        target="_blank"
-        rel="noopener noreferrer"
-        variant="outlined"
-        color="inherit"
-        startIcon={<OpenInNewIcon />}
-      >
-        Watch Demo
-      </Button>
-    </Stack>
-  );
-}
-
-function ExistingDealLink({
-  dealId,
+function BaseLink({
   title,
   description,
   buttonText,
+  href,
 }: {
-  dealId: string;
   title: string;
   description: string;
   buttonText: string;
+  href: string;
 }) {
   return (
-    <Stack p={4} flex={1} gap={2} justifyContent="center" alignItems="center">
-      <RecordedDemoIllustration sx={{ width: 200 }} />
-      <Box>
+    <Stack p={4} flex={1} justifyContent="center" alignItems="center">
+      <RecordedDemoIllustration sx={{ width: 200, mb: 2 }} />
+      <Box sx={{ mb: 3 }}>
         <Typography textAlign="center" variant="h5">
           {title}
         </Typography>
@@ -187,17 +160,41 @@ function ExistingDealLink({
         </Typography>
       </Box>
       <Button
-        href={CLIENT_PATHS.salesroom(dealId)}
+        href={href}
         target="_blank"
         rel="noopener noreferrer"
-        variant="outlined"
-        color="inherit"
+        variant="contained"
+        color="purple"
+        fullWidth
         startIcon={<OpenInNewIcon />}
       >
         {buttonText}
       </Button>
     </Stack>
   );
+}
+
+function RecordedDemoLink({ productId }: { productId: string }) {
+  return (
+    <BaseLink
+      title="Watch our demo now!"
+      description="You've qualified to watch an immediate recorded demo of our product. If any questions come up, our team will be there to answer."
+      buttonText="Watch Demo"
+      href={CLIENT_PATHS.product(productId)}
+    />
+  );
+}
+
+function ExistingDealLink({
+  dealId,
+  ...rest
+}: {
+  dealId: string;
+  title: string;
+  description: string;
+  buttonText: string;
+}) {
+  return <BaseLink {...rest} href={CLIENT_PATHS.salesroom(dealId)} />;
 }
 
 function DisabledState({ routing }: { routing: PublicRouting }) {

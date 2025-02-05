@@ -10,6 +10,7 @@ import {
   Fade,
   useMediaQuery,
   Theme,
+  Link,
 } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import * as yup from 'yup';
@@ -253,16 +254,18 @@ function FormState({
           )}
         </Stack>
         {showContinueButton && (
-          <LoadingButton
-            loading={isSubmitting}
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="purple"
-            sx={{ mt: 3 }}
-          >
-            Continue
-          </LoadingButton>
+          <Stack gap={2} mt={3}>
+            <SMSConsent />
+            <LoadingButton
+              loading={isSubmitting}
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="purple"
+            >
+              Continue
+            </LoadingButton>
+          </Stack>
         )}
       </form>
     </FormProvider>
@@ -335,3 +338,34 @@ function StaticState({
     </Stack>
   );
 }
+
+const SMSConsent = () => (
+  <Typography
+    component="div"
+    sx={{ color: 'text.secondary', typography: 'caption', textAlign: 'center' }}
+  >
+    By filling out this form, I consent to receiving text messages from Ripcord.io about meeting
+    reminders. You also agree to our{' '}
+    <Link
+      href="https://www.ripcord.io/terms-of-use"
+      target="_blank"
+      rel="noreferrer noopener"
+      underline="always"
+      color="text.primary"
+    >
+      Terms of Service
+    </Link>{' '}
+    and{' '}
+    <Link
+      href="https://www.ripcord.io/privacy"
+      target="_blank"
+      rel="noreferrer noopener"
+      underline="always"
+      color="text.primary"
+    >
+      Privacy Policy
+    </Link>
+    . Message/data rates apply. Consent is not a condition of purchase. Reply HELP for help and STOP
+    to cancel.
+  </Typography>
+);

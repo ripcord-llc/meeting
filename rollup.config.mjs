@@ -58,12 +58,12 @@ export default [
       {
         file: pkj.browser,
         format: 'iife',
-        name: 'Ripcord',
+        name: 'ripcord',
       },
       {
         file: pkj.browser.replace('.js', '.min.js'),
         format: 'iife',
-        name: 'Ripcord',
+        name: 'ripcord',
         plugins: [terser()],
       },
     ],

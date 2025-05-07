@@ -5,32 +5,46 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    #booking-inline {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+  </style>
 </head>
 
 <body style="height: 100%">
   <div>
-    <button id="open-modal">Open Modal</button>
-    <button id="destroy">Destroy</button>
+    <!-- <button id="open-modal">Open Modal</button>
+    <button id="destroy">Destroy</button> -->
+    <div id="booking-inline"></div>
   </div>
   <script src="/dist/index.umd.js"></script>
   <script>
     const button = document.getElementById('open-modal')
     const destroyButton = document.getElementById('destroy')
+    const bookingInline = document.getElementById('booking-inline')
 
-    Ripcord.INTERNAL_USE_ONLY_setConfig({
+    window.ripcord.INTERNAL_USE_ONLY_setConfig({
       CLIENT_URL: "http://localhost:8081",
       API_URL: "http://localhost:3000"
     })
 
-    const instance = new Ripcord({ el: button, routingId: "wvsxXrmRks-_ezdau7qn3" })
+    // const instance = new Ripcord({ el: button, routingId: "vjJ8Sw2Zujx9n4YP-wrzr" })
 
-    window.addEventListener("load", () => {
-      instance.open()
-    })
+    // window.addEventListener("load", () => {
+    //   instance.open()
+    // })
 
-    destroyButton.addEventListener('click', () => {
-      instance.destroy()
-    })
+    // destroyButton.addEventListener('click', () => {
+    //   instance.destroy()
+    // })
+
+    const instance = new ripcord.Inline({ el: bookingInline, routingId: "vjJ8Sw2Zujx9n4YP-wrzr" })
+
+    instance.initialize()
+
+    console.log(window.ripcord.Widget)
   </script>
 </body>
 

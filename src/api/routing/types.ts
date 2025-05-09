@@ -4,6 +4,10 @@ export enum RoutingOutcomeType {
   TEAM = 'TEAM',
 }
 
+interface Pixel {
+  pixelId: string;
+}
+
 export interface PublicRouting {
   uuid: string;
   name: string;
@@ -13,6 +17,8 @@ export interface PublicRouting {
     avatar: {
       fileUrl: string;
     } | null;
+    googlePixel: Pixel | null;
+    facebookPixel: Pixel | null;
   };
   questions: {
     id: number;

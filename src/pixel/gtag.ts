@@ -24,6 +24,11 @@ export function initGtag(trackingId: string, additionalConfigInfo = {}) {
 }
 
 function gtag(...args: any[]) {
+  if (!window.dataLayer) {
+    console.warn('window.dataLayer is not set. Gtag must be initialized first.');
+    return;
+  }
+
   // Can't use arrow func + destructuring as Google expects
   // arguments objects in dataLayer (not an array of arguments).
   window.dataLayer.push(arguments);

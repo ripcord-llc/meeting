@@ -34,6 +34,8 @@ import { useWidgetStateContext } from '../../../state';
 import { FormValues } from '../types';
 import { BookingParams } from '../../../api/deals/types';
 
+import { sendPixelEvent } from '../../../pixel';
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -266,6 +268,12 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
             url,
           });
 
+          sendPixelEvent({
+            name,
+            email,
+            productId,
+          });
+
           setConfirm({ meeting, formValues: { email, name, phone, url } });
           return;
         }
@@ -279,6 +287,12 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           name,
           phone,
           url,
+        });
+
+        sendPixelEvent({
+          name,
+          email,
+          productId: routedProductId,
         });
 
         setConfirm({ meeting, formValues: { email, name, phone, url } });

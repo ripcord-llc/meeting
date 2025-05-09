@@ -1,7 +1,10 @@
 import { initUTMCapture } from './utm';
 
-import Ripcord from './Ripcord';
+import Widget from './Ripcord';
+import Inline from './RipcordInline';
+
+import { INTERNAL_USE_ONLY_setConfig } from './INTERNAL_config';
 
 initUTMCapture();
 
-export default Ripcord;
+export { Widget, Inline, INTERNAL_USE_ONLY_setConfig };

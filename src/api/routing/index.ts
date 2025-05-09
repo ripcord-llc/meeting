@@ -2,6 +2,9 @@ import useSWRImmutable from 'swr/immutable';
 
 import { PublicRouting, RouteResult } from './types';
 
+import { initFacebookPixelSimple } from '../../pixel/facebook';
+import { initGtag } from '../../pixel/gtag';
+
 import { fetcher, post, Exception } from '../fetcher';
 
 const PUBLIC_ROUTING_ENDPOINTS = {
@@ -15,6 +18,15 @@ export function usePublicRouting(uuid: string) {
     fetcher<PublicRouting>,
     {
       revalidateOnMount: true,
+      onSuccess: (data) => {
+        if (data.account.facebookPixel) {
+          initFacebookPixelSimple(data.account.facebookPixel.pixelId);
+        }
+
+        if (data.account.googlePixel) {
+          initGtag(data.account.googlePixel.pixelId);
+        }
+      },
     }
   );
 }

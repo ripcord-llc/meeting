@@ -1,6 +1,8 @@
 import {
   Dialog as MuiDialog,
   DialogProps,
+  PaperProps,
+  Paper,
   Box,
   IconButton,
   Stack,
@@ -140,5 +142,113 @@ export default function Dialog({
         </Stack>
       </StyledContent>
     </MuiDialog>
+  );
+}
+
+export function DialogInline({
+  children,
+  slots,
+  enableConfirmedDesign = false,
+  sx,
+  ...rest
+}: {
+  slots?: {
+    headerLeft?: React.ReactNode;
+    footerLeft?: React.ReactNode;
+  };
+  children?: React.ReactNode;
+  enableConfirmedDesign?: boolean;
+} & PaperProps) {
+  return (
+    <Paper
+      variant="outlined"
+      sx={{
+        m: 0,
+        transition: (theme) =>
+          theme.transitions.create(['max-width', 'background-color'], {
+            easing: theme.transitions.easing.easeInOut,
+            duration: theme.transitions.duration.standard,
+          }),
+        ...(enableConfirmedDesign
+          ? {
+              bgcolor: (theme) =>
+                theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
+            }
+          : {
+              overflow: 'hidden',
+            }),
+        ...sx,
+      }}
+      {...rest}
+    >
+      <StyledContent
+        sx={{
+          ...(enableConfirmedDesign && {
+            height: 'auto',
+            minHeight: '100%',
+            overflow: 'unset',
+          }),
+        }}
+      >
+        <Stack
+          direction="row"
+          alignItems="center"
+          sx={(theme) => ({
+            px: {
+              xs: 3,
+              md: 4,
+            },
+            ...(!enableConfirmedDesign && {
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            }),
+          })}
+        >
+          {slots?.headerLeft}
+        </Stack>
+        <Box
+          sx={
+            !enableConfirmedDesign
+              ? {
+                  overflow: 'hidden',
+                }
+              : {}
+          }
+        >
+          {children}
+        </Box>
+        <Stack
+          direction="row"
+          alignItems="center"
+          sx={(theme) => ({
+            px: {
+              xs: 3,
+              md: 4,
+            },
+            ...(!enableConfirmedDesign && {
+              borderTop: `1px solid ${theme.palette.divider}`,
+            }),
+            bgcolor:
+              theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[800],
+          })}
+        >
+          {slots?.footerLeft}
+          <PoweredByRipcordIcon
+            component="a"
+            href="https://www.ripcord.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={(theme) => ({
+              ml: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              fill: theme.palette.text.secondary,
+              '& svg': {
+                height: 20,
+              },
+            })}
+          />
+        </Stack>
+      </StyledContent>
+    </Paper>
   );
 }

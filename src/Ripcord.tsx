@@ -3,8 +3,6 @@
 import './index.css';
 import { createRoot, Root } from 'react-dom/client';
 
-import { Config, setConfig } from './config';
-
 import BookingWidget from './BookingWidget';
 
 function assertConstructorParams(params: { routingId: string; el?: string | HTMLElement }) {
@@ -78,9 +76,7 @@ class Ripcord {
     this.initialize();
   }
 
-  static INTERNAL_USE_ONLY_setConfig(config: Config) {
-    setConfig(config);
-
+  static INTERNAL_USE_ONLY_onConfigChange() {
     Ripcord.instances.forEach((instance) => {
       if (instance && !instance.destroyed) {
         instance.key = String(Math.random());

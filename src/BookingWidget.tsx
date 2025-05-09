@@ -3,7 +3,7 @@
 import { StrictMode } from 'react';
 import { Fade, Stack, Avatar, Typography } from '@mui/material';
 
-import Dialog from './components/dialog/Dialog';
+import Dialog, { DialogInline } from './components/dialog/Dialog';
 
 import FormScreen from './components/FormScreen';
 import ErrorScreen from './components/ErrorScreen';
@@ -17,11 +17,14 @@ import { ConfigurationProvider } from './config';
 
 import { useWidgetState, WidgetStateContext } from './state';
 
-export interface BookingWidgetProps {
-  open: boolean;
-  onClose: () => void;
+interface BookingProps {
   routingId: string;
   productId?: string;
+}
+
+export interface BookingWidgetProps extends BookingProps {
+  open: boolean;
+  onClose: () => void;
 }
 
 function BookingWidget({ open, onClose, routingId, productId }: BookingWidgetProps) {
@@ -87,6 +90,67 @@ function BookingWidget({ open, onClose, routingId, productId }: BookingWidgetPro
   );
 }
 
+function BookingInline({ routingId, productId }: BookingProps) {
+  const widgetState = useWidgetState();
+
+  const [state] = widgetState;
+
+  const { data, isLoading, error } = usePublicRouting(routingId);
+
+  if (isLoading) {
+    return (
+      <DialogInline sx={{ maxWidth: 'sm' }}>
+        <LoadingScreen />
+      </DialogInline>
+    );
+  }
+
+  if (!data || error || state.state === 'error') {
+    const message =
+      state.state === 'error' ? state.error : error?.response?.message || error?.message;
+
+    return (
+      <DialogInline sx={{ maxWidth: 'sm' }}>
+        <ErrorScreen error={message} />
+      </DialogInline>
+    );
+  }
+
+  if (state.state === 'confirm') {
+    return (
+      <DialogInline sx={{ maxWidth: 'sm' }} enableConfirmedDesign>
+        <ConfirmationScreen {...state} contactEmail={state.formValues.email} />
+      </DialogInline>
+    );
+  }
+
+  return (
+    <DialogInline
+      sx={{ maxWidth: 'md' }}
+      slots={{
+        headerLeft: (
+          <Stack direction="row" gap={1} alignItems="center">
+            <Avatar
+              src={data.account?.avatar?.fileUrl}
+              sx={{
+                width: 32,
+                height: 32,
+              }}
+            />
+            <Typography variant="subtitle2">{data.account.name}</Typography>
+          </Stack>
+        ),
+      }}
+    >
+      <WidgetStateContext.Provider value={widgetState}>
+        <Fade in appear timeout={750}>
+          <FormScreen routing={data} productId={productId} />
+        </Fade>
+      </WidgetStateContext.Provider>
+    </DialogInline>
+  );
+}
+
 function Main(props: BookingWidgetProps) {
   return (
     <StrictMode>
@@ -94,6 +158,16 @@ function Main(props: BookingWidgetProps) {
         <ErrorBoundary {...props}>
           <BookingWidget {...props} />
         </ErrorBoundary>
+      </ConfigurationProvider>
+    </StrictMode>
+  );
+}
+
+export function MainInline(props: BookingProps) {
+  return (
+    <StrictMode>
+      <ConfigurationProvider>
+        <BookingInline {...props} />
       </ConfigurationProvider>
     </StrictMode>
   );

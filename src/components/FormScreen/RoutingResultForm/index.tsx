@@ -269,9 +269,13 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           });
 
           sendPixelEvent({
-            name,
-            email,
-            productId,
+            data: {
+              name,
+              email,
+              productId,
+            },
+            facebookPixel: routing.account.facebookPixel,
+            googlePixel: routing.account.googlePixel,
           });
 
           setConfirm({ meeting, formValues: { email, name, phone, url } });
@@ -290,9 +294,13 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
         });
 
         sendPixelEvent({
-          name,
-          email,
-          productId: routedProductId,
+          data: {
+            name,
+            email,
+            productId: routedProductId,
+          },
+          facebookPixel: routing.account.facebookPixel,
+          googlePixel: routing.account.googlePixel,
         });
 
         setConfirm({ meeting, formValues: { email, name, phone, url } });
@@ -302,7 +310,14 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
         setLoading(false);
       }
     },
-    [formValues, routeResult, productId, setConfirm]
+    [
+      formValues,
+      routeResult,
+      productId,
+      setConfirm,
+      routing.account.facebookPixel,
+      routing.account.googlePixel,
+    ]
   );
 
   const onDealSubmit = useCallback(

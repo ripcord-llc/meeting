@@ -4,8 +4,13 @@ export enum RoutingOutcomeType {
   TEAM = 'TEAM',
 }
 
-interface Pixel {
+export interface FacebookPixel {
   pixelId: string;
+}
+
+export interface GooglePixel {
+  pixelId: string;
+  conversionId: string | null;
 }
 
 export interface PublicRouting {
@@ -17,8 +22,8 @@ export interface PublicRouting {
     avatar: {
       fileUrl: string;
     } | null;
-    googlePixel: Pixel | null;
-    facebookPixel: Pixel | null;
+    googlePixel: GooglePixel | null;
+    facebookPixel: FacebookPixel | null;
   };
   questions: {
     id: number;

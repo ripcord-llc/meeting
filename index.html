@@ -6,6 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <style>
+    html,
+    body,
+    #root {
+      background-color: oklch(86.9% 0.005 56.366);
+      height: 100%
+    }
+
+    #root {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     #booking-inline {
       max-width: 900px;
       margin: 0 auto;
@@ -14,7 +27,7 @@
 </head>
 
 <body style="height: 100%">
-  <div>
+  <div id="root">
     <!-- <button id="open-modal">Open Modal</button>
     <button id="destroy">Destroy</button> -->
     <div id="booking-inline"></div>
@@ -40,7 +53,7 @@
     //   instance.destroy()
     // })
 
-    const instance = new ripcord.Inline({ el: bookingInline, routingId: "vjJ8Sw2Zujx9n4YP-wrzr" })
+    const instance = new ripcord.Inline({ el: bookingInline, routingId: "BFj7Hqk5SQCJGerkiMuH7" })
 
     instance.initialize()
 

@@ -253,20 +253,19 @@ function FormState({
             </Collapse>
           )}
         </Stack>
-        {showContinueButton && (
-          <Stack gap={2} mt={3}>
-            <SMSConsent />
-            <LoadingButton
-              loading={isSubmitting}
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="purple"
-            >
-              Continue
-            </LoadingButton>
-          </Stack>
-        )}
+        <Stack gap={2} mt={3}>
+          <SMSConsent />
+          <LoadingButton
+            disabled={!showContinueButton}
+            loading={isSubmitting}
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="purple"
+          >
+            Continue
+          </LoadingButton>
+        </Stack>
       </form>
     </FormProvider>
   );

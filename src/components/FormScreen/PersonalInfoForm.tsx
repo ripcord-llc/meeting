@@ -174,14 +174,14 @@ function FormState({
     }
   }, [inject, routingId, validated.email, validated.name, validated.phone, validated.url]);
 
-  const emailAndUrlEnteredAndValid = validated.email && validated.url;
+  const emailIsValid = validated.email;
 
-  // Phone and name are only visible if the email and URL are valid
+  // Phone, name, and url are only visible if the email is valid
   useEffect(() => {
-    if (emailAndUrlEnteredAndValid && !allFieldsVisibleOnce) {
+    if (emailIsValid && !allFieldsVisibleOnce) {
       setStatus((s) => [...s, 'all-fields']);
     }
-  }, [setStatus, allFieldsVisibleOnce, emailAndUrlEnteredAndValid]);
+  }, [setStatus, allFieldsVisibleOnce, emailIsValid]);
 
   useEffect(() => {
     if (calledWithAllData && !questionsVisibleOnce) {
@@ -189,11 +189,11 @@ function FormState({
     }
   }, [setStatus, calledWithAllData, questionsVisibleOnce]);
 
-  const showFullNameAndPhone = emailAndUrlEnteredAndValid || allFieldsVisibleOnce;
+  const showRestOfFields = emailIsValid || allFieldsVisibleOnce;
   const showQuestions = calledWithAllData || questionsVisibleOnce;
   const showQuestionsLoading =
     !questionsVisibleOnce && !hasNoQuestions && !!validated.phone && isProcessing;
-  const showContinueButton = hasNoQuestions ? showFullNameAndPhone : showQuestions;
+  const showContinueButton = hasNoQuestions ? showRestOfFields : showQuestions;
 
   return (
     <FormProvider {...methods}>
@@ -203,23 +203,23 @@ function FormState({
           <FieldWrapper label="Email">
             <TextField name="email" fullWidth variant="outlined" onBlur={onBlur} />
           </FieldWrapper>
-          <FieldWrapper label="Company Website">
-            <TextField
-              name="url"
-              fullWidth
-              variant="outlined"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start" sx={{ mr: 0 }}>
-                    https://
-                  </InputAdornment>
-                ),
-              }}
-              onBlur={onBlur}
-            />
-          </FieldWrapper>
-          {showFullNameAndPhone && (
+          {showRestOfFields && (
             <>
+              <FieldWrapper label="Company Website">
+                <TextField
+                  name="url"
+                  fullWidth
+                  variant="outlined"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start" sx={{ mr: 0 }}>
+                        https://
+                      </InputAdornment>
+                    ),
+                  }}
+                  onBlur={onBlur}
+                />
+              </FieldWrapper>
               <FieldWrapper label="Full Name">
                 <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
               </FieldWrapper>

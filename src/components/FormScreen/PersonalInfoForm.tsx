@@ -223,7 +223,7 @@ function FormState({
               <FieldWrapper label="Full Name">
                 <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
               </FieldWrapper>
-              <FieldWrapper label="Cell Number">
+              <FieldWrapper label="Cell Number (for meeting reminders)">
                 <PhoneInput name="phone" fullWidth variant="outlined" />
               </FieldWrapper>
             </>

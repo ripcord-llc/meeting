@@ -20,8 +20,9 @@ jobs:
           scope: "@ripcord.io"
       - run: npm ci
       - run: npm run build
+        env:
+          CLIENT_URL: ${{vars.CLIENT_URL}}
+          API_URL: ${{vars.API_URL}}
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-          CLIENT_URL: ${{vars.CLIENT_URL}}
-          API_URL: ${{vars.API_URL}}

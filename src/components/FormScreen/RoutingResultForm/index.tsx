@@ -226,7 +226,7 @@ function DisabledState({ routing }: { routing: PublicRouting }) {
           boxShadow: theme.shadows[4],
         })}
       >
-        Please fill out the form to book a meeting with {routing.account.name}
+        Enter your information to reveal booking availability
       </Box>
     </Stack>
   );

@@ -38,6 +38,8 @@ export default function TextField({ name, helperText, label, description, ...oth
 
 export const removeProtocol = (url: string) => url.replace(/^https?:\/\//, '');
 
+const getSelectedRangeAsString = (): string => window.getSelection()?.toString() || '';
+
 export function UrlTextField({ name, helperText, InputProps, inputProps, ...other }: Props) {
   const { control, setValue, getValues } = useFormContext();
 
@@ -45,8 +47,10 @@ export function UrlTextField({ name, helperText, InputProps, inputProps, ...othe
     (event: React.ClipboardEvent) => {
       // Strips urls of their protocol before pasting. Useful since most people will copy the urls from their browser
       const currentValue = getValues(name);
+      const selectedText = getSelectedRangeAsString();
 
-      if (currentValue) return;
+      // Should only paste if either the field is empty or the selected text is the same as the current value
+      if (currentValue && selectedText !== currentValue) return;
 
       const paste = event.clipboardData.getData('text');
 

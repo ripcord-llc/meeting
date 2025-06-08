@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Button,
-  InputAdornment,
   Collapse,
   Fade,
   useMediaQuery,
@@ -21,7 +20,7 @@ import { EmailSchema, NameSchema, PhoneNumberSchema, URLSchema } from '../../api
 
 import { useValidatedLeadInjectionValues, useInjectLeadContext } from '../../api/deals/hooks';
 
-import TextField from '../form/TextField';
+import TextField, { UrlTextField } from '../form/TextField';
 import RadioGroup from '../form/RadioGroup';
 import { PhoneInput } from '../form/phone-input';
 
@@ -230,19 +229,7 @@ function FormState({
           {showRestOfFields && (
             <>
               <FieldWrapper label="Company Website">
-                <TextField
-                  name="url"
-                  fullWidth
-                  variant="outlined"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start" sx={{ mr: 0 }}>
-                        https://
-                      </InputAdornment>
-                    ),
-                  }}
-                  onBlur={onBlur}
-                />
+                <UrlTextField name="url" fullWidth variant="outlined" onBlur={onBlur} />
               </FieldWrapper>
               <FieldWrapper label="Full Name">
                 <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />

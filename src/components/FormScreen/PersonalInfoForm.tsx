@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LoadingButton } from '@mui/lab';
 import {
   Stack,
@@ -30,6 +30,8 @@ import { PublicRouting } from '../../api/routing/types';
 import FieldWrapper from '../form/FieldWrapper';
 
 import { FormValues, PersonalInfoFormStatus } from './types';
+
+import { getEmailDomain, COMMON_EMAIL_DOMAINS } from './utils';
 
 // TODO: Make sure latest enrichment data is fetched (maybe polled) when the client changes the url
 
@@ -91,6 +93,8 @@ function FormState({
 
   const { inject, data, flush, isProcessing, calledWithAllData } = useInjectLeadContext();
 
+  const [hasParsedEmail, setHasParsedEmail] = useState(false);
+
   const hasNoQuestions = questions.length === 0;
 
   const allFieldsVisibleOnce = status.includes('all-fields');
@@ -149,10 +153,30 @@ function FormState({
     watch,
     handleSubmit,
     formState: { isSubmitting },
+    setValue,
   } = methods;
 
   const onBlur = () => {
     flush(); // Run latest call to injectLead when input fields are blurred. This flushes the debounced function.
+  };
+
+  const onEmailBlur = () => {
+    onBlur();
+
+    // Set
+    if (validated.email && !hasParsedEmail) {
+      const domain = getEmailDomain(validated.email);
+
+      const isCompanyDomain = domain && !COMMON_EMAIL_DOMAINS.includes(domain);
+
+      if (isCompanyDomain) {
+        setValue('url', domain, {
+          shouldDirty: true,
+        });
+
+        setHasParsedEmail(true);
+      }
+    }
   };
 
   const onSubmit = async (_data: FormValues) => {
@@ -201,7 +225,7 @@ function FormState({
         <FormHeader account={account} />
         <Stack gap={2} mt={3}>
           <FieldWrapper label="Email">
-            <TextField name="email" fullWidth variant="outlined" onBlur={onBlur} />
+            <TextField name="email" fullWidth variant="outlined" onBlur={onEmailBlur} />
           </FieldWrapper>
           {showRestOfFields && (
             <>

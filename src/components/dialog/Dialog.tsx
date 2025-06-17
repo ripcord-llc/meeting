@@ -177,6 +177,7 @@ export function DialogInline({
           : {
               overflow: 'hidden',
             }),
+        width: '100%',
         ...sx,
       }}
       {...rest}

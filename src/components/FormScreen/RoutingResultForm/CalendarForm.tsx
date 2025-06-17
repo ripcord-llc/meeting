@@ -28,7 +28,7 @@ export const StyledDateCalendar = styled(CalendarPicker<Dayjs>)(({ theme }) => (
   height: 348,
   maxHeight: 348,
 
-  '& .MuiDayCalendar-weekDayLabel': {
+  '& .MuiDayPicker-weekDayLabel': {
     width: 48,
   },
 

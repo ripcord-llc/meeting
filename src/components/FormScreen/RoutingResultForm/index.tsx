@@ -265,7 +265,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
             booking,
             name,
             phone,
-            url,
+            ...(url && { url }),
           });
 
           sendPixelEvent({
@@ -290,7 +290,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           booking,
           name,
           phone,
-          url,
+          ...(url && { url }),
         });
 
         sendPixelEvent({
@@ -335,7 +335,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
           email,
           name,
           phone,
-          url,
+          ...(url && { url }),
         });
 
         setConfirm({ meeting, formValues: { email, name, phone, url } });

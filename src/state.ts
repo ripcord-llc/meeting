@@ -17,7 +17,7 @@ export type WidgetState =
         email: string;
         name: string;
         phone: string;
-        url: string;
+        url?: string;
       };
       meeting: BookMeetingResponse;
     };

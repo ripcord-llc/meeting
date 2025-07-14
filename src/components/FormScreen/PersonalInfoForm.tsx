@@ -24,7 +24,7 @@ import TextField, { UrlTextField } from '../form/TextField';
 import RadioGroup from '../form/RadioGroup';
 import { PhoneInput } from '../form/phone-input';
 
-import { PublicRouting } from '../../api/routing/types';
+import { PublicRouting, AccountType } from '../../api/routing/types';
 
 import FieldWrapper from '../form/FieldWrapper';
 
@@ -96,6 +96,8 @@ function FormState({
 
   const hasNoQuestions = questions.length === 0;
 
+  const showUrlField = account.accountType === AccountType.B2B;
+
   const allFieldsVisibleOnce = status.includes('all-fields');
   const questionsVisibleOnce = status.includes('questions');
 
@@ -112,7 +114,7 @@ function FormState({
         email: EmailSchema,
         name: NameSchema,
         phone: PhoneNumberSchema,
-        url: URLSchema,
+        ...(showUrlField && { url: URLSchema }),
         ...(visibleQuestions.length && {
           answers: yup.object().shape(
             visibleQuestions.reduce(
@@ -126,7 +128,7 @@ function FormState({
           ),
         }),
       }),
-    [visibleQuestions]
+    [visibleQuestions, showUrlField]
   );
 
   const methods = useForm<FormValues>({
@@ -134,7 +136,9 @@ function FormState({
       email: formValues?.email || '',
       name: formValues?.name || '',
       phone: formValues?.phone || '',
-      url: formValues?.url ? formValues.url.replace(/^https?:\/\//, '') : '',
+      ...(showUrlField && {
+        url: formValues?.url ? formValues.url.replace(/^https?:\/\//, '') : '',
+      }),
       answers:
         formValues?.answers ||
         questions.reduce(
@@ -163,7 +167,7 @@ function FormState({
     onBlur();
 
     // Set
-    if (validated.email && !hasParsedEmail) {
+    if (showUrlField && validated.email && !hasParsedEmail) {
       const domain = getEmailDomain(validated.email);
 
       const isCompanyDomain = domain && !COMMON_EMAIL_DOMAINS.includes(domain);
@@ -184,7 +188,11 @@ function FormState({
     await _onSubmit(_data);
   };
 
-  const validated = useValidatedLeadInjectionValues(...watch(['email', 'name', 'phone', 'url']));
+  const validated = useValidatedLeadInjectionValues(
+    ...watch(['email', 'name', 'phone', 'url'], {
+      url: '',
+    })
+  );
 
   useEffect(() => {
     if (validated.email) {
@@ -228,9 +236,11 @@ function FormState({
           </FieldWrapper>
           {showRestOfFields && (
             <>
-              <FieldWrapper label="Company Website">
-                <UrlTextField name="url" fullWidth variant="outlined" onBlur={onBlur} />
-              </FieldWrapper>
+              {showUrlField && (
+                <FieldWrapper label="Company Website">
+                  <UrlTextField name="url" fullWidth variant="outlined" onBlur={onBlur} />
+                </FieldWrapper>
+              )}
               <FieldWrapper label="Full Name">
                 <TextField name="name" fullWidth variant="outlined" onBlur={onBlur} />
               </FieldWrapper>
@@ -329,7 +339,7 @@ function StaticState({
             parsePhoneNumber(formValues?.phone || '')?.formatNational() || formValues?.phone
           }
         />
-        <StaticLine title="Company Website" description={formValues?.url} />
+        {!!formValues?.url && <StaticLine title="Company Website" description={formValues?.url} />}
         {listedAnswers.map((a) => (
           <StaticLine key={a.question} title={a.question} description={a.answer} />
         ))}

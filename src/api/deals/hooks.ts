@@ -150,7 +150,7 @@ export function useInjectLead(
 
           setData(resp);
 
-          if (params.name && params.phone && params.url) {
+          if (params.name && params.phone) {
             setCalledWithAllData(true);
           }
         } catch (e) {

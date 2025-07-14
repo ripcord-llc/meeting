@@ -4,6 +4,11 @@ export enum RoutingOutcomeType {
   TEAM = 'TEAM',
 }
 
+export enum AccountType {
+  B2B = 'B2B',
+  B2C = 'B2C',
+}
+
 export interface FacebookPixel {
   pixelId: string;
 }
@@ -22,6 +27,7 @@ export interface PublicRouting {
     avatar: {
       fileUrl: string;
     } | null;
+    accountType: AccountType;
     googlePixel: GooglePixel | null;
     facebookPixel: FacebookPixel | null;
   };

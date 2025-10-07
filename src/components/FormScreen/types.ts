@@ -4,6 +4,7 @@ export interface FormValues {
   phone: string;
   url: string;
   answers: Record<number, number>;
+  altchaPayload: string;
 }
 
 export type FormScreenStatus = 'personal-info' | 'calendar';

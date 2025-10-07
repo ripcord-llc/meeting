@@ -24,6 +24,9 @@ import TextField, { UrlTextField } from '../form/TextField';
 import RadioGroup from '../form/RadioGroup';
 import { PhoneInput } from '../form/phone-input';
 
+import Altcha from '../altcha';
+import useAltcha from '../altcha/useAltcha';
+
 import { PublicRouting, AccountType } from '../../api/routing/types';
 
 import FieldWrapper from '../form/FieldWrapper';
@@ -51,7 +54,7 @@ export default function PersonalInfoForm(props: {
   disabled: boolean;
   status: PersonalInfoFormStatus[];
   setStatus: React.Dispatch<React.SetStateAction<PersonalInfoFormStatus[]>>;
-  onSubmit: (values: FormValues) => Promise<void>;
+  onSubmit: (values: FormValues | null, err?: string) => Promise<void>;
   onGoBack: () => void;
   formValues: FormValues | null;
 }) {
@@ -84,13 +87,16 @@ function FormState({
   disabled: boolean;
   status: PersonalInfoFormStatus[];
   setStatus: React.Dispatch<React.SetStateAction<PersonalInfoFormStatus[]>>;
-  onSubmit: (values: FormValues) => Promise<void>;
+  onSubmit: (values: FormValues | null, err?: string) => Promise<void>;
   onGoBack: () => void;
   formValues: FormValues | null;
 }) {
   const { uuid: routingId, account, questions } = routing;
 
   const { inject, data, flush, isProcessing, calledWithAllData } = useInjectLeadContext();
+
+  const altchaProps = useAltcha();
+  const { state: altchaState, payload: altchaPayload } = altchaProps;
 
   const [hasParsedEmail, setHasParsedEmail] = useState(false);
 
@@ -183,9 +189,13 @@ function FormState({
   };
 
   const onSubmit = async (_data: FormValues) => {
+    if (!altchaPayload) {
+      await _onSubmit(null, 'Missing Captcha verification');
+      return;
+    }
     // Flush any requests to injectLead that are debounced before submitting the form
     flush();
-    await _onSubmit(_data);
+    await _onSubmit({ ..._data, altchaPayload });
   };
 
   const validated = useValidatedLeadInjectionValues(
@@ -195,15 +205,28 @@ function FormState({
   );
 
   useEffect(() => {
+    if (!altchaPayload) return;
+
     if (validated.email) {
-      inject({
-        email: validated.email,
-        ...(validated.name && { name: validated.name }), // Strip null values
-        ...(validated.phone && { phone: validated.phone }),
-        ...(validated.url && { url: validated.url }),
-      });
+      inject(
+        {
+          email: validated.email,
+          ...(validated.name && { name: validated.name }), // Strip null values
+          ...(validated.phone && { phone: validated.phone }),
+          ...(validated.url && { url: validated.url }),
+        },
+        altchaPayload
+      );
     }
-  }, [inject, routingId, validated.email, validated.name, validated.phone, validated.url]);
+  }, [
+    inject,
+    routingId,
+    validated.email,
+    validated.name,
+    validated.phone,
+    validated.url,
+    altchaPayload,
+  ]);
 
   const emailIsValid = validated.email;
 
@@ -225,6 +248,8 @@ function FormState({
   const showQuestionsLoading =
     !questionsVisibleOnce && !hasNoQuestions && !!validated.phone && isProcessing;
   const showContinueButton = hasNoQuestions ? showRestOfFields : showQuestions;
+
+  const disabled = !showContinueButton || altchaState !== 'verified';
 
   return (
     <FormProvider {...methods}>
@@ -275,9 +300,10 @@ function FormState({
           )}
         </Stack>
         <Stack gap={2} mt={3}>
+          <Altcha {...altchaProps} />
           <SMSConsent />
           <LoadingButton
-            disabled={!showContinueButton}
+            disabled={disabled}
             loading={isSubmitting}
             type="submit"
             fullWidth

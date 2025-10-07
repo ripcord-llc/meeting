@@ -136,17 +136,23 @@ export function useInjectLead(
 
   // Debounced functions use same logic as those using useEffectEvent. This means the object reference stays the same, even if dependencies change.
   const handler = useDebounced(
-    async (params: { email?: string; name?: string; phone?: string; url?: string }) => {
+    async (
+      params: { email?: string; name?: string; phone?: string; url?: string },
+      altchaPayload: string
+    ) => {
       if (params.email) {
         try {
           setIsLoading(true);
 
-          const resp = await injectLead({
-            ...params,
-            email: params.email,
-            routingId,
-            productId,
-          });
+          const resp = await injectLead(
+            {
+              ...params,
+              email: params.email,
+              routingId,
+              productId,
+            },
+            altchaPayload
+          );
 
           setData(resp);
 
@@ -175,11 +181,14 @@ export function useInjectLead(
   }, [handler]);
 
   const inject = useCallback(
-    async (params: { email?: string; name?: string; phone?: string; url?: string }) => {
+    async (
+      params: { email?: string; name?: string; phone?: string; url?: string },
+      altchaPayload: string
+    ) => {
       setIsProcessing(true);
 
       try {
-        await handler(params);
+        await handler(params, altchaPayload);
       } catch (e) {
         console.error(e);
       }

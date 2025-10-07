@@ -15,6 +15,7 @@ import {
 } from './types';
 
 import { PUBLIC_DEALS_ENDPOINTS } from '.';
+import { ALTCHA_PAYLOAD_HEADER_KEY } from '../altcha/constants';
 
 interface InjectLeadBody {
   email: string;
@@ -75,41 +76,69 @@ export function injectLead(
   body: InjectLeadBody & {
     routingId: string;
     productId?: string;
-  }
+  },
+  altchaPayload: string
 ): Promise<LeadInjectionResponse> {
-  return post<LeadInjectionResponse>(PUBLIC_DEALS_ENDPOINTS.injectLead, {
-    ...body,
-    utm: getUTMParams(),
-    source: getSourceParams(),
-  });
+  return post<LeadInjectionResponse>(
+    PUBLIC_DEALS_ENDPOINTS.injectLead,
+    {
+      ...body,
+      utm: getUTMParams(),
+      source: getSourceParams(),
+    },
+    {
+      [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,
+    }
+  );
 }
 
 export async function bookMeetingIntoLatestNonStartedDeal(
-  body: CreateMeetingParams
+  body: CreateMeetingParams,
+  altchaPayload: string
 ): Promise<BookMeetingResponse> {
-  return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal, {
-    ...body,
-    utm: getUTMParams(),
-    source: getSourceParams(),
-  });
+  return post<BookMeetingResponse>(
+    PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal,
+    {
+      ...body,
+      utm: getUTMParams(),
+      source: getSourceParams(),
+    },
+    {
+      [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,
+    }
+  );
 }
 
 export async function bookMeetingIntoProduct(
-  body: CreateMeetingParams
+  body: CreateMeetingParams,
+  altchaPayload: string
 ): Promise<BookMeetingResponse> {
-  return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct, {
-    ...body,
-    utm: getUTMParams(),
-    source: getSourceParams(),
-  });
+  return post<BookMeetingResponse>(
+    PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct,
+    {
+      ...body,
+      utm: getUTMParams(),
+      source: getSourceParams(),
+    },
+    {
+      [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,
+    }
+  );
 }
 
 export async function bookMeetingIntoExistingDeal(
-  body: CreateExistingDealMeetingParams
+  body: CreateExistingDealMeetingParams,
+  altchaPayload: string
 ): Promise<BookMeetingResponse> {
-  return post<BookMeetingResponse>(PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal, {
-    ...body,
-    utm: getUTMParams(),
-    source: getSourceParams(),
-  });
+  return post<BookMeetingResponse>(
+    PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal,
+    {
+      ...body,
+      utm: getUTMParams(),
+      source: getSourceParams(),
+    },
+    {
+      [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,
+    }
+  );
 }

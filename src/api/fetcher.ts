@@ -32,12 +32,17 @@ export async function fetcher<T>(key: string): Promise<T> {
   return json;
 }
 
-export async function post<T>(path: string, body: Record<string, any>): Promise<T> {
+export async function post<T>(
+  path: string,
+  body: Record<string, any>,
+  headers?: Record<string, string>
+): Promise<T> {
   const resp = await fetch(CONFIG.API_URL + path, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...headers,
     },
     body: JSON.stringify(body),
   });

@@ -8,7 +8,7 @@ import { CONFIG } from '../../config';
 
 import { UseAltchaProps } from './useAltcha';
 
-const CHALLENGE_URL = `${CONFIG.API_URL}/altcha`;
+const getChallengeUrl = () => `${CONFIG.API_URL}/altcha`;
 
 const HIDDEN_STATES: AltchaState[] = ['unverified', 'verifying', 'verified'];
 
@@ -49,7 +49,8 @@ const Altcha = ({ state, onStateChange }: Props) => {
       <altcha-widget
         ref={widgetRef}
         auto="onload"
-        challengeurl={CHALLENGE_URL}
+        challengeurl={getChallengeUrl()}
+        credentials="omit"
         style={{
           '--altcha-color-base': theme.palette.background.neutral,
           '--altcha-color-border': theme.palette.divider,

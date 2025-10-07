@@ -256,17 +256,20 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
       try {
         if (!formValues || !routeResult) return;
 
-        const { email, name, phone, url } = formValues;
+        const { email, name, phone, url, altchaPayload } = formValues;
 
         if (productId) {
-          const meeting = await bookMeetingIntoProduct({
-            email,
-            productId,
-            booking,
-            name,
-            phone,
-            ...(url && { url }),
-          });
+          const meeting = await bookMeetingIntoProduct(
+            {
+              email,
+              productId,
+              booking,
+              name,
+              phone,
+              ...(url && { url }),
+            },
+            altchaPayload
+          );
 
           sendPixelEvent({
             data: {
@@ -284,14 +287,17 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
 
         const { productId: routedProductId } = routeResult;
 
-        const meeting = await bookMeetingIntoLatestNonStartedDeal({
-          email,
-          productId: routedProductId,
-          booking,
-          name,
-          phone,
-          ...(url && { url }),
-        });
+        const meeting = await bookMeetingIntoLatestNonStartedDeal(
+          {
+            email,
+            productId: routedProductId,
+            booking,
+            name,
+            phone,
+            ...(url && { url }),
+          },
+          altchaPayload
+        );
 
         sendPixelEvent({
           data: {
@@ -324,19 +330,22 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
     async (slot: { startTime: Date; endTime: Date }) => {
       if (!formValues || !data?.deal) return;
 
-      const { email, name, phone, url } = formValues;
+      const { email, name, phone, url, altchaPayload } = formValues;
 
       setLoading(true);
 
       try {
-        const meeting = await bookMeetingIntoExistingDeal({
-          dealId: data?.deal?.uuid,
-          event: slot,
-          email,
-          name,
-          phone,
-          ...(url && { url }),
-        });
+        const meeting = await bookMeetingIntoExistingDeal(
+          {
+            dealId: data?.deal?.uuid,
+            event: slot,
+            email,
+            name,
+            phone,
+            ...(url && { url }),
+          },
+          altchaPayload
+        );
 
         setConfirm({ meeting, formValues: { email, name, phone, url } });
       } catch (e) {

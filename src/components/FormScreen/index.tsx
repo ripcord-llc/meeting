@@ -44,10 +44,15 @@ const FormScreen = forwardRef<HTMLDivElement, { routing: PublicRouting; productI
     const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
 
     const moveToCalendar = useCallback(
-      async (values: FormValues) => {
-        setFormValues(values);
+      async (values: FormValues | null, err?: string) => {
+        if (err || !values) {
+          onError(err || 'Missing values');
+          return;
+        }
 
         try {
+          setFormValues(values);
+
           const result = await handleRouting({
             routingId: routing.uuid,
             email: values.email,

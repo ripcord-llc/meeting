@@ -1,6 +1,6 @@
 {
   "name": "@ripcord.io/meeting",
-  "version": "2.0.10",
+  "version": "2.1.0",
   "description": "A booking widget library for Ripcord.io",
   "homepage": "https://github.com/ripcord-llc/meeting",
   "main": "dist/index.cjs.js",
@@ -64,6 +64,7 @@
     "@mui/lab": "^5.0.0-alpha.116",
     "@mui/material": "^5.11.5",
     "@mui/x-date-pickers": "^5.0.14",
+    "altcha": "^2.2.4",
     "calendar-link": "^2.7.0",
     "dayjs": "^1.11.12",
     "lodash": "^4.17.21",

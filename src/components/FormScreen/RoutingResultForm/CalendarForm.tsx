@@ -14,13 +14,17 @@ import { CalendarPicker } from '@mui/x-date-pickers';
 
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
+import tz from 'dayjs/plugin/timezone';
 
 import { BookingSlotHookProps } from '../../../api/bookings';
 import { Slot } from '../../../api/bookings/types';
 
+import TimezonePopover from '../../timezone-select/TimezonePopover';
+import { TIMEZONE_LABELS } from '../../timezone-select/constants';
+import { useTimezoneStateContext } from '../../timezone-select/TimezoneProvider';
+
 dayjs.extend(utc);
-dayjs.extend(timezone);
+dayjs.extend(tz);
 
 export const StyledDateCalendar = styled(CalendarPicker<Dayjs>)(({ theme }) => ({
   margin: 0,
@@ -58,7 +62,11 @@ function TimeSlots<T extends Slot>({
   error,
   loading,
   onConfirm,
-}: BookingSlotHookProps<T>) {
+  date,
+}: BookingSlotHookProps<T> & {
+  date: dayjs.Dayjs;
+}) {
+  const [timezone] = useTimezoneStateContext();
   const [selected, setSelected] = useState<Slot | null>(null);
 
   const slots = data || [];
@@ -87,6 +95,12 @@ function TimeSlots<T extends Slot>({
       {slots.map((slot) => {
         const isSelected = slot === selected;
 
+        const startOfDayInTz = date.tz(timezone, true);
+        const startTimeInTz = dayjs(slot.startTime).tz(timezone);
+
+        const formattedTime = startTimeInTz.format('h:mm A');
+        const isDifferentDay = !startTimeInTz.isSame(startOfDayInTz, 'date');
+
         return (
           <Box
             sx={{
@@ -112,8 +126,17 @@ function TimeSlots<T extends Slot>({
               fullWidth
               onClick={() => setSelected(isSelected ? null : slot)}
               disabled={isLoading}
+              sx={{
+                flexDirection: 'column',
+                lineHeight: '1.2',
+              }}
             >
-              {dayjs(slot.startTime).format('h:mm A')}
+              {formattedTime}
+              {isDifferentDay && (
+                <Typography variant="caption" color="text.secondary" display="block">
+                  {startTimeInTz.format('ddd, MMM D')}
+                </Typography>
+              )}
             </Button>
             {isSelected && (
               <LoadingButton
@@ -161,11 +184,57 @@ export default function BaseCalendarForm<T extends Slot>({
 }) {
   return (
     <>
-      <Typography variant="subtitle2" textAlign="center">
-        Select a Date
-      </Typography>
+      <Stack
+        direction={{
+          xs: 'column',
+          md: 'row',
+        }}
+        justifyContent="space-between"
+        alignItems="center"
+        gap={0.5}
+      >
+        <Typography variant="subtitle2" textAlign="center">
+          Select a Date
+        </Typography>
+        <TimezoneButton />
+      </Stack>
       <StyledDateCalendar disablePast date={date} onChange={setDate} />
-      {!!date && <TimeSlots {...rest} />}
+      {!!date && <TimeSlots {...rest} date={date} />}
+    </>
+  );
+}
+
+function TimezoneButton() {
+  const [open, setOpen] = useState<HTMLElement | null>(null);
+  const [timezone, setTimezone] = useTimezoneStateContext();
+
+  return (
+    <>
+      <Button
+        variant="outlined"
+        color="inherit"
+        size="small"
+        onClick={(e) => setOpen(e.currentTarget)}
+      >
+        {TIMEZONE_LABELS[timezone] ?? timezone}
+      </Button>
+      <TimezonePopover
+        open={!!open}
+        anchorEl={open}
+        onClose={() => setOpen(null)}
+        onChange={(value) => {
+          setTimezone(value);
+          setOpen(null);
+        }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      />
     </>
   );
 }

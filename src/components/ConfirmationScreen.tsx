@@ -16,17 +16,23 @@ import NotesIcon from '@mui/icons-material/Notes';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import dayjs from 'dayjs';
+import tz from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 
 import { BookMeetingResponse } from '../api/deals/types';
 
 import useCopyToClipboard from '../hooks/useCopyToClipboard';
 
+import { useTimezoneStateContext } from './timezone-select/TimezoneProvider';
+
 import { parseEmailIntoEvent } from '../utils';
 
 import { CONFIG } from '../config';
 
+dayjs.extend(utc);
 dayjs.extend(advancedFormat);
+dayjs.extend(tz);
 
 function makeEventLink(uuid: string): string {
   return `${CONFIG.CLIENT_URL}/m/${uuid}`;
@@ -117,8 +123,10 @@ function UserDetailsRow({ user }: { user: BookMeetingResponse['user'] }) {
 }
 
 function TimeRow({ startTime, endTime }: { startTime: string; endTime: string }) {
-  const formattedStartTime = dayjs(startTime).format('dddd, MMM D, h:mma');
-  const formattedEndTime = dayjs(endTime).format('h:mma z');
+  const [timezone] = useTimezoneStateContext();
+
+  const formattedStartTime = dayjs(startTime).tz(timezone).format('dddd, MMM D, h:mma');
+  const formattedEndTime = dayjs(endTime).tz(timezone).format('h:mma (zzz)');
 
   return (
     <DetailsRow
@@ -156,6 +164,7 @@ function LinkRow({ uuid }: { uuid: string }) {
               color: theme.palette.text.secondary,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              textAlign: 'left',
               '&:hover': {
                 textDecoration: 'underline',
               },

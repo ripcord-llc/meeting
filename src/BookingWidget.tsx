@@ -11,6 +11,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingScreen from './components/LoadingScreen';
 import ConfirmationScreen from './components/ConfirmationScreen';
 
+import { TimezoneStateProvider } from './components/timezone-select/TimezoneProvider';
+
 import { usePublicRouting } from './api/routing';
 
 import { ConfigurationProvider } from './config';
@@ -156,7 +158,9 @@ function Main(props: BookingWidgetProps) {
     <StrictMode>
       <ConfigurationProvider>
         <ErrorBoundary {...props}>
-          <BookingWidget {...props} />
+          <TimezoneStateProvider>
+            <BookingWidget {...props} />
+          </TimezoneStateProvider>
         </ErrorBoundary>
       </ConfigurationProvider>
     </StrictMode>
@@ -167,7 +171,9 @@ export function MainInline(props: BookingProps) {
   return (
     <StrictMode>
       <ConfigurationProvider>
-        <BookingInline {...props} />
+        <TimezoneStateProvider>
+          <BookingInline {...props} />
+        </TimezoneStateProvider>
       </ConfigurationProvider>
     </StrictMode>
   );

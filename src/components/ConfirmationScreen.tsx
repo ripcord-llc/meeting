@@ -164,6 +164,7 @@ function LinkRow({ uuid }: { uuid: string }) {
               color: theme.palette.text.secondary,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              textAlign: 'left',
               '&:hover': {
                 textDecoration: 'underline',
               },

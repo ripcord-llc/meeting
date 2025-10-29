@@ -23,6 +23,7 @@ import {
   bookMeetingIntoExistingDeal,
   bookMeetingIntoLatestNonStartedDeal,
   bookMeetingIntoProduct,
+  getBookingWidgetSource,
 } from '../../../api/deals/actions';
 
 import { PublicRouting, RouteResult, RoutingOutcomeType } from '../../../api/routing/types';
@@ -253,6 +254,8 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
     async (booking: BookingParams) => {
       setLoading(true);
 
+      const source = getBookingWidgetSource(routing.id);
+
       try {
         if (!formValues || !routeResult) return;
 
@@ -268,7 +271,8 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
               phone,
               ...(url && { url }),
             },
-            altchaPayload
+            altchaPayload,
+            source
           );
 
           sendPixelEvent({
@@ -296,7 +300,8 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
             phone,
             ...(url && { url }),
           },
-          altchaPayload
+          altchaPayload,
+          source
         );
 
         sendPixelEvent({
@@ -323,12 +328,15 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
       setConfirm,
       routing.account.facebookPixel,
       routing.account.googlePixel,
+      routing.id,
     ]
   );
 
   const onDealSubmit = useCallback(
     async (slot: { startTime: Date; endTime: Date }) => {
       if (!formValues || !data?.deal) return;
+
+      const source = getBookingWidgetSource(routing.id);
 
       const { email, name, phone, url, altchaPayload } = formValues;
 
@@ -344,7 +352,8 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
             phone,
             ...(url && { url }),
           },
-          altchaPayload
+          altchaPayload,
+          source
         );
 
         setConfirm({ meeting, formValues: { email, name, phone, url } });
@@ -352,7 +361,7 @@ function RoutingResultFormInner({ routing, productId, routeResult, formValues, d
         console.error('Error booking meeting', e);
       }
     },
-    [formValues, data?.deal, setConfirm]
+    [formValues, data?.deal, setConfirm, routing.id]
   );
 
   if (disabled) {

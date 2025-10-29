@@ -6,7 +6,7 @@ import { Exception } from '../fetcher';
 
 import { injectLead, EmailSchema, NameSchema, PhoneNumberSchema, URLSchema } from './actions';
 
-import { LeadInjectionResponse } from './types';
+import { LeadInjectionResponse, ClientSourceDto } from './types';
 
 export function useValidatedLeadInjectionValues(
   email: string,
@@ -138,7 +138,8 @@ export function useInjectLead(
   const handler = useDebounced(
     async (
       params: { email?: string; name?: string; phone?: string; url?: string },
-      altchaPayload: string
+      altchaPayload: string,
+      source: ClientSourceDto
     ) => {
       if (params.email) {
         try {
@@ -151,7 +152,8 @@ export function useInjectLead(
               routingId,
               productId,
             },
-            altchaPayload
+            altchaPayload,
+            source
           );
 
           setData(resp);
@@ -183,12 +185,13 @@ export function useInjectLead(
   const inject = useCallback(
     async (
       params: { email?: string; name?: string; phone?: string; url?: string },
-      altchaPayload: string
+      altchaPayload: string,
+      source: ClientSourceDto
     ) => {
       setIsProcessing(true);
 
       try {
-        await handler(params, altchaPayload);
+        await handler(params, altchaPayload, source);
       } catch (e) {
         console.error(e);
       }

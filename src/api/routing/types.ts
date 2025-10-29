@@ -19,6 +19,7 @@ export interface GooglePixel {
 }
 
 export interface PublicRouting {
+  id: number;
   uuid: string;
   name: string;
   account: {

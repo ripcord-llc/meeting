@@ -57,6 +57,24 @@ export interface CreateExistingDealMeetingParams {
   url?: string;
 }
 
+export enum ClientSourceType {
+  MANUAL = 'MAN',
+  PRODUCT = 'PRO',
+  LANDING_PAGE = 'LAN',
+  BOOKING_WIDGET = 'WID',
+  API = 'API',
+  USER = 'USR',
+  UNKNOWN = 'UKN',
+}
+
+export type ClientSourceDto =
+  | { type: ClientSourceType.API }
+  | { type: ClientSourceType.MANUAL }
+  | { type: ClientSourceType.BOOKING_WIDGET; url: string; routingId: number }
+  | { type: ClientSourceType.LANDING_PAGE; landingPageId: number }
+  | { type: ClientSourceType.PRODUCT; productId: number }
+  | { type: ClientSourceType.USER; userId: number };
+
 export interface BookMeetingResponse {
   event: {
     uuid: string;

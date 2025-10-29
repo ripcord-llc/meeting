@@ -12,6 +12,8 @@ import {
   CreateMeetingParams,
   CreateExistingDealMeetingParams,
   BookMeetingResponse,
+  ClientSourceType,
+  ClientSourceDto,
 } from './types';
 
 import { PUBLIC_DEALS_ENDPOINTS } from '.';
@@ -66,10 +68,10 @@ export async function validateAndConvertDataToInjectLeadBody(body: {
   return data;
 }
 
-function getSourceParams(): { type: 'LAN' | 'WID'; url?: string } {
+export function getBookingWidgetSource(routingId: number): ClientSourceDto {
   const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
 
-  return { type: 'WID', url };
+  return { type: ClientSourceType.BOOKING_WIDGET, url, routingId };
 }
 
 export function injectLead(
@@ -77,14 +79,15 @@ export function injectLead(
     routingId: string;
     productId?: string;
   },
-  altchaPayload: string
+  altchaPayload: string,
+  source: ClientSourceDto
 ): Promise<LeadInjectionResponse> {
   return post<LeadInjectionResponse>(
     PUBLIC_DEALS_ENDPOINTS.injectLead,
     {
       ...body,
       utm: getUTMParams(),
-      source: getSourceParams(),
+      source,
     },
     {
       [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,
@@ -94,14 +97,15 @@ export function injectLead(
 
 export async function bookMeetingIntoLatestNonStartedDeal(
   body: CreateMeetingParams,
-  altchaPayload: string
+  altchaPayload: string,
+  source: ClientSourceDto
 ): Promise<BookMeetingResponse> {
   return post<BookMeetingResponse>(
     PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoLatestNonStartedDeal,
     {
       ...body,
       utm: getUTMParams(),
-      source: getSourceParams(),
+      source,
     },
     {
       [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,
@@ -111,14 +115,15 @@ export async function bookMeetingIntoLatestNonStartedDeal(
 
 export async function bookMeetingIntoProduct(
   body: CreateMeetingParams,
-  altchaPayload: string
+  altchaPayload: string,
+  source: ClientSourceDto
 ): Promise<BookMeetingResponse> {
   return post<BookMeetingResponse>(
     PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoProduct,
     {
       ...body,
       utm: getUTMParams(),
-      source: getSourceParams(),
+      source,
     },
     {
       [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,
@@ -128,14 +133,15 @@ export async function bookMeetingIntoProduct(
 
 export async function bookMeetingIntoExistingDeal(
   body: CreateExistingDealMeetingParams,
-  altchaPayload: string
+  altchaPayload: string,
+  source: ClientSourceDto
 ): Promise<BookMeetingResponse> {
   return post<BookMeetingResponse>(
     PUBLIC_DEALS_ENDPOINTS.bookMeetingIntoExistingDeal,
     {
       ...body,
       utm: getUTMParams(),
-      source: getSourceParams(),
+      source,
     },
     {
       [ALTCHA_PAYLOAD_HEADER_KEY]: altchaPayload,

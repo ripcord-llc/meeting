@@ -6,12 +6,11 @@ import commonjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
-import filesize from 'rollup-plugin-filesize';
 import terser from '@rollup/plugin-terser';
 import dts from 'rollup-plugin-dts';
 import del from 'rollup-plugin-delete';
 
-import pkj from './package.json' assert { type: 'json' };
+import pkj from './package.json' with { type: 'json' };
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -36,8 +35,6 @@ const plugins = [
   }),
 ];
 
-const devPlugins = [...(isProduction ? [] : [filesize()])];
-
 const common = {
   onwarn: (warning, defaultHandler) => {
     if (
@@ -52,7 +49,7 @@ const common = {
 export default [
   {
     ...common,
-    plugins: [...plugins, ...devPlugins],
+    plugins,
     input: 'src/browser.ts',
     output: [
       {
@@ -74,7 +71,6 @@ export default [
     plugins: [
       ...plugins,
       typescript({ noForceEmit: true }), // Only for type checking and declaration file generation
-      ...devPlugins,
     ],
     external: [
       '@emotion/react',

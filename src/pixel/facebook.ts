@@ -53,37 +53,28 @@ export function initFacebookPixel(pixelId: string, trackPageView: boolean = true
   }
 }
 
+let initializedPixelId: string | null = null;
+
 /**
- * Initialize Facebook Meta Pixel by injecting the original pixel code directly as a script tag
+ * Initialize Facebook Meta Pixel once per page.
+ * The pixel ID comes from the API and must never be written into script source.
  * @param pixelId Your Facebook pixel ID
  */
 export function initFacebookPixelSimple(pixelId: string): void {
-  if (document.getElementById('fb-pixel-script')) {
-    console.warn('Facebook Pixel script already exists in the document');
+  if (!/^\d{1,20}$/.test(pixelId)) {
+    console.warn('Ignoring invalid Facebook Pixel ID');
     return;
   }
 
-  // Create script element for the pixel code
-  const pixelScript = document.createElement('script');
-  pixelScript.id = 'fb-pixel-script';
+  if (initializedPixelId) {
+    if (initializedPixelId !== pixelId) {
+      console.warn('Facebook Pixel already initialized with a different ID');
+    }
+    return;
+  }
 
-  // Use the exact code from Facebook's Meta Pixel documentation
-  // with the pixel ID replaced with the provided one
-  pixelScript.innerHTML = `
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '${pixelId}');
-    fbq('track', 'PageView');
-  `;
-
-  // Append the script to the document head
-  document.head.appendChild(pixelScript);
+  initializedPixelId = pixelId;
+  initFacebookPixel(pixelId, true);
 }
 
 /**

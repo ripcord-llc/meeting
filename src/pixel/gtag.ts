@@ -10,11 +10,17 @@ export function initGtag(trackingId: string, additionalConfigInfo = {}) {
 
   if (document.getElementById(scriptId)) return;
 
+  // The ID comes from the API; only load real Google tag IDs
+  if (!/^(G|AW|GT|DC|UA)-[A-Za-z0-9-]{1,30}$/.test(trackingId)) {
+    console.warn('Ignoring invalid Google tag ID');
+    return;
+  }
+
   const { head } = document;
   const script = document.createElement('script');
   script.id = scriptId;
   script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${trackingId}`;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(trackingId)}`;
   head.insertBefore(script, head.firstChild);
 
   window.dataLayer = window.dataLayer || [];
